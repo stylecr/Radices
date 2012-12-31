@@ -11,7 +11,9 @@ Vide LICENCE para informações da licença desse projeto (GNU/GPL)
 31/12/2012
 	* Remoção do cMake
 	* Adição do SH Cronus-Commander
-	*Atualização do Readme
+	* Atualização do Readme
+	* Removido txt durante a compilação
+	* Adicionado Travis ao repositório
 
 30/12/2012
 	* Importação inicial do repositório "Radices"
