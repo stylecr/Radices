@@ -8,6 +8,11 @@ Data: Dia/Mês/Ano
 Projeto baseado no eAthena http://www.eathena.ws/ ou http://svn.eathena.ws/svn/ea/
 Vide LICENCE para informações da licença desse projeto (GNU/GPL)
 ------------------------------------------------------------------------------------------------
+31/12/2012
+	* Remoção do cMake
+	* Adição do SH Cronus-Commander
+	*Atualização do Readme
+
 30/12/2012
 	* Importação inicial do repositório "Radices"
 	- Início da alteração completa do desenvolvimento do Cronus-Emulator.
