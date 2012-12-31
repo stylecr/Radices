@@ -3,12 +3,10 @@
 //===== Por: =================================================
 //= (Autor/es)
 //===== Versão Atual: ========================================
-//= (Versão atual Cronus) Cr/(Versão atual eAthena) eA
+//= (Versão atual Cronus) Cr
 //===== Compatibilidade: =====================================
 //= (Emulador [Revisão]; Cliente [Episódio])
-//===== Descrição: ===========================================
-//= ( Breve descrição sobre as funções do(s) NPC(s) )
-//===== Comentários Adicionais: ==============================
+//===== Revisões: ============================================
 //= (Versão Mudança) [Nome]
 //============================================================
 (Conteúdo)
