@@ -2,15 +2,15 @@
 
 HAVE_MYSQL=@HAVE_MYSQL@
 ifeq ($(HAVE_MYSQL),yes)
-	ALL_DEPENDS=mt19937ar common common_sql login login_sql char char_sql map map_sql tools converters save
-	SQL_DEPENDS=mt19937ar common_sql login_sql char_sql map_sql save
+	ALL_DEPENDS=mt19937ar common common_sql login login_sql char char_sql map map_sql tools converters
+	SQL_DEPENDS=mt19937ar common_sql login_sql char_sql map_sql
 	COMMON_SQL_DEPENDS=mt19937ar
 	LOGIN_SQL_DEPENDS=mt19937ar common_sql
 	CHAR_SQL_DEPENDS=mt19937ar common_sql
 	MAP_SQL_DEPENDS=mt19937ar common_sql
 	CONVERTERS_DEPENDS=common_sql
 else
-	ALL_DEPENDS=mt19937ar common login char map tools save
+	ALL_DEPENDS=mt19937ar common login char map tools
 	SQL_DEPENDS=needs_mysql
 	COMMON_SQL_DEPENDS=needs_mysql
 	LOGIN_SQL_DEPENDS=needs_mysql
@@ -28,20 +28,18 @@ else
 endif
 
 #####################################################################
-.PHONY: txt sql conf \
-	common common_sql \
+.PHONY: sql \
+	common_sql \
 	mt19937ar \
-	login login_sql \
-	char char_sql \
-	map map_sql \
-	tools converters plugins addons import save \
+	login_sql \
+	char_sql \
+	map_sql \
+	tools converters plugins addons \
 	clean help
 
 all: $(ALL_DEPENDS)
 
 sql: $(SQL_DEPENDS)
-
-conf: save
 
 common_sql: $(COMMON_SQL_DEPENDS)
 	@$(MAKE) -C src/common sql
@@ -67,15 +65,6 @@ converters: $(CONVERTERS_DEPENDS)
 plugins addons: $(PLUGIN_DEPENDS)
 	@$(MAKE) -C src/plugins
 
-save:
-# 1) create save folder
-# 2) add missing files
-# 3) remove remaining .svn folder
-	@echo "building save folder..."
-	@if test ! -d save ; then mkdir save ; fi
-	@for f in $$(ls save-tmpl) ; do if test ! -e save/$$f ; then cp save-tmpl/$$f save ; fi ; done
-	@rm -rf save/.svn
-
 clean:
 	@$(MAKE) -C src/common $@
 	@$(MAKE) -C 3rdparty/mt19937ar $@
@@ -88,7 +77,7 @@ clean:
 	@$(MAKE) -C src/txt-converter $@
 
 help:
-	@echo "most common targets are 'all' 'txt' 'sql' 'conf' 'clean' 'help'"
+	@echo "most common targets are 'all' 'sql' 'clean' 'help'"
 	@echo "possible targets are:"
 	@echo "'common_sql'  - builds object files used in SQL servers"
 	@echo "'mt19937ar'   - builds object file of Mersenne Twister MT19937"
@@ -99,12 +88,9 @@ help:
 	@echo "'converters'  - builds the login/char converters"
 	@echo "'plugins'     - builds all the plugins in src/plugins"
 	@echo "'addons'"
-	@echo "'save'        - builds save folder from the template save-tmpl"
 	@echo "'all'         - builds all the above targets"
-	@echo "                'import' and 'save')"
-	@echo "'sql'         - builds sql servers (targets 'common_sql' 'login_sql' 'char_sql'"
-	@echo "                'map_sql' 'import' and 'save')"
-	@echo "'conf'        - builds templated folders/files (targets 'import' and 'save')"
+	@echo "'sql'         - builds sql servers (targets 'common_sql' 'login_sql' 'char_sql' and"
+	@echo "                'map_sql')"
 	@echo "'clean'       - cleans builds and objects"
 	@echo "'help'        - outputs this message"
 
@@ -126,13 +112,11 @@ install:	conf/%.conf conf/%.txt
 	$(shell mkdir -p /opt/cronus/bin/)
 	$(shell mkdir -p /opt/cronus/etc/cronus/)
 	$(shell mkdir -p /opt/cronus/var/log/cronus/)
-	$(shell mv save /opt/cronus/etc/cronus/save)
 	$(shell mv db /opt/cronus/etc/cronus/db)
 	$(shell mv conf /opt/cronus/etc/cronus/conf)
 	$(shell mv npc /opt/cronus/etc/cronus/npc)
 	$(shell mv log/* /opt/cronus/var/log/cronus/)
 	$(shell cp *-server* /opt/cronus/bin/)
-	$(shell ln -s /opt/cronus/etc/cronus/save/ /opt/cronus/bin/)
 	$(shell ln -s /opt/cronus/etc/cronus/db/ /opt/cronus/bin/)
 	$(shell ln -s /opt/cronus/etc/cronus/conf/ /opt/cronus/bin/)
 	$(shell ln -s /opt/cronus/etc/cronus/npc/ /opt/cronus/bin/)
@@ -146,7 +130,6 @@ bin-clean:
 uninstall:
 	$(shell read -p "WARNING: This target does not work properly yet. Press Ctrl+C to cancel or Enter to continue.")
 	bin-clean
-	$(shell rm /opt/cronus/bin/save)
 	$(shell rm /opt/cronus/bin/db)
 	$(shell rm /opt/cronus/bin/conf)
 	$(shell rm /opt/cronus/bin/npc)

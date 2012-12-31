@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(eAthena)
+AC_INIT(Cronus)
 AC_REVISION($Revision$)
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([src/common/cbasetypes.h])
@@ -637,7 +637,7 @@ fi
 
 
 #
-# MySQL library (optional)
+# MySQL library (required)
 #
 
 if test "$want_mysql" = "no" ; then
