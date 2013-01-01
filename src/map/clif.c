@@ -8084,10 +8084,7 @@ void clif_refresh(struct map_session_data *sd)
 
 	// unlike vending, resuming buyingstore crashes the client.
 	buyingstore_close(sd);
-
-#ifndef TXT_ONLY
 	mail_clear(sd);
-#endif
 }
 
 
@@ -9146,9 +9143,7 @@ void clif_parse_LoadEndAck(int fd,struct map_session_data *sd)
 		sd->state.changemap = false;
 	}
 	
-#ifndef TXT_ONLY
 	mail_clear(sd);
-#endif
 
 	if(map[sd->bl.m].flag.loadevent) // Lance
 		npc_script_event(sd, NPCE_LOADMAP);
@@ -13293,9 +13288,6 @@ void clif_parse_Check(int fd, struct map_session_data *sd)
 	clif_check(fd, pl_sd);
 }
 
-
-#ifndef TXT_ONLY
-
 /// MAIL SYSTEM
 /// By Zephyrus
 ///
@@ -14071,9 +14063,6 @@ void clif_parse_Auction_buysell(int fd, struct map_session_data* sd)
 
 	intif_Auction_requestlist(sd->status.char_id, type, 0, "", 1);
 }
-
-#endif
-
 
 /// CASH/POINT SHOP
 ///
@@ -16159,7 +16148,6 @@ static int packetdb_readdb(void)
 		{clif_parse_Check,"check"},
 		{clif_parse_Adopt_request,"adoptrequest"},
 		{clif_parse_Adopt_reply,"adoptreply"},
-#ifndef TXT_ONLY
 		// MAIL SYSTEM
 		{clif_parse_Mail_refreshinbox,"mailrefresh"},
 		{clif_parse_Mail_read,"mailread"},
@@ -16180,7 +16168,6 @@ static int packetdb_readdb(void)
 		{clif_parse_Auction_bid,"auctionbid"},
 		// Quest Log System
 		{clif_parse_questStateAck,"queststate"},
-#endif
 		{clif_parse_cashshop_buy,"cashshopbuy"},
 		{clif_parse_ViewPlayerEquip,"viewplayerequip"},
 		{clif_parse_EquipTick,"equiptickbox"},

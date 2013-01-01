@@ -688,7 +688,6 @@ typedef struct mercenary_data   TBL_MER;
 
 extern char main_chat_nick[16];
 
-#ifndef TXT_ONLY
 
 #include "../common/sql.h"
 
@@ -701,8 +700,6 @@ extern char item_db_db[32];
 extern char item_db2_db[32];
 extern char mob_db_db[32];
 extern char mob_db2_db[32];
-
-#endif /* not TXT_ONLY */
 
 void do_shutdown(void);
 

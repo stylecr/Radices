@@ -125,7 +125,6 @@ void log_branch(struct map_session_data* sd)
 	if( !log_config.branch )
 		return;
 
-#ifndef TXT_ONLY
 	if( log_config.sql_logs )
 	{
 		SqlStmt* stmt;
@@ -141,7 +140,6 @@ void log_branch(struct map_session_data* sd)
 		SqlStmt_Free(stmt);
 	}
 	else
-#endif
 	{
 		char timestring[255];
 		time_t curtime;
@@ -170,7 +168,6 @@ void log_pick_pc(struct map_session_data* sd, e_log_pick_type type, int nameid, 
 	if( !should_log_item(nameid, amount, itm ? itm->refine : 0) )
 		return; //we skip logging this item set - it doesn't meet our logging conditions [Lupus]
 
-#ifndef TXT_ONLY
 	if( log_config.sql_logs )
 	{
 		if( itm == NULL )
@@ -193,7 +190,6 @@ void log_pick_pc(struct map_session_data* sd, e_log_pick_type type, int nameid, 
 		}
 	}
 	else
-#endif
 	{
 		char timestring[255];
 		time_t curtime;
@@ -237,7 +233,6 @@ void log_pick_mob(struct mob_data* md, e_log_pick_type type, int nameid, int amo
 	if( mapname == NULL )
 		mapname="";
 
-#ifndef TXT_ONLY
 	if( log_config.sql_logs )
 	{
 		if( itm == NULL )
@@ -260,7 +255,6 @@ void log_pick_mob(struct mob_data* md, e_log_pick_type type, int nameid, int amo
 		}
 	}
 	else
-#endif
 	{
 		char timestring[255];
 		time_t curtime;
@@ -309,7 +303,6 @@ void log_zeny(struct map_session_data* sd, e_log_pick_type type, struct map_sess
 	if( !log_config.zeny || ( log_config.zeny != 1 && abs(amount) < log_config.zeny ) )
 		return;
 
-#ifndef TXT_ONLY
 	if( log_config.sql_logs )
 	{
 		if( SQL_ERROR == Sql_Query(logmysql_handle, "INSERT DELAYED INTO `%s` (`time`, `char_id`, `src_id`, `type`, `amount`, `map`) VALUES (NOW(), '%d', '%d', '%c', '%d', '%s')",
@@ -320,7 +313,6 @@ void log_zeny(struct map_session_data* sd, e_log_pick_type type, struct map_sess
 		}
 	}
 	else
-#endif
 	{
 		char timestring[255];
 		time_t curtime;
@@ -344,7 +336,6 @@ void log_mvpdrop(struct map_session_data* sd, int monster_id, int* log_mvp)
 	if( !log_config.mvpdrop )
 		return;
 
-#ifndef TXT_ONLY
 	if( log_config.sql_logs )
 	{
 		if( SQL_ERROR == Sql_Query(logmysql_handle, "INSERT DELAYED INTO `%s` (`mvp_date`, `kill_char_id`, `monster_id`, `prize`, `mvpexp`, `map`) VALUES (NOW(), '%d', '%d', '%d', '%d', '%s') ",
@@ -355,7 +346,6 @@ void log_mvpdrop(struct map_session_data* sd, int monster_id, int* log_mvp)
 		}
 	}
 	else
-#endif
 	{
 		char timestring[255];
 		time_t curtime;
@@ -379,7 +369,6 @@ void log_atcommand(struct map_session_data* sd, int cmdlvl, const char* message)
 	if( cmdlvl < log_config.gm )
 		return;
 
-#ifndef TXT_ONLY
 	if( log_config.sql_logs )
 	{
 		SqlStmt* stmt;
@@ -397,7 +386,6 @@ void log_atcommand(struct map_session_data* sd, int cmdlvl, const char* message)
 		SqlStmt_Free(stmt);
 	}
 	else
-#endif
 	{
 		char timestring[255];
 		time_t curtime;
@@ -421,7 +409,6 @@ void log_npc(struct map_session_data* sd, const char* message)
 	if( !log_config.npc )
 		return;
 
-#ifndef TXT_ONLY
 	if( log_config.sql_logs )
 	{
 		SqlStmt* stmt;
@@ -438,7 +425,6 @@ void log_npc(struct map_session_data* sd, const char* message)
 		SqlStmt_Free(stmt);
 	}
 	else
-#endif
 	{
 		char timestring[255];
 		time_t curtime;
@@ -467,7 +453,6 @@ void log_chat(e_log_chat_type type, int type_id, int src_charid, int src_accid, 
 		return;
 	}
 
-#ifndef TXT_ONLY
 	if( log_config.sql_logs )
 	{
 		SqlStmt* stmt;
@@ -485,7 +470,6 @@ void log_chat(e_log_chat_type type, int type_id, int src_charid, int src_accid, 
 		SqlStmt_Free(stmt);
 	}
 	else
-#endif
 	{
 		char timestring[255];
 		time_t curtime;
@@ -540,13 +524,6 @@ int log_config_read(const char* cfgName)
 			else if( strcmpi(w1, "sql_logs") == 0 )
 			{
 				log_config.sql_logs = (bool)config_switch(w2);
-#ifdef TXT_ONLY
-				if( log_config.sql_logs )
-				{
-					ShowWarning("log_config_read: SQL logging is not supported on this server.\n");
-					log_config.sql_logs = false;
-				}
-#endif
 			}
 //start of common filter settings
 			else if( strcmpi(w1, "rare_items_log") == 0 )

@@ -4487,22 +4487,20 @@ int do_init(int argc, char **argv)
 	sql_config_read(SQL_CONF_NAME);
 
 	if (strcmp(userid, "s1")==0 && strcmp(passwd, "p1")==0) {
-		ShowError("Using the default user/password s1/p1 is NOT RECOMMENDED.\n");
-		ShowNotice("Please edit your 'login' table to create a proper inter-server user/password (gender 'S')\n");
-		ShowNotice("And then change the user/password to use in conf/char_athena.conf (or conf/import/char_conf.txt)\n");
+		ShowError("Usar o login e senha padrıes "CL_WHITE"s1"CL_RESET"/"CL_WHITE"p1 "CL_RED"n„o"CL_RESET" È recomendado.\n");
+		ShowNotice("Crie uma nova conta (gÍnero "CL_WHITE"S"CL_RESET"), ou edite a existente,\n");
+		ShowNotice("e lembre de mudar o "CL_WHITE"userid"CL_RESET" e o "CL_WHITE"passwd"CL_RESET" no char-athena.conf e map-athena.conf.\n");
 	}
 
 	ShowInfo("Finished reading the char-server configuration.\n");
 
 	inter_init_sql((argc > 2) ? argv[2] : inter_cfgName); // inter server √ ±‚»≠
 	ShowInfo("Finished reading the inter-server configuration.\n");
-	
-	ShowInfo("Initializing char server.\n");
+
 	auth_db = idb_alloc(DB_OPT_RELEASE_DATA);
 	online_char_db = idb_alloc(DB_OPT_RELEASE_DATA);
 	mmo_char_sql_init();
 	char_read_fame_list(); //Read fame lists.
-	ShowInfo("char server initialized.\n");
 
 	if ((naddr_ != 0) && (!login_ip || !char_ip))
 	{
@@ -4558,12 +4556,9 @@ int do_init(int argc, char **argv)
 	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `%s` WHERE `guild_id` = '0' AND `account_id` = '0' AND `char_id` = '0'", guild_member_db) )
 		Sql_ShowDebug(sql_handle);
 
-	ShowInfo("End of char server initilization function.\n");
-
 	set_defaultparse(parse_char);
-	ShowInfo("open port %d.....\n",char_port);
 	char_fd = make_listen_bind(bind_ip, char_port);
-	ShowStatus("The char-server is "CL_GREEN"ready"CL_RESET" (Server is listening on the port %d).\n\n", char_port);
+	ShowStatus("O char-server est· "CL_GREEN"pronto"CL_RESET" e funcionando pela porta "CL_WHITE"%d"CL_RESET".\n", char_port);
 
 	if( runflag != CORE_ST_STOP )
 	{

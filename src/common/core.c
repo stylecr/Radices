@@ -193,13 +193,13 @@ static void display_title(void)
 	ShowMessage(""CL_XXBL"          ("CL_BOLD"      \\     \\____|  | \\(  <_> )   |  \\  |  /\\___ \\       "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
 	ShowMessage(""CL_XXBL"          ("CL_BOLD"       \\______  /|__|   \\____/|___|  /____//____  >      "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
 	ShowMessage(""CL_XXBL"          ("CL_BOLD"              \\/                   \\/           \\/       "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
-	ShowMessage(""CL_XXBL"          ("CL_BT_RED"                          Fusion                         "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
+	ShowMessage(""CL_XXBL"          ("CL_BT_RED"                          Radices                         "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
 	ShowMessage(""CL_XXBL"          ("CL_BOLD"                  www.cronus-emulator.com                "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
-	ShowMessage(""CL_XXBL"          ("CL_BT_YELLOW"      Baseado no eAthena (c) 2005-2012 Projeto Cronus    "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
+	ShowMessage(""CL_XXBL"          ("CL_BT_YELLOW"      Baseado no eAthena (c) 2005-2013 Projeto Cronus    "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
 	ShowMessage(""CL_XXBL"          ("CL_BOLD"                                                         "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
 	ShowMessage(""CL_WTBL"          (=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=)"CL_CLL""CL_NORMAL"\n\n");
 
-	ShowInfo("Revisao SVN: '"CL_WHITE"%s"CL_RESET"'.\n", get_svn_revision());
+	ShowInfo("Revisão SVN: '"CL_WHITE"%s"CL_RESET"'.\n", get_svn_revision());
 }
 
 // Avisa se o usuário está logado como ROOT

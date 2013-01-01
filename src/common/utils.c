@@ -87,23 +87,31 @@ void ShowDump(const void* buffer, size_t length)
 }
 
 
-#ifdef WIN32
-
-static char* checkpath(char *path, const char *srcpath)
+static char* checkpath(char *path, const char*srcpath)
 {	// just make sure the char*path is not const
 	char *p=path;
 	if(NULL!=path && NULL!=srcpath)
 	while(*srcpath) {
+#ifdef WIN32
+		if (*srcpath=='\\') {
+			*p++ = '/';
+			srcpath++;
+		}
+#else
 		if (*srcpath=='/') {
 			*p++ = '\\';
 			srcpath++;
 		}
+#endif
 		else
 			*p++ = *srcpath++;
 	}
 	*p = *srcpath; //EOS
 	return path;
 }
+
+
+#ifdef WIN32
 
 void findfile(const char *p, const char *pat, void (func)(const char*))
 {	
@@ -149,22 +157,6 @@ void findfile(const char *p, const char *pat, void (func)(const char*))
 #else
 
 #define MAX_DIR_PATH 2048
-
-static char* checkpath(char *path, const char*srcpath)
-{	// just make sure the char*path is not const
-	char *p=path;
-	if(NULL!=path && NULL!=srcpath)
-	while(*srcpath) {
-		if (*srcpath=='\\') {
-			*p++ = '/';
-			srcpath++;
-		}
-		else
-			*p++ = *srcpath++;
-	}
-	*p = *srcpath; //EOS
-	return path;
-}
 
 void findfile(const char *p, const char *pat, void (func)(const char*))
 {	

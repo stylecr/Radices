@@ -3673,7 +3673,6 @@ static void mob_readdb(void)
 	}
 }
 
-#ifndef TXT_ONLY
 /*==========================================
  * mob_db table reading
  *------------------------------------------*/
@@ -3728,7 +3727,6 @@ static int mob_read_sqldb(void)
 	}
 	return 0;
 }
-#endif /* not TXT_ONLY */
 
 /*==========================================
  * MOB display graphic change data reading
@@ -4274,11 +4272,9 @@ static bool mob_readdb_race2(char* fields[], int columns, int current)
 
 static void mob_load(void)
 {
-#ifndef TXT_ONLY
 	if(db_use_sqldbs)
 		mob_read_sqldb();
 	else
-#endif /* TXT_ONLY */
 	mob_readdb();
 
 	sv_readdb(db_path, "mob_avail.txt", ',', 2, 12, -1, &mob_readdb_mobavail);

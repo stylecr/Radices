@@ -1416,8 +1416,6 @@ int intif_quest_save(TBL_PC *sd)
 	return 0;
 }
 
-#ifndef TXT_ONLY
-
 /*==========================================
  * MAIL SYSTEM
  * By Zephyrus
@@ -1892,8 +1890,6 @@ static void intif_parse_Auction_message(int fd)
 	clif_Auction_message(sd->fd, result);
 }
 
-#endif
-
 /*==========================================
  * Mercenary's System
  *------------------------------------------*/
@@ -2053,7 +2049,6 @@ int intif_parse(int fd)
 	case 0x3860:	intif_parse_questlog(fd); break;
 	case 0x3861:	intif_parse_questsave(fd); break;
 
-#ifndef TXT_ONLY
 // Mail System
 	case 0x3848:	intif_parse_Mail_inboxreceived(fd); break;
 	case 0x3849:	intif_parse_Mail_new(fd); break;
@@ -2068,7 +2063,7 @@ int intif_parse(int fd)
 	case 0x3853:	intif_parse_Auction_close(fd); break;
 	case 0x3854:	intif_parse_Auction_message(fd); break;
 	case 0x3855:	intif_parse_Auction_bid(fd); break;
-#endif
+
 // Mercenary System
 	case 0x3870:	intif_parse_mercenary_received(fd); break;
 	case 0x3871:	intif_parse_mercenary_deleted(fd); break;

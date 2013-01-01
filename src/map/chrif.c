@@ -223,13 +223,9 @@ void chrif_setpasswd(char *pwd)
 void chrif_checkdefaultlogin(void)
 {
 	if (strcmp(userid, "s1")==0 && strcmp(passwd, "p1")==0) {
-		ShowError("Usar o s1/p1 como padrao para usuario/senha nao e recomendado.\n");
-#ifdef TXT_ONLY
-		ShowNotice("Por favor altere seu arquivo save/account.txt para criar um usuario/senha adequado do inter-server (Genero 'S')\n");
-#else
-		ShowNotice("Por favor altere a tabela 'login' para criar um usuario/senha adequado do inter-server (Genero 'S')\n");
-#endif
-		ShowNotice("e entao altere seu usuario/senha em conf/map_athena.conf (ou conf/import/map_conf.txt)\n");
+		ShowError("Usar o login e senha padrões "CL_WHITE"s1"CL_RESET"/"CL_WHITE"p1 "CL_RED"não"CL_RESET" é recomendado.\n");
+		ShowNotice("Crie uma nova conta (gênero "CL_WHITE"S"CL_RESET"), ou edite a existente,\n");
+		ShowNotice("e lembre de mudar o "CL_WHITE"userid"CL_RESET" e o "CL_WHITE"passwd"CL_RESET" no char-athena.conf e map-athena.conf.\n");
 	}
 }
 
@@ -311,10 +307,8 @@ int chrif_save(struct map_session_data *sd, int flag)
 		merc_save(sd->hd);
 	if( sd->md && mercenary_get_lifetime(sd->md) > 0 )
 		mercenary_save(sd->md);
-#ifndef TXT_ONLY
 	if( sd->save_quest )
 		intif_quest_save(sd);
-#endif
 
 	return 0;
 }
@@ -1532,16 +1526,12 @@ static int check_connect_char_server(int tid, unsigned int tick, int id, intptr_
 
 		chrif_connect(char_fd);
 		chrif_connected = (chrif_state == 2);
-#ifndef TXT_ONLY
 		srvinfo = 0;
-#endif /* not TXT_ONLY */
 	} else {
-#ifndef TXT_ONLY
 		if (srvinfo == 0) {
 			chrif_ragsrvinfo(battle_config.base_exp_rate, battle_config.job_exp_rate, battle_config.item_rate_common);
 			srvinfo = 1;
 		}
-#endif /* not TXT_ONLY */
 	}
 	if (chrif_isconnected()) displayed = 0;
 	return 0;
