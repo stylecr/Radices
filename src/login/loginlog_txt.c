@@ -19,7 +19,7 @@ char login_log_filename[1024] = "log/login.log";
 
 
 // Returns the number of failed login attemps by the ip in the last minutes.
-unsigned long loginlog_failedattempts(uint32 ip, unsigned int minutes)
+unsigned long loginlog_failedattempts (uint32 ip, unsigned int minutes)
 {
 	// XXX not implemented
 	return 0;
@@ -29,39 +29,35 @@ unsigned long loginlog_failedattempts(uint32 ip, unsigned int minutes)
 /*=============================================
  * Records an event in the login log
  *---------------------------------------------*/
-void login_log(uint32 ip, const char* username, int rcode, const char* message)
+void login_log (uint32 ip, const char *username, int rcode, const char *message)
 {
-	FILE* log_fp;
+	FILE *log_fp;
 
-	if( !login_config.log_login )
+	if (!login_config.log_login)
 		return;
-	
-	log_fp = fopen(login_log_filename, "a");
-	if( log_fp != NULL )
-	{
-		char esc_username[NAME_LENGTH*4+1];
-		char esc_message[255*4+1];
+
+	log_fp = fopen (login_log_filename, "a");
+
+	if (log_fp != NULL) {
+		char esc_username[NAME_LENGTH * 4 + 1];
+		char esc_message[255 * 4 + 1];
 		time_t raw_time;
 		char str_time[24];
-
-		sv_escape_c(esc_username, username, safestrnlen(username,NAME_LENGTH), NULL);
-		sv_escape_c(esc_message, message, safestrnlen(message,255), NULL);
-
-		time(&raw_time);
-		strftime(str_time, 24, login_config.date_format, localtime(&raw_time));
+		sv_escape_c (esc_username, username, safestrnlen (username, NAME_LENGTH), NULL);
+		sv_escape_c (esc_message, message, safestrnlen (message, 255), NULL);
+		time (&raw_time);
+		strftime (str_time, 24, login_config.date_format, localtime (&raw_time));
 		str_time[23] = '\0';
-
-		fprintf(log_fp, "%s\t%s\t%s\t%d\t%s\n", str_time, ip2str(ip,NULL), esc_username, rcode, esc_message);
-
-		fclose(log_fp);
+		fprintf (log_fp, "%s\t%s\t%s\t%d\t%s\n", str_time, ip2str (ip, NULL), esc_username, rcode, esc_message);
+		fclose (log_fp);
 	}
 }
 
 
-bool loginlog_config_read(const char* w1, const char* w2)
+bool loginlog_config_read (const char *w1, const char *w2)
 {
-	if(!strcmpi(w1, "login_log_filename"))
-		safestrncpy(login_log_filename, w2, sizeof(login_log_filename));
+	if (!strcmpi (w1, "login_log_filename"))
+		safestrncpy (login_log_filename, w2, sizeof (login_log_filename));
 	else
 		return false;
 
@@ -69,13 +65,13 @@ bool loginlog_config_read(const char* w1, const char* w2)
 }
 
 
-bool loginlog_init(void)
+bool loginlog_init (void)
 {
 	return true;
 }
 
 
-bool loginlog_final(void)
+bool loginlog_final (void)
 {
 	return true;
 }

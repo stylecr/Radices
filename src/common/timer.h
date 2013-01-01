@@ -17,7 +17,7 @@
 
 // Struct declaration
 
-typedef int (*TimerFunc)(int tid, unsigned int tick, int id, intptr_t data);
+typedef int (*TimerFunc) (int tid, unsigned int tick, int id, intptr_t data);
 
 struct TimerData {
 	unsigned int tick;
@@ -27,29 +27,29 @@ struct TimerData {
 	int heap_pos;
 
 	// general-purpose storage
-	int id; 
+	int id;
 	intptr_t data;
 };
 
 // Function prototype declaration
 
-unsigned int gettick(void);
-unsigned int gettick_nocache(void);
+unsigned int gettick (void);
+unsigned int gettick_nocache (void);
 
-int add_timer(unsigned int tick, TimerFunc func, int id, intptr_t data);
-int add_timer_interval(unsigned int tick, TimerFunc func, int id, intptr_t data, int interval);
-const struct TimerData* get_timer(int tid);
-int delete_timer(int tid, TimerFunc func);
+int add_timer (unsigned int tick, TimerFunc func, int id, intptr_t data);
+int add_timer_interval (unsigned int tick, TimerFunc func, int id, intptr_t data, int interval);
+const struct TimerData *get_timer (int tid);
+int delete_timer (int tid, TimerFunc func);
 
-int addtick_timer(int tid, unsigned int tick);
-int settick_timer(int tid, unsigned int tick);
+int addtick_timer (int tid, unsigned int tick);
+int settick_timer (int tid, unsigned int tick);
 
-int add_timer_func_list(TimerFunc func, char* name);
+int add_timer_func_list (TimerFunc func, char *name);
 
-unsigned long get_uptime(void);
+unsigned long get_uptime (void);
 
-int do_timer(unsigned int tick);
-void timer_init(void);
-void timer_final(void);
+int do_timer (unsigned int tick);
+void timer_init (void);
+void timer_final (void);
 
 #endif /* _TIMER_H_ */

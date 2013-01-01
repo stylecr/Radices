@@ -22,7 +22,7 @@ struct s_instance {
 	int users;
 
 	struct linkdb_node *ivar, *svar; // Instance Variable for scripts
-	
+
 	int progress_timer;
 	time_t progress_timeout;
 
@@ -33,20 +33,20 @@ struct s_instance {
 extern int instance_start;
 extern struct s_instance instance[MAX_INSTANCE];
 
-int instance_create(int party_id, const char *name);
-int instance_add_map(const char *name, int instance_id, bool usebasename);
-void instance_del_map(int m);
-int instance_map2imap(int m, int instance_id);
-int instance_mapid2imapid(int m, int instance_id);
-void instance_destroy(int instance_id);
-void instance_init(int instance_id);
+int instance_create (int party_id, const char *name);
+int instance_add_map (const char *name, int instance_id, bool usebasename);
+void instance_del_map (int m);
+int instance_map2imap (int m, int instance_id);
+int instance_mapid2imapid (int m, int instance_id);
+void instance_destroy (int instance_id);
+void instance_init (int instance_id);
 
-void instance_check_idle(int instance_id);
-void instance_check_kick(struct map_session_data *sd);
-void instance_set_timeout(int instance_id, unsigned int progress_timeout, unsigned int idle_timeout);
+void instance_check_idle (int instance_id);
+void instance_check_kick (struct map_session_data *sd);
+void instance_set_timeout (int instance_id, unsigned int progress_timeout, unsigned int idle_timeout);
 
 void do_init_instance();
-void do_final_instance(void);
-void do_init_instance(void);
+void do_final_instance (void);
+void do_init_instance (void);
 
 #endif

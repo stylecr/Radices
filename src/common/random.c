@@ -4,80 +4,81 @@
 #include "../common/timer.h" // gettick
 #include "random.h"
 #if defined(WIN32)
-	#define WIN32_LEAN_AND_MEAN
-	#include <windows.h>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #elif defined(HAVE_GETPID) || defined(HAVE_GETTID)
-	#include <sys/types.h>
-	#include <unistd.h>
+#include <sys/types.h>
+#include <unistd.h>
 #endif
 #include <time.h> // time
 #include <mt19937ar.h> // init_genrand, genrand_int32, genrand_res53
 
 
 /// Initializes the random number generator with an appropriate seed.
-void rnd_init(void)
+void rnd_init (void)
 {
 	uint32 seed = gettick();
-	seed += (uint32)time(NULL);
+	seed += (uint32) time (NULL);
 #if defined(WIN32)
 	seed += GetCurrentProcessId();
 	seed += GetCurrentThreadId();
 #else
 #if defined(HAVE_GETPID)
-	seed += (uint32)getpid();
+	seed += (uint32) getpid();
 #endif // HAVE_GETPID
 #if defined(HAVE_GETTID)
-	seed += (uint32)gettid();
+	seed += (uint32) gettid();
 #endif // HAVE_GETTID
 #endif
-	init_genrand(seed);
+	init_genrand (seed);
 }
 
 
 /// Initializes the random number generator.
-void rnd_seed(uint32 seed)
+void rnd_seed (uint32 seed)
 {
-	init_genrand(seed);
+	init_genrand (seed);
 }
 
 
 /// Generates a random number in the interval [0, UINT32_MAX]
-uint32 rnd(void)
+uint32 rnd (void)
 {
-	return (uint32)genrand_int32();
+	return (uint32) genrand_int32();
 }
 
 
 /// Generates a random number in the interval [0, dice_faces)
 /// NOTE: interval is open ended, so dice_faces is excluded (unless it's 0)
-uint32 rnd_roll(uint32 dice_faces)
+uint32 rnd_roll (uint32 dice_faces)
 {
-	return (uint32)(rnd_uniform()*dice_faces);
+	return (uint32) (rnd_uniform() * dice_faces);
 }
 
 
 /// Generates a random number in the interval [min, max]
 /// Returns min if range is invalid.
-int32 rnd_value(int32 min, int32 max)
+int32 rnd_value (int32 min, int32 max)
 {
-	if( min >= max )
+	if (min >= max)
 		return min;
-	return min + (int32)(rnd_uniform()*(max-min+1));
+
+	return min + (int32) (rnd_uniform() * (max - min + 1));
 }
 
 
 /// Generates a random number in the interval [0.0, 1.0)
 /// NOTE: interval is open ended, so 1.0 is excluded
-double rnd_uniform(void)
+double rnd_uniform (void)
 {
-	return ((uint32)genrand_int32())*(1.0/4294967296.0);// divided by 2^32
+	return ( (uint32) genrand_int32()) * (1.0 / 4294967296.0); // divided by 2^32
 }
 
 
 /// Generates a random number in the interval [0.0, 1.0) with 53-bit resolution
 /// NOTE: interval is open ended, so 1.0 is excluded
 /// NOTE: 53 bits is the maximum precision of a double
-double rnd_uniform53(void)
+double rnd_uniform53 (void)
 {
 	return genrand_res53();
 }

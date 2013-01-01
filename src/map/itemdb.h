@@ -41,7 +41,7 @@
 
 struct item_data {
 	int nameid;
-	char name[ITEM_NAME_LENGTH],jname[ITEM_NAME_LENGTH];
+	char name[ITEM_NAME_LENGTH], jname[ITEM_NAME_LENGTH];
 	//Do not add stuff between value_buy and wlv (see how getiteminfo works)
 	int value_buy;
 	int value_sell;
@@ -59,8 +59,8 @@ struct item_data {
 	int wlv;
 	int view_id;
 	int delay;
-//Lupus: I rearranged order of these fields due to compatibility with ITEMINFO script command
-//		some script commands should be revised as well...
+	//Lupus: I rearranged order of these fields due to compatibility with ITEMINFO script command
+	//		some script commands should be revised as well...
 	unsigned int class_base[3];	//Specifies if the base can wear this item (split in 3 indexes per type: 1-1, 2-1, 2-2)
 	unsigned class_upper : 3; //Specifies if the upper-type can equip it (bitfield, 1: normal, 2: upper, 3: baby)
 	struct {
@@ -87,11 +87,11 @@ struct item_group {
 	int qty; //Counts amount of items in the group.
 };
 
-struct item_data* itemdb_searchname(const char *name);
-int itemdb_searchname_array(struct item_data** data, int size, const char *str);
-struct item_data* itemdb_load(int nameid);
-struct item_data* itemdb_search(int nameid);
-struct item_data* itemdb_exists(int nameid);
+struct item_data *itemdb_searchname (const char *name);
+int itemdb_searchname_array (struct item_data **data, int size, const char *str);
+struct item_data *itemdb_load (int nameid);
+struct item_data *itemdb_search (int nameid);
+struct item_data *itemdb_exists (int nameid);
 #define itemdb_name(n) itemdb_search(n)->name
 #define itemdb_jname(n) itemdb_search(n)->jname
 #define itemdb_type(n) itemdb_search(n)->type
@@ -108,40 +108,40 @@ struct item_data* itemdb_exists(int nameid);
 #define itemdb_available(n) (itemdb_search(n)->flag.available)
 #define itemdb_viewid(n) (itemdb_search(n)->view_id)
 #define itemdb_autoequip(n) (itemdb_search(n)->flag.autoequip)
-const char* itemdb_typename(int type);
+const char *itemdb_typename (int type);
 
-int itemdb_group_bonus(struct map_session_data* sd, int itemid);
-int itemdb_searchrandomid(int flags);
+int itemdb_group_bonus (struct map_session_data *sd, int itemid);
+int itemdb_searchrandomid (int flags);
 
 #define itemdb_value_buy(n) itemdb_search(n)->value_buy
 #define itemdb_value_sell(n) itemdb_search(n)->value_sell
 #define itemdb_canrefine(n) (!itemdb_search(n)->flag.no_refine)
 //Item trade restrictions [Skotlex]
-int itemdb_isdropable_sub(struct item_data *, int, int);
-int itemdb_cantrade_sub(struct item_data*, int, int);
-int itemdb_canpartnertrade_sub(struct item_data*, int, int);
-int itemdb_cansell_sub(struct item_data*,int, int);
-int itemdb_cancartstore_sub(struct item_data*, int, int);
-int itemdb_canstore_sub(struct item_data*, int, int);
-int itemdb_canguildstore_sub(struct item_data*, int, int);
-int itemdb_isrestricted(struct item* item, int gmlv, int gmlv2, int (*func)(struct item_data*, int, int));
+int itemdb_isdropable_sub (struct item_data *, int, int);
+int itemdb_cantrade_sub (struct item_data *, int, int);
+int itemdb_canpartnertrade_sub (struct item_data *, int, int);
+int itemdb_cansell_sub (struct item_data *, int, int);
+int itemdb_cancartstore_sub (struct item_data *, int, int);
+int itemdb_canstore_sub (struct item_data *, int, int);
+int itemdb_canguildstore_sub (struct item_data *, int, int);
+int itemdb_isrestricted (struct item *item, int gmlv, int gmlv2, int (*func) (struct item_data *, int, int));
 #define itemdb_isdropable(item, gmlv) itemdb_isrestricted(item, gmlv, 0, itemdb_isdropable_sub)
 #define itemdb_cantrade(item, gmlv, gmlv2) itemdb_isrestricted(item, gmlv, gmlv2, itemdb_cantrade_sub)
 #define itemdb_canpartnertrade(item, gmlv, gmlv2) itemdb_isrestricted(item, gmlv, gmlv2, itemdb_canpartnertrade_sub)
 #define itemdb_cansell(item, gmlv) itemdb_isrestricted(item, gmlv, 0, itemdb_cansell_sub)
 #define itemdb_cancartstore(item, gmlv)  itemdb_isrestricted(item, gmlv, 0, itemdb_cancartstore_sub)
-#define itemdb_canstore(item, gmlv) itemdb_isrestricted(item, gmlv, 0, itemdb_canstore_sub) 
-#define itemdb_canguildstore(item, gmlv) itemdb_isrestricted(item , gmlv, 0, itemdb_canguildstore_sub) 
+#define itemdb_canstore(item, gmlv) itemdb_isrestricted(item, gmlv, 0, itemdb_canstore_sub)
+#define itemdb_canguildstore(item, gmlv) itemdb_isrestricted(item , gmlv, 0, itemdb_canguildstore_sub)
 
-int itemdb_isequip(int);
-int itemdb_isequip2(struct item_data *);
-int itemdb_isidentified(int);
-int itemdb_isstackable(int);
-int itemdb_isstackable2(struct item_data *);
+int itemdb_isequip (int);
+int itemdb_isequip2 (struct item_data *);
+int itemdb_isidentified (int);
+int itemdb_isstackable (int);
+int itemdb_isstackable2 (struct item_data *);
 
-void itemdb_reload(void);
+void itemdb_reload (void);
 
-void do_final_itemdb(void);
-int do_init_itemdb(void);
+void do_final_itemdb (void);
+int do_init_itemdb (void);
 
 #endif /* _ITEMDB_H_ */

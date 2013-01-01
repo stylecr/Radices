@@ -64,8 +64,8 @@
 /**
  * Define this to enable the functions that cast to unions.
  * Required when the compiler doesn't support casting to unions.
- * NOTE: It is recommened that the conditional tests to determine if this 
- * should be defined be located in the configure script or a header file 
+ * NOTE: It is recommened that the conditional tests to determine if this
+ * should be defined be located in the configure script or a header file
  * specific for compatibility and portability issues.
  * @public
  * @see #db_i2key(int)
@@ -90,7 +90,7 @@ typedef enum DBRelease {
 
 /**
  * Supported types of database.
- * See {@link #db_fix_options(DBType,DBOptions)} for restrictions of the 
+ * See {@link #db_fix_options(DBType,DBOptions)} for restrictions of the
  * types of databases.
  * @param DB_INT Uses int's for keys
  * @param DB_UINT Uses unsigned int's for keys
@@ -114,14 +114,14 @@ typedef enum DBType {
 
 /**
  * Bitfield of options that define the behaviour of the database.
- * See {@link #db_fix_options(DBType,DBOptions)} for restrictions of the 
+ * See {@link #db_fix_options(DBType,DBOptions)} for restrictions of the
  * types of databases.
  * @param DB_OPT_BASE Base options: does not duplicate keys, releases nothing
  *          and does not allow NULL keys or NULL data.
- * @param DB_OPT_DUP_KEY Duplicates the keys internally. If DB_OPT_RELEASE_KEY 
+ * @param DB_OPT_DUP_KEY Duplicates the keys internally. If DB_OPT_RELEASE_KEY
  *          is defined, the real key is freed as soon as the entry is added.
  * @param DB_OPT_RELEASE_KEY Releases the key.
- * @param DB_OPT_RELEASE_DATA Releases the data whenever an entry is removed 
+ * @param DB_OPT_RELEASE_DATA Releases the data whenever an entry is removed
  *          from the database.
  *          WARNING: for funtions that return the data (like DBMap::remove),
  *          a dangling pointer will be returned.
@@ -161,7 +161,7 @@ typedef union DBKey {
 } DBKey;
 
 /**
- * Format of funtions that create the data for the key when the entry doesn't 
+ * Format of funtions that create the data for the key when the entry doesn't
  * exist in the database yet.
  * @param key Key of the database entry
  * @param args Extra arguments of the funtion
@@ -170,12 +170,12 @@ typedef union DBKey {
  * @see DBMap#vensure
  * @see DBMap#ensure
  */
-typedef void* (*DBCreateData)(DBKey key, va_list args);
+typedef void * (*DBCreateData) (DBKey key, va_list args);
 
 /**
- * Format of functions to be applyed to an unspecified quantity of entries of 
+ * Format of functions to be applyed to an unspecified quantity of entries of
  * a database.
- * Any function that applies this function to the database will return the sum 
+ * Any function that applies this function to the database will return the sum
  * of values returned by this function.
  * @param key Key of the database entry
  * @param data Data of the database entry
@@ -187,7 +187,7 @@ typedef void* (*DBCreateData)(DBKey key, va_list args);
  * @see DBMap#vdestroy
  * @see DBMap#destroy
  */
-typedef int (*DBApply)(DBKey key, void* data, va_list args);
+typedef int (*DBApply) (DBKey key, void *data, va_list args);
 
 /**
  * Format of functions that match database entries.
@@ -200,7 +200,7 @@ typedef int (*DBApply)(DBKey key, void* data, va_list args);
  * @public
  * @see DBMap#getall
  */
-typedef int (*DBMatcher)(DBKey key, void* data, va_list args);
+typedef int (*DBMatcher) (DBKey key, void *data, va_list args);
 
 /**
  * Format of the comparators used internally by the database system.
@@ -214,7 +214,7 @@ typedef int (*DBMatcher)(DBKey key, void* data, va_list args);
  * @public
  * @see #db_default_cmp(DBType)
  */
-typedef int (*DBComparator)(DBKey key1, DBKey key2, unsigned short maxlen);
+typedef int (*DBComparator) (DBKey key1, DBKey key2, unsigned short maxlen);
 
 /**
  * Format of the hashers used internally by the database system.
@@ -226,7 +226,7 @@ typedef int (*DBComparator)(DBKey key1, DBKey key2, unsigned short maxlen);
  * @public
  * @see #db_default_hash(DBType)
  */
-typedef unsigned int (*DBHasher)(DBKey key, unsigned short maxlen);
+typedef unsigned int (*DBHasher) (DBKey key, unsigned short maxlen);
 
 /**
  * Format of the releaser used by the database system.
@@ -240,7 +240,7 @@ typedef unsigned int (*DBHasher)(DBKey key, unsigned short maxlen);
  * @see #db_default_releaser(DBType,DBOptions)
  * @see #db_custom_release(DBRelease)
  */
-typedef void (*DBReleaser)(DBKey key, void* data, DBRelease which);
+typedef void (*DBReleaser) (DBKey key, void *data, DBRelease which);
 
 
 
@@ -253,13 +253,12 @@ typedef struct DBMap DBMap;
  * Database iterator.
  * Supports forward iteration, backward iteration and removing entries from the database.
  * The iterator is initially positioned before the first entry of the database.
- * While the iterator exists the database is locked internally, so invoke 
+ * While the iterator exists the database is locked internally, so invoke
  * {@link DBIterator#destroy} as soon as possible.
  * @public
  * @see #DBMap
  */
-struct DBIterator
-{
+struct DBIterator {
 
 	/**
 	 * Fetches the first entry in the database.
@@ -270,7 +269,7 @@ struct DBIterator
 	 * @return Data of the entry
 	 * @protected
 	 */
-	void* (*first)(DBIterator* self, DBKey* out_key);
+	void * (*first) (DBIterator *self, DBKey *out_key);
 
 	/**
 	 * Fetches the last entry in the database.
@@ -281,7 +280,7 @@ struct DBIterator
 	 * @return Data of the entry
 	 * @protected
 	 */
-	void* (*last)(DBIterator* self, DBKey* out_key);
+	void * (*last) (DBIterator *self, DBKey *out_key);
 
 	/**
 	 * Fetches the next entry in the database.
@@ -292,7 +291,7 @@ struct DBIterator
 	 * @return Data of the entry
 	 * @protected
 	 */
-	void* (*next)(DBIterator* self, DBKey* out_key);
+	void * (*next) (DBIterator *self, DBKey *out_key);
 
 	/**
 	 * Fetches the previous entry in the database.
@@ -303,21 +302,21 @@ struct DBIterator
 	 * @return Data of the entry
 	 * @protected
 	 */
-	void* (*prev)(DBIterator* self, DBKey* out_key);
+	void * (*prev) (DBIterator *self, DBKey *out_key);
 
 	/**
 	 * Returns true if the fetched entry exists.
-	 * The databases entries might have NULL data, so use this to to test if 
+	 * The databases entries might have NULL data, so use this to to test if
 	 * the iterator is done.
 	 * @param self Iterator
 	 * @return true is the entry exists
 	 * @protected
 	 */
-	bool (*exists)(DBIterator* self);
+	bool (*exists) (DBIterator *self);
 
 	/**
 	 * Removes the current entry from the database.
-	 * NOTE: {@link DBIterator#exists} will return false until another entry 
+	 * NOTE: {@link DBIterator#exists} will return false until another entry
 	 *       is fethed
 	 * Returns the data of the entry.
 	 * @param self Iterator
@@ -325,14 +324,14 @@ struct DBIterator
 	 * @protected
 	 * @see DBMap#remove
 	 */
-	void* (*remove)(DBIterator* self);
+	void * (*remove) (DBIterator *self);
 
 	/**
 	 * Destroys this iterator and unlocks the database.
 	 * @param self Iterator
 	 * @protected
 	 */
-	void (*destroy)(DBIterator* self);
+	void (*destroy) (DBIterator *self);
 
 };
 
@@ -347,13 +346,13 @@ struct DBMap {
 	/**
 	 * Returns a new iterator for this database.
 	 * The iterator keeps the database locked until it is destroyed.
-	 * The database will keep functioning normally but will only free internal 
+	 * The database will keep functioning normally but will only free internal
 	 * memory when unlocked, so destroy the iterator as soon as possible.
 	 * @param self Database
 	 * @return New iterator
 	 * @protected
 	 */
-	DBIterator* (*iterator)(DBMap* self);
+	DBIterator * (*iterator) (DBMap *self);
 
 	/**
 	 * Returns true if the entry exists.
@@ -362,7 +361,7 @@ struct DBMap {
 	 * @return true is the entry exists
 	 * @protected
 	*/
-	bool (*exists)(DBMap* self, DBKey key);
+	bool (*exists) (DBMap *self, DBKey key);
 
 	/**
 	 * Get the data of the entry identifid by the key.
@@ -371,7 +370,7 @@ struct DBMap {
 	 * @return Data of the entry or NULL if not found
 	 * @protected
 	 */
-	void* (*get)(DBMap* self, DBKey key);
+	void * (*get) (DBMap *self, DBKey key);
 
 	/**
 	 * Just calls {@link DBMap#vgetall}.
@@ -379,7 +378,7 @@ struct DBMap {
 	 * It puts a maximum of <code>max</code> entries into <code>buf</code>.
 	 * If <code>buf</code> is NULL, it only counts the matches.
 	 * Returns the number of entries that matched.
-	 * NOTE: if the value returned is greater than <code>max</code>, only the 
+	 * NOTE: if the value returned is greater than <code>max</code>, only the
 	 * first <code>max</code> entries found are put into the buffer.
 	 * @param self Database
 	 * @param buf Buffer to put the data of the matched entries
@@ -390,14 +389,14 @@ struct DBMap {
 	 * @protected
 	 * @see DBMap#vgetall(DBMap*,void **,unsigned int,DBMatcher,va_list)
 	 */
-	unsigned int (*getall)(DBMap* self, void** buf, unsigned int max, DBMatcher match, ...);
+	unsigned int (*getall) (DBMap *self, void **buf, unsigned int max, DBMatcher match, ...);
 
 	/**
 	 * Get the data of the entries matched by <code>match</code>.
 	 * It puts a maximum of <code>max</code> entries into <code>buf</code>.
 	 * If <code>buf</code> is NULL, it only counts the matches.
 	 * Returns the number of entries that matched.
-	 * NOTE: if the value returned is greater than <code>max</code>, only the 
+	 * NOTE: if the value returned is greater than <code>max</code>, only the
 	 * first <code>max</code> entries found are put into the buffer.
 	 * @param self Database
 	 * @param buf Buffer to put the data of the matched entries
@@ -408,12 +407,12 @@ struct DBMap {
 	 * @protected
 	 * @see DBMap#getall(DBMap*,void **,unsigned int,DBMatcher,...)
 	 */
-	unsigned int (*vgetall)(DBMap* self, void** buf, unsigned int max, DBMatcher match, va_list args);
+	unsigned int (*vgetall) (DBMap *self, void **buf, unsigned int max, DBMatcher match, va_list args);
 
 	/**
 	 * Just calls {@link DBMap#vensure}.
 	 * Get the data of the entry identified by the key.
-	 * If the entry does not exist, an entry is added with the data returned by 
+	 * If the entry does not exist, an entry is added with the data returned by
 	 * <code>create</code>.
 	 * @param self Database
 	 * @param key Key that identifies the entry
@@ -423,11 +422,11 @@ struct DBMap {
 	 * @protected
 	 * @see DBMap#vensure(DBMap*,DBKey,DBCreateData,va_list)
 	 */
-	void* (*ensure)(DBMap* self, DBKey key, DBCreateData create, ...);
+	void * (*ensure) (DBMap *self, DBKey key, DBCreateData create, ...);
 
 	/**
 	 * Get the data of the entry identified by the key.
-	 * If the entry does not exist, an entry is added with the data returned by 
+	 * If the entry does not exist, an entry is added with the data returned by
 	 * <code>create</code>.
 	 * @param self Database
 	 * @param key Key that identifies the entry
@@ -437,7 +436,7 @@ struct DBMap {
 	 * @protected
 	 * @see DBMap#ensure(DBMap*,DBKey,DBCreateData,...)
 	 */
-	void* (*vensure)(DBMap* self, DBKey key, DBCreateData create, va_list args);
+	void * (*vensure) (DBMap *self, DBKey key, DBCreateData create, va_list args);
 
 	/**
 	 * Put the data identified by the key in the database.
@@ -449,7 +448,7 @@ struct DBMap {
 	 * @return The previous data if the entry exists or NULL
 	 * @protected
 	 */
-	void* (*put)(DBMap* self, DBKey key, void* data);
+	void * (*put) (DBMap *self, DBKey key, void *data);
 
 	/**
 	 * Remove an entry from the database.
@@ -460,7 +459,7 @@ struct DBMap {
 	 * @return The data of the entry or NULL if not found
 	 * @protected
 	 */
-	void* (*remove)(DBMap* self, DBKey key);
+	void * (*remove) (DBMap *self, DBKey key);
 
 	/**
 	 * Just calls {@link DBMap#vforeach}.
@@ -473,7 +472,7 @@ struct DBMap {
 	 * @protected
 	 * @see DBMap#vforeach(DBMap*,DBApply,va_list)
 	 */
-	int (*foreach)(DBMap* self, DBApply func, ...);
+	int (*foreach) (DBMap *self, DBApply func, ...);
 
 	/**
 	 * Apply <code>func</code> to every entry in the database.
@@ -485,7 +484,7 @@ struct DBMap {
 	 * @protected
 	 * @see DBMap#foreach(DBMap*,DBApply,...)
 	 */
-	int (*vforeach)(DBMap* self, DBApply func, va_list args);
+	int (*vforeach) (DBMap *self, DBApply func, va_list args);
 
 	/**
 	 * Just calls {@link DBMap#vclear}.
@@ -500,7 +499,7 @@ struct DBMap {
 	 * @protected
 	 * @see DBMap#vclear(DBMap*,DBApply,va_list)
 	 */
-	int (*clear)(DBMap* self, DBApply func, ...);
+	int (*clear) (DBMap *self, DBApply func, ...);
 
 	/**
 	 * Removes all entries from the database.
@@ -514,7 +513,7 @@ struct DBMap {
 	 * @protected
 	 * @see DBMap#clear(DBMap*,DBApply,...)
 	 */
-	int (*vclear)(DBMap* self, DBApply func, va_list args);
+	int (*vclear) (DBMap *self, DBApply func, va_list args);
 
 	/**
 	 * Just calls {@link DBMap#vdestroy}.
@@ -522,7 +521,7 @@ struct DBMap {
 	 * Before deleting an entry, func is applyed to it.
 	 * Releases the key and the data.
 	 * Returns the sum of values returned by func, if it exists.
-	 * NOTE: This locks the database globally. Any attempt to insert or remove 
+	 * NOTE: This locks the database globally. Any attempt to insert or remove
 	 * a database entry will give an error and be aborted (except for clearing).
 	 * @param self Database
 	 * @param func Function to be applyed to every entry before deleting
@@ -531,13 +530,13 @@ struct DBMap {
 	 * @protected
 	 * @see DBMap#vdestroy(DBMap*,DBApply,va_list)
 	 */
-	int (*destroy)(DBMap* self, DBApply func, ...);
+	int (*destroy) (DBMap *self, DBApply func, ...);
 
 	/**
 	 * Finalize the database, feeing all the memory it uses.
 	 * Before deleting an entry, func is applyed to it.
 	 * Returns the sum of values returned by func, if it exists.
-	 * NOTE: This locks the database globally. Any attempt to insert or remove 
+	 * NOTE: This locks the database globally. Any attempt to insert or remove
 	 * a database entry will give an error and be aborted (except for clearing).
 	 * @param self Database
 	 * @param func Function to be applyed to every entry before deleting
@@ -546,7 +545,7 @@ struct DBMap {
 	 * @protected
 	 * @see DBMap#destroy(DBMap*,DBApply,...)
 	 */
-	int (*vdestroy)(DBMap* self, DBApply func, va_list args);
+	int (*vdestroy) (DBMap *self, DBApply func, va_list args);
 
 	/**
 	 * Return the size of the database (number of items in the database).
@@ -554,7 +553,7 @@ struct DBMap {
 	 * @return Size of the database
 	 * @protected
 	 */
-	unsigned int (*size)(DBMap* self);
+	unsigned int (*size) (DBMap *self);
 
 	/**
 	 * Return the type of the database.
@@ -562,7 +561,7 @@ struct DBMap {
 	 * @return Type of the database
 	 * @protected
 	 */
-	DBType (*type)(DBMap* self);
+	DBType (*type) (DBMap *self);
 
 	/**
 	 * Return the options of the database.
@@ -570,7 +569,7 @@ struct DBMap {
 	 * @return Options of the database
 	 * @protected
 	 */
-	DBOptions (*options)(DBMap* self);
+	DBOptions (*options) (DBMap *self);
 
 };
 
@@ -656,7 +655,7 @@ struct DBMap {
  * @see #DBOptions
  * @see #db_default_release(DBType,DBOptions)
  */
-DBOptions db_fix_options(DBType type, DBOptions options);
+DBOptions db_fix_options (DBType type, DBOptions options);
 
 /**
  * Returns the default comparator for the type of database.
@@ -666,7 +665,7 @@ DBOptions db_fix_options(DBType type, DBOptions options);
  * @see #DBType
  * @see #DBComparator
  */
-DBComparator db_default_cmp(DBType type);
+DBComparator db_default_cmp (DBType type);
 
 /**
  * Returns the default hasher for the specified type of database.
@@ -676,10 +675,10 @@ DBComparator db_default_cmp(DBType type);
  * @see #DBType
  * @see #DBHasher
  */
-DBHasher db_default_hash(DBType type);
+DBHasher db_default_hash (DBType type);
 
 /**
- * Returns the default releaser for the specified type of database with the 
+ * Returns the default releaser for the specified type of database with the
  * specified options.
  * NOTE: the options are fixed by {@link #db_fix_options(DBType,DBOptions)}
  * before choosing the releaser
@@ -693,7 +692,7 @@ DBHasher db_default_hash(DBType type);
  * @see #db_fix_options(DBType,DBOptions)
  * @see #db_custom_release(DBRelease)
  */
-DBReleaser db_default_release(DBType type, DBOptions options);
+DBReleaser db_default_release (DBType type, DBOptions options);
 
 /**
  * Returns the releaser that behaves as <code>which</code> specifies.
@@ -704,11 +703,11 @@ DBReleaser db_default_release(DBType type, DBOptions options);
  * @see #DBReleaser
  * @see #db_default_release(DBType,DBOptions)
  */
-DBReleaser db_custom_release(DBRelease which);
+DBReleaser db_custom_release (DBRelease which);
 
 /**
  * Allocate a new database of the specified type.
- * It uses the default comparator, hasher and releaser of the specified 
+ * It uses the default comparator, hasher and releaser of the specified
  * database type and fixed options.
  * NOTE: the options are fixed by {@link #db_fix_options(DBType,DBOptions)}
  * before creating the database.
@@ -716,7 +715,7 @@ DBReleaser db_custom_release(DBRelease which);
  * @param line Line of the file where the database is being allocated
  * @param type Type of database
  * @param options Options of the database
- * @param maxlen Maximum length of the string to be used as key in string 
+ * @param maxlen Maximum length of the string to be used as key in string
  *          databases. If 0, the maximum number of maxlen is used (64K).
  * @return The interface of the database
  * @public
@@ -727,7 +726,7 @@ DBReleaser db_custom_release(DBRelease which);
  * @see #db_default_release(DBType,DBOptions)
  * @see #db_fix_options(DBType,DBOptions)
  */
-DBMap* db_alloc(const char *file, int line, DBType type, DBOptions options, unsigned short maxlen);
+DBMap *db_alloc (const char *file, int line, DBType type, DBOptions options, unsigned short maxlen);
 
 #ifdef DB_MANUAL_CAST_TO_UNION
 /**
@@ -738,7 +737,7 @@ DBMap* db_alloc(const char *file, int line, DBType type, DBOptions options, unsi
  * @public
  * @see #DB_MANUAL_CAST_TO_UNION
  */
-DBKey db_i2key(int key);
+DBKey db_i2key (int key);
 
 /**
  * Manual cast from 'unsigned int' to the union DBKey.
@@ -748,7 +747,7 @@ DBKey db_i2key(int key);
  * @public
  * @see #DB_MANUAL_CAST_TO_UNION
  */
-DBKey db_ui2key(unsigned int key);
+DBKey db_ui2key (unsigned int key);
 
 /**
  * Manual cast from 'unsigned char *' to the union DBKey.
@@ -758,7 +757,7 @@ DBKey db_ui2key(unsigned int key);
  * @public
  * @see #DB_MANUAL_CAST_TO_UNION
  */
-DBKey db_str2key(const char *key);
+DBKey db_str2key (const char *key);
 #endif /* DB_MANUAL_CAST_TO_UNION */
 
 /**
@@ -766,7 +765,7 @@ DBKey db_str2key(const char *key);
  * @public
  * @see #db_final(void)
  */
-void db_init(void);
+void db_init (void);
 
 /**
  * Finalize the database system.
@@ -774,7 +773,7 @@ void db_init(void);
  * @public
  * @see #db_init(void)
  */
-void db_final(void);
+void db_final (void);
 
 // Link DB System - From jAthena
 struct linkdb_node {
@@ -784,14 +783,14 @@ struct linkdb_node {
 	void               *data;
 };
 
-typedef void (*LinkDBFunc)(void* key, void* data, va_list args);
+typedef void (*LinkDBFunc) (void *key, void *data, va_list args);
 
-void  linkdb_insert ( struct linkdb_node** head, void *key, void* data); // 重複を考慮しない
-void  linkdb_replace( struct linkdb_node** head, void *key, void* data); // 重複を考慮する
-void* linkdb_search ( struct linkdb_node** head, void *key);
-void* linkdb_erase  ( struct linkdb_node** head, void *key);
-void  linkdb_final  ( struct linkdb_node** head );
-void  linkdb_foreach( struct linkdb_node** head, LinkDBFunc func, ...  );
+void  linkdb_insert (struct linkdb_node **head, void *key, void *data);  // 重複を考慮しない
+void  linkdb_replace (struct linkdb_node **head, void *key, void *data); // 重複を考慮する
+void *linkdb_search (struct linkdb_node **head, void *key);
+void *linkdb_erase (struct linkdb_node **head, void *key);
+void  linkdb_final (struct linkdb_node **head);
+void  linkdb_foreach (struct linkdb_node **head, LinkDBFunc func, ...);
 
 
 
@@ -1354,7 +1353,7 @@ void  linkdb_foreach( struct linkdb_node** head, LinkDBFunc func, ...  );
 			size_t _lchild_ = _i_*2 + 1; \
 			size_t _rchild_ = _i_*2 + 2; \
 			if( (_lchild_ >= VECTOR_LENGTH(__heap) || __topcmp(VECTOR_INDEX(__heap,_i_),VECTOR_INDEX(__heap,_lchild_)) <= 0) && \
-				(_rchild_ >= VECTOR_LENGTH(__heap) || __topcmp(VECTOR_INDEX(__heap,_i_),VECTOR_INDEX(__heap,_rchild_)) <= 0) ) \
+					(_rchild_ >= VECTOR_LENGTH(__heap) || __topcmp(VECTOR_INDEX(__heap,_i_),VECTOR_INDEX(__heap,_rchild_)) <= 0) ) \
 				break; /* done */ \
 			else if( _rchild_ >= VECTOR_LENGTH(__heap) || __topcmp(VECTOR_INDEX(__heap,_lchild_),VECTOR_INDEX(__heap,_rchild_)) <= 0 ) \
 			{ /* left child */ \

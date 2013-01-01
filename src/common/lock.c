@@ -19,41 +19,46 @@
 // （書き込みが終わるまで、旧ファイルを保管しておく）
 
 // 新しいファイルの書き込み開始
-FILE* lock_fopen (const char* filename, int *info) {
+FILE *lock_fopen (const char *filename, int *info)
+{
 	char newfile[512];
 	int no = 0;
 
 	// 安全なファイル名を得る（手抜き）
 	do {
-		sprintf(newfile, "%s_%04d.tmp", filename, ++no);
-	} while(exists(newfile) && no < 9999);
+		sprintf (newfile, "%s_%04d.tmp", filename, ++no);
+	} while (exists (newfile) && no < 9999);
+
 	*info = no;
-	return fopen(newfile,"w");
+	return fopen (newfile, "w");
 }
 
 // 旧ファイルを削除＆新ファイルをリネーム
-int lock_fclose (FILE *fp, const char* filename, int *info) {
+int lock_fclose (FILE *fp, const char *filename, int *info)
+{
 	int ret = 1;
 	char newfile[512];
 	char oldfile[512];
-	if (fp != NULL) {
-		ret = fclose(fp);
-		sprintf(newfile, "%s_%04d.tmp", filename, *info);
-		sprintf(oldfile, "%s.bak", filename);	// old backup file
 
-		if (exists(oldfile)) remove(oldfile);	// remove backup file if it already exists
+	if (fp != NULL) {
+		ret = fclose (fp);
+		sprintf (newfile, "%s_%04d.tmp", filename, *info);
+		sprintf (oldfile, "%s.bak", filename);	// old backup file
+
+		if (exists (oldfile)) remove (oldfile);	// remove backup file if it already exists
+
 		rename (filename, oldfile);				// backup our older data instead of deleting it
 
 		// このタイミングで落ちると最悪。
-		if ((ret = rename(newfile,filename)) != 0) {	// rename our temporary file to its correct name
+		if ( (ret = rename (newfile, filename)) != 0) {	// rename our temporary file to its correct name
 #if defined(__NETBSD__) || defined(_WIN32) || defined(sun) || defined (_sun) || defined (__sun__)
-			ShowError("%s - '"CL_WHITE"%s"CL_RESET"'\n", strerror(errno), newfile);
+			ShowError ("%s - '"CL_WHITE"%s"CL_RESET"'\n", strerror (errno), newfile);
 #else
 			char ebuf[255];
-			ShowError("%s - '"CL_WHITE"%s"CL_RESET"'\n", strerror_r(errno, ebuf, sizeof(ebuf)), newfile);
+			ShowError ("%s - '"CL_WHITE"%s"CL_RESET"'\n", strerror_r (errno, ebuf, sizeof (ebuf)), newfile);
 #endif
 		}
 	}
-	
+
 	return ret;
 }

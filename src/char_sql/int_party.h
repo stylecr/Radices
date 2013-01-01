@@ -5,7 +5,7 @@
 #define _INT_PARTY_SQL_H_
 
 //Party Flags on what to save/delete.
-//Create a new party entry (index holds leader's info) 
+//Create a new party entry (index holds leader's info)
 #define PS_CREATE 0x01
 //Update basic party info.
 #define PS_BASIC 0x02
@@ -20,13 +20,13 @@
 
 struct party;
 
-int inter_party_parse_frommap(int fd);
-int inter_party_sql_init(void);
-void inter_party_sql_final(void);
-int inter_party_leave(int party_id,int account_id, int char_id);
-int inter_party_CharOnline(int char_id, int party_id);
-int inter_party_CharOffline(int char_id, int party_id);
+int inter_party_parse_frommap (int fd);
+int inter_party_sql_init (void);
+void inter_party_sql_final (void);
+int inter_party_leave (int party_id, int account_id, int char_id);
+int inter_party_CharOnline (int char_id, int party_id);
+int inter_party_CharOffline (int char_id, int party_id);
 //Required for the TXT->SQL converter
-int inter_party_tosql(struct party *p, int flag, int index);
+int inter_party_tosql (struct party *p, int flag, int index);
 
 #endif /* _INT_PARTY_SQL_H_ */

@@ -7,8 +7,7 @@
 #include "../common/mmo.h" // NAME_LENGTH,SEX_*
 #include "../common/core.h" // CORE_ST_LAST
 
-enum E_LOGINSERVER_ST
-{
+enum E_LOGINSERVER_ST {
 	LOGINSERVER_ST_RUNNING = CORE_ST_LAST,
 	LOGINSERVER_ST_SHUTDOWN,
 	LOGINSERVER_ST_LAST
@@ -28,7 +27,7 @@ struct login_session_data {
 	char sex;// 'F','M','S'
 
 	char userid[NAME_LENGTH];
-	char passwd[32+1]; // 23+1 for plaintext, 32+1 for md5-ed passwords
+	char passwd[32 + 1]; // 23+1 for plaintext, 32+1 for md5-ed passwords
 	int passwdenc;
 	char md5key[20];
 	uint16 md5keylen;

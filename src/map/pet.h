@@ -9,7 +9,7 @@
 
 struct s_pet_db {
 	short class_;
-	char name[NAME_LENGTH],jname[NAME_LENGTH];
+	char name[NAME_LENGTH], jname[NAME_LENGTH];
 	short itemID;
 	short EggID;
 	short AcceID;
@@ -32,7 +32,7 @@ struct s_pet_db {
 };
 extern struct s_pet_db pet_db[MAX_PET_DB];
 
-enum { PET_CLASS,PET_CATCH,PET_EGG,PET_EQUIP,PET_FOOD };
+enum { PET_CLASS, PET_CATCH, PET_EGG, PET_EQUIP, PET_FOOD };
 
 struct pet_recovery { //Stat recovery
 	enum sc_type type;	//Status Change id
@@ -86,51 +86,51 @@ struct pet_data {
 		unsigned skillbonus : 1;
 	} state;
 	int move_fail_count;
-	unsigned int next_walktime,last_thinktime;
+	unsigned int next_walktime, last_thinktime;
 	short rate_fix;	//Support rate as modified by intimacy (1000 = 100%) [Skotlex]
 
-	struct pet_recovery* recovery;
-	struct pet_bonus* bonus;
-	struct pet_skill_attack* a_skill;
-	struct pet_skill_support* s_skill;
-	struct pet_loot* loot;
+	struct pet_recovery *recovery;
+	struct pet_bonus *bonus;
+	struct pet_skill_attack *a_skill;
+	struct pet_skill_support *s_skill;
+	struct pet_loot *loot;
 
 	struct map_session_data *msd;
 };
 
 
 
-int pet_create_egg(struct map_session_data *sd, int item_id);
-int pet_hungry_val(struct pet_data *pd);
-void pet_set_intimate(struct pet_data *pd, int value);
-int pet_target_check(struct map_session_data *sd,struct block_list *bl,int type);
-int pet_unlocktarget(struct pet_data *pd);
-int pet_sc_check(struct map_session_data *sd, int type); //Skotlex
-int search_petDB_index(int key,int type);
-int pet_hungry_timer_delete(struct pet_data *pd);
-int pet_data_init(struct map_session_data *sd, struct s_pet *pet);
-int pet_birth_process(struct map_session_data *sd, struct s_pet *pet);
-int pet_recv_petdata(int account_id,struct s_pet *p,int flag);
-int pet_select_egg(struct map_session_data *sd,short egg_index);
-int pet_catch_process1(struct map_session_data *sd,int target_class);
-int pet_catch_process2(struct map_session_data *sd,int target_id);
-int pet_get_egg(int account_id,int pet_id,int flag);
-int pet_menu(struct map_session_data *sd,int menunum);
-int pet_change_name(struct map_session_data *sd,char *name);
-int pet_change_name_ack(struct map_session_data *sd, char* name, int flag);
-int pet_equipitem(struct map_session_data *sd,int index);
-int pet_lootitem_drop(struct pet_data *pd,struct map_session_data *sd);
-int pet_attackskill(struct pet_data *pd, int target_id);
-int pet_skill_support_timer(int tid, unsigned int tick, int id, intptr_t data); // [Skotlex]
-int pet_skill_bonus_timer(int tid, unsigned int tick, int id, intptr_t data); // [Valaris]
-int pet_recovery_timer(int tid, unsigned int tick, int id, intptr_t data); // [Valaris]
-int pet_heal_timer(int tid, unsigned int tick, int id, intptr_t data); // [Valaris]
+int pet_create_egg (struct map_session_data *sd, int item_id);
+int pet_hungry_val (struct pet_data *pd);
+void pet_set_intimate (struct pet_data *pd, int value);
+int pet_target_check (struct map_session_data *sd, struct block_list *bl, int type);
+int pet_unlocktarget (struct pet_data *pd);
+int pet_sc_check (struct map_session_data *sd, int type); //Skotlex
+int search_petDB_index (int key, int type);
+int pet_hungry_timer_delete (struct pet_data *pd);
+int pet_data_init (struct map_session_data *sd, struct s_pet *pet);
+int pet_birth_process (struct map_session_data *sd, struct s_pet *pet);
+int pet_recv_petdata (int account_id, struct s_pet *p, int flag);
+int pet_select_egg (struct map_session_data *sd, short egg_index);
+int pet_catch_process1 (struct map_session_data *sd, int target_class);
+int pet_catch_process2 (struct map_session_data *sd, int target_id);
+int pet_get_egg (int account_id, int pet_id, int flag);
+int pet_menu (struct map_session_data *sd, int menunum);
+int pet_change_name (struct map_session_data *sd, char *name);
+int pet_change_name_ack (struct map_session_data *sd, char *name, int flag);
+int pet_equipitem (struct map_session_data *sd, int index);
+int pet_lootitem_drop (struct pet_data *pd, struct map_session_data *sd);
+int pet_attackskill (struct pet_data *pd, int target_id);
+int pet_skill_support_timer (int tid, unsigned int tick, int id, intptr_t data); // [Skotlex]
+int pet_skill_bonus_timer (int tid, unsigned int tick, int id, intptr_t data); // [Valaris]
+int pet_recovery_timer (int tid, unsigned int tick, int id, intptr_t data); // [Valaris]
+int pet_heal_timer (int tid, unsigned int tick, int id, intptr_t data); // [Valaris]
 
 #define pet_stop_walking(pd, type) unit_stop_walking(&(pd)->bl, type)
 #define pet_stop_attack(pd) unit_stop_attack(&(pd)->bl)
 
-int read_petdb(void);
-int do_init_pet(void);
-int do_final_pet(void);
+int read_petdb (void);
+int do_init_pet (void);
+int do_final_pet (void);
 
 #endif /* _PET_H_ */

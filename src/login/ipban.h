@@ -7,19 +7,19 @@
 #include "../common/cbasetypes.h"
 
 // initialize
-void ipban_init(void);
+void ipban_init (void);
 
 // finalize
-void ipban_final(void);
+void ipban_final (void);
 
 // check ip against ban list
-bool ipban_check(uint32 ip);
+bool ipban_check (uint32 ip);
 
 // increases failure count for the specified IP
-void ipban_log(uint32 ip);
+void ipban_log (uint32 ip);
 
 // parses configuration option
-bool ipban_config_read(const char* key, const char* value);
+bool ipban_config_read (const char *key, const char *value);
 
 
 #endif // __IPBAN_H_INCLUDED__

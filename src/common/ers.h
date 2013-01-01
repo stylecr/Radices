@@ -55,7 +55,7 @@
 /**
  * Define this to disable the Entry Reusage System.
  * All code except the typedef of ERInterface will be disabled.
- * To allow a smooth transition, 
+ * To allow a smooth transition,
  */
 //#define DISABLE_ERS
 
@@ -63,7 +63,7 @@
  * Entries are aligned to ERS_ALIGNED bytes in the blocks of entries.
  * By default it aligns to one byte, using the "natural order" of the entries.
  * This should NEVER be set to zero or less.
- * If greater than one, some memory can be wasted. This should never be needed 
+ * If greater than one, some memory can be wasted. This should never be needed
  * but is here just in case some aligment issues arise.
  */
 #ifndef ERS_ALIGNED
@@ -85,7 +85,7 @@ typedef struct eri {
 	 * @param self Interface of the entry manager
 	 * @return An entry
 	 */
-	void *(*alloc)(struct eri *self);
+	void * (*alloc) (struct eri *self);
 
 	/**
 	 * Free an entry allocated from this manager.
@@ -94,23 +94,23 @@ typedef struct eri {
 	 * @param self Interface of the entry manager
 	 * @param entry Entry to be freed
 	 */
-	void (*free)(struct eri *self, void *entry);
+	void (*free) (struct eri *self, void *entry);
 
 	/**
 	 * Return the size of the entries allocated from this manager.
 	 * @param self Interface of the entry manager
 	 * @return Size of the entries of this manager in bytes
 	 */
-	size_t (*entry_size)(struct eri *self);
+	size_t (*entry_size) (struct eri *self);
 
 	/**
 	 * Destroy this instance of the manager.
 	 * The manager is actually only destroyed when all the instances are destroyed.
-	 * When destroying the manager a warning is shown if the manager has 
+	 * When destroying the manager a warning is shown if the manager has
 	 * missing/extra entries.
 	 * @param self Interface of the entry manager
 	 */
-	void (*destroy)(struct eri *self);
+	void (*destroy) (struct eri *self);
 
 } *ERS;
 
@@ -125,7 +125,7 @@ typedef struct eri {
 #	define ers_report()
 #	define ers_force_destroy_all()
 #else /* not DISABLE_ERS */
-// These defines should be used to allow the code to keep working whenever 
+// These defines should be used to allow the code to keep working whenever
 // the system is disabled
 #	define ers_alloc(obj,type) (type *)(obj)->alloc(obj)
 #	define ers_free(obj,entry) (obj)->free((obj),(entry))
@@ -135,33 +135,33 @@ typedef struct eri {
 /**
  * Get a new instance of the manager that handles the specified entry size.
  * Size has to greater than 0.
- * If the specified size is smaller than a pointer, the size of a pointer is 
+ * If the specified size is smaller than a pointer, the size of a pointer is
  * used instead.
- * It's also aligned to ERS_ALIGNED bytes, so the smallest multiple of 
+ * It's also aligned to ERS_ALIGNED bytes, so the smallest multiple of
  * ERS_ALIGNED that is greater or equal to size is what's actually used.
  * @param The requested size of the entry in bytes
  * @return Interface of the object
  */
-ERS ers_new(uint32 size);
+ERS ers_new (uint32 size);
 
 /**
  * Print a report about the current state of the Entry Reusage System.
  * Shows information about the global system and each entry manager.
- * The number of entries are checked and a warning is shown if extra reusable 
+ * The number of entries are checked and a warning is shown if extra reusable
  * entries are found.
  * The extra entries are included in the count of reusable entries.
  */
-void ers_report(void);
+void ers_report (void);
 
 /**
  * Forcibly destroy all the entry managers, checking for nothing.
  * The system is left as if no instances or entries had ever been allocated.
  * All previous entries and instances of the managers become invalid.
  * The use of this is NOT recommended.
- * It should only be used in extreme situations to make shure all the memory 
+ * It should only be used in extreme situations to make shure all the memory
  * allocated by this system is released.
  */
-void ers_force_destroy_all(void);
+void ers_force_destroy_all (void);
 #endif /* DISABLE_ERS / not DISABLE_ERS */
 
 #endif /* _ERS_H_ */

@@ -244,7 +244,7 @@ typedef char bool;
 #undef swap
 #endif
 // hmm only ints?
-//#define swap(a,b) { int temp=a; a=b; b=temp;} 
+//#define swap(a,b) { int temp=a; a=b; b=temp;}
 // if using macros then something that is type independent
 //#define swap(a,b) ((a == b) || ((a ^= b), (b ^= a), (a ^= b)))
 // Avoid "value computed is not used" warning and generates the same assembly code
@@ -336,15 +336,18 @@ typedef char bool;
 // Set a pointer variable to a pointer value.
 #ifdef __cplusplus
 template <typename T1, typename T2>
-void SET_POINTER(T1*&var, T2* p)
+void SET_POINTER (T1 *&var, T2 *p)
 {
-	var = static_cast<T1*>(p);
+	var = static_cast<T1 *> (p);
 }
 template <typename T1, typename T2>
-void SET_FUNCPOINTER(T1& var, T2 p)
+void SET_FUNCPOINTER (T1 &var, T2 p)
 {
-	char ASSERT_POINTERSIZE[sizeof(T1) == sizeof(void*) && sizeof(T2) == sizeof(void*)?1:-1];// 1 if true, -1 if false
-	union{ T1 out; T2 in; } tmp;// /!\ WARNING casting a pointer to a function pointer is against the C++ standard
+	char ASSERT_POINTERSIZE[sizeof (T1) == sizeof (void *) && sizeof (T2) == sizeof (void *) ? 1 : -1]; // 1 if true, -1 if false
+	union {
+		T1 out;
+		T2 in;
+	} tmp;// /!\ WARNING casting a pointer to a function pointer is against the C++ standard
 	tmp.in = p;
 	var = tmp.out;
 }

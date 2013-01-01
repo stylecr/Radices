@@ -168,7 +168,7 @@
  *  1 NULL
  *--------------------------------------
  */
-int nullpo_chk(const char *file, int line, const char *func, const void *target);
+int nullpo_chk (const char *file, int line, const char *func, const void *target);
 
 
 /*======================================
@@ -187,9 +187,9 @@ int nullpo_chk(const char *file, int line, const char *func, const void *target)
  *  1 NULL
  *--------------------------------------
  */
-int nullpo_chk_f(const char *file, int line, const char *func, const void *target,
-                 const char *fmt, ...)
-                 __attribute__((format(printf,5,6)));
+int nullpo_chk_f (const char *file, int line, const char *func, const void *target,
+				  const char *fmt, ...)
+__attribute__ ( (format (printf, 5, 6)));
 
 
 /*======================================
@@ -202,7 +202,7 @@ int nullpo_chk_f(const char *file, int line, const char *func, const void *targe
  *    Ç±ÇÍÇÁÇ…ÇÕ NLP_MARK ÇégÇ§Ç∆ÇÊÇ¢
  *--------------------------------------
  */
-void nullpo_info(const char *file, int line, const char *func);
+void nullpo_info (const char *file, int line, const char *func);
 
 
 /*======================================
@@ -217,9 +217,9 @@ void nullpo_info(const char *file, int line, const char *func);
  *    îıçlÇ‚ä÷åWïœêîÇÃèëÇ´èoÇµÇ»Ç«Ç…
  *--------------------------------------
  */
-void nullpo_info_f(const char *file, int line, const char *func, 
-                   const char *fmt, ...)
-                   __attribute__((format(printf,4,5)));
+void nullpo_info_f (const char *file, int line, const char *func,
+					const char *fmt, ...)
+__attribute__ ( (format (printf, 4, 5)));
 
 
 #endif /* _NULLPO_H_ */

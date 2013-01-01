@@ -27,29 +27,35 @@ PLUGIN_EVENTS_TABLE = {
 //////////////////////////////////////
 
 #if defined(_WIN32) || defined(MINGW)
-	int sig_init()
-	{
-		ShowError("sig: This plugin is not supported - Enable 'exchndl' instead!\n");
-		return 0;
-	}
-	int sig_final() { return 0; }
+int sig_init()
+{
+	ShowError ("sig: This plugin is not supported - Enable 'exchndl' instead!\n");
+	return 0;
+}
+int sig_final()
+{
+	return 0;
+}
 #elif defined (__NETBSD__) || defined (__FREEBSD__)
-	int sig_init()
-	{
-		ShowError("sig: This plugin is not supported!\n");
-		return 0;
-	}
-	int sig_final() { return 0; }
+int sig_init()
+{
+	ShowError ("sig: This plugin is not supported!\n");
+	return 0;
+}
+int sig_final()
+{
+	return 0;
+}
 #else
 
 //////////////////////////////////////
 
 #if !defined(CYGWIN)
-	#include <execinfo.h>
+#include <execinfo.h>
 #endif
 
-const char* (*getrevision)();
-unsigned long (*getuptime)();
+const char * (*getrevision) ();
+unsigned long (*getuptime) ();
 char *server_name;
 int crash_flag = 0;
 
@@ -64,18 +70,17 @@ int sig_final ();
 #ifndef POSIX
 #define compat_signal(signo, func) signal(signo, func)
 #else
-sigfunc *compat_signal(int signo, sigfunc *func)
+sigfunc *compat_signal (int signo, sigfunc *func)
 {
 	struct sigaction sact, oact;
-
 	sact.sa_handler = func;
-	sigemptyset(&sact.sa_mask);
+	sigemptyset (&sact.sa_mask);
 	sact.sa_flags = 0;
 #ifdef SA_INTERRUPT
 	sact.sa_flags |= SA_INTERRUPT;	/* SunOS */
 #endif
 
-	if (sigaction(signo, &sact, &oact) < 0)
+	if (sigaction (signo, &sact, &oact) < 0)
 		return (SIG_ERR);
 
 	return (oact.sa_handler);
@@ -87,66 +92,68 @@ sigfunc *compat_signal(int signo, sigfunc *func)
  *-----------------------------------------
  */
 #ifdef CYGWIN
-	#define FOPEN_ freopen
-	#ifdef __cplusplus
-	extern "C" void cygwin_stackdump();
-	#else
-	extern void cygwin_stackdump();
-	#endif
+#define FOPEN_ freopen
+#ifdef __cplusplus
+extern "C" void cygwin_stackdump();
 #else
-	#define FOPEN_(fn,m,s) fopen(fn,m)
+extern void cygwin_stackdump();
 #endif
-void sig_dump(int sn)
+#else
+#define FOPEN_(fn,m,s) fopen(fn,m)
+#endif
+void sig_dump (int sn)
 {
 	FILE *fp;
 	char file[256];
 	int no = 0;
+	crash_flag = 1;
 
-	crash_flag = 1;	
 	// search for a usable filename
 	do {
 		sprintf (file, "log/%s%04d.stackdump", server_name, ++no);
-	} while((fp = fopen(file,"r")) && (fclose(fp), no < 9999));
+	} while ( (fp = fopen (file, "r")) && (fclose (fp), no < 9999));
+
 	// dump the trace into the file
 
-	if ((fp = FOPEN_(file, "w", stderr)) != NULL) {
+	if ( (fp = FOPEN_ (file, "w", stderr)) != NULL) {
 		const char *revision;
-	#ifndef CYGWIN
-		void* array[20];
+#ifndef CYGWIN
+		void *array[20];
 		char **stack;
 		size_t size;
-	#endif
-
+#endif
 		ShowNotice ("Dumping stack to '"CL_WHITE"%s"CL_RESET"'...\n", file);
-		if ((revision = getrevision()) != NULL)
-			fprintf(fp, "Version: svn%s \n", revision);
-		else
-			fprintf(fp, "Version: %2d.%02d.%02d mod%02d \n", ATHENA_MAJOR_VERSION, ATHENA_MINOR_VERSION, ATHENA_REVISION, ATHENA_MOD_VERSION);
-		fprintf(fp, "Exception: %s \n", strsignal(sn));
-		fflush (fp);
 
-	#ifdef CYGWIN
+		if ( (revision = getrevision()) != NULL)
+			fprintf (fp, "Version: svn%s \n", revision);
+		else
+			fprintf (fp, "Version: %2d.%02d.%02d mod%02d \n", ATHENA_MAJOR_VERSION, ATHENA_MINOR_VERSION, ATHENA_REVISION, ATHENA_MOD_VERSION);
+
+		fprintf (fp, "Exception: %s \n", strsignal (sn));
+		fflush (fp);
+#ifdef CYGWIN
 		cygwin_stackdump ();
-	#else
-		fprintf(fp, "Stack trace:\n");
+#else
+		fprintf (fp, "Stack trace:\n");
 		size = backtrace (array, 20);
 		stack = backtrace_symbols (array, size);
-		for (no = 0; no < size; no++) {
-			fprintf(fp, "%s\n", stack[no]);
-		}
-		fprintf(fp,"End of stack trace\n");
-		free(stack);
-	#endif
 
-		ShowNotice("%s Saved.\n", file);
-		fflush(stdout);
-		fclose(fp);
+		for (no = 0; no < size; no++) {
+			fprintf (fp, "%s\n", stack[no]);
+		}
+
+		fprintf (fp, "End of stack trace\n");
+		free (stack);
+#endif
+		ShowNotice ("%s Saved.\n", file);
+		fflush (stdout);
+		fclose (fp);
 	}
 
 	sig_final();	// Log our uptime
 	// Pass the signal to the system's default handler
-	compat_signal(sn, SIG_DFL);
-	raise(sn);
+	compat_signal (sn, SIG_DFL);
+	raise (sn);
 }
 
 /*=========================================
@@ -157,28 +164,26 @@ void sig_dump(int sn)
 int sig_final ()
 {
 	time_t curtime;
-	char curtime2[24];	
+	char curtime2[24];
 	FILE *fp;
-	long seconds = 0, day = 24*60*60, hour = 60*60,
-		minute = 60, days = 0, hours = 0, minutes = 0;
+	long seconds = 0, day = 24 * 60 * 60, hour = 60 * 60,
+		 minute = 60, days = 0, hours = 0, minutes = 0;
+	fp = fopen ("log/uptime.log", "a");
 
-	fp = fopen("log/uptime.log","a");
 	if (fp) {
-		time(&curtime);
-		strftime(curtime2, 24, "%m/%d/%Y %H:%M:%S", localtime(&curtime));
-
+		time (&curtime);
+		strftime (curtime2, 24, "%m/%d/%Y %H:%M:%S", localtime (&curtime));
 		seconds = getuptime();
-		days = seconds/day;
-		seconds -= (seconds/day>0)?(seconds/day)*day:0;
-		hours = seconds/hour;
-		seconds -= (seconds/hour>0)?(seconds/hour)*hour:0;
-		minutes = seconds/minute;
-		seconds -= (seconds/minute>0)?(seconds/minute)*minute:0;
-
-		fprintf(fp, "%s: %s %s - %ld days, %ld hours, %ld minutes, %ld seconds.\n",
-			curtime2, server_name, (crash_flag ? "crashed" : "uptime"),
-			days, hours, minutes, seconds);
-		fclose(fp);
+		days = seconds / day;
+		seconds -= (seconds / day > 0) ? (seconds / day) * day : 0;
+		hours = seconds / hour;
+		seconds -= (seconds / hour > 0) ? (seconds / hour) * hour : 0;
+		minutes = seconds / minute;
+		seconds -= (seconds / minute > 0) ? (seconds / minute) * minute : 0;
+		fprintf (fp, "%s: %s %s - %ld days, %ld hours, %ld minutes, %ld seconds.\n",
+				 curtime2, server_name, (crash_flag ? "crashed" : "uptime"),
+				 days, hours, minutes, seconds);
+		fclose (fp);
 	}
 
 	return 1;
@@ -193,19 +198,18 @@ int sig_init ()
 	void (*func) = sig_dump;
 #ifdef CYGWIN	// test if dumper is enabled
 	char *buf = getenv ("CYGWIN");
-	if (buf && strstr(buf, "error_start") != NULL)
+
+	if (buf && strstr (buf, "error_start") != NULL)
 		func = SIG_DFL;
+
 #endif
-
-	IMPORT_SYMBOL(server_name, 1);
-	IMPORT_SYMBOL(getrevision, 6);
-	IMPORT_SYMBOL(getuptime, 11);
-
-	compat_signal(SIGSEGV, func);
-	compat_signal(SIGFPE, func);
-	compat_signal(SIGILL, func);
-	compat_signal(SIGBUS, func);
-
+	IMPORT_SYMBOL (server_name, 1);
+	IMPORT_SYMBOL (getrevision, 6);
+	IMPORT_SYMBOL (getuptime, 11);
+	compat_signal (SIGSEGV, func);
+	compat_signal (SIGFPE, func);
+	compat_signal (SIGILL, func);
+	compat_signal (SIGBUS, func);
 	return 1;
 }
 #endif

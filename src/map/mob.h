@@ -55,8 +55,7 @@ enum MobSkillState {
 	MSS_ANYTARGET,
 };
 
-enum MobDamageLogFlag
-{
+enum MobDamageLogFlag {
 	MDLF_NORMAL = 0,
 	MDLF_HOMUN,
 	MDLF_PET,
@@ -64,11 +63,11 @@ enum MobDamageLogFlag
 
 struct mob_skill {
 	enum MobSkillState state;
-	short skill_id,skill_lv;
+	short skill_id, skill_lv;
 	short permillage;
-	int casttime,delay;
+	int casttime, delay;
 	short cancel;
-	short cond1,cond2;
+	short cond1, cond2;
 	short target;
 	int val[5];
 	short emotion;
@@ -85,16 +84,20 @@ struct spawn_info {
 	unsigned short mapindex;
 	unsigned short qty;
 };
- 
+
 struct mob_db {
-	char sprite[NAME_LENGTH],name[NAME_LENGTH],jname[NAME_LENGTH];
-	unsigned int base_exp,job_exp;
-	unsigned int mexp,mexpper;
-	short range2,range3;
+	char sprite[NAME_LENGTH], name[NAME_LENGTH], jname[NAME_LENGTH];
+	unsigned int base_exp, job_exp;
+	unsigned int mexp, mexpper;
+	short range2, range3;
 	short race2;	// celest
 	unsigned short lv;
-	struct { int nameid,p; } dropitem[MAX_MOB_DROP];
-	struct { int nameid,p; } mvpitem[3];
+	struct {
+		int nameid, p;
+	} dropitem[MAX_MOB_DROP];
+	struct {
+		int nameid, p;
+	} mvpitem[3];
 	struct status_data status;
 	struct view_data vd;
 	short option;
@@ -115,10 +118,10 @@ struct mob_data {
 	struct {
 		unsigned int size : 2; //Small/Big monsters.
 		unsigned int ai : 2; //Special ai for summoned monsters.
-							//0: Normal mob.
-							//1: Standard summon, attacks mobs.
-							//2: Alchemist Marine Sphere
-							//3: Alchemist Summon Flora
+		//0: Normal mob.
+		//1: Standard summon, attacks mobs.
+		//2: Alchemist Marine Sphere
+		//3: Alchemist Summon Flora
 	} special_state; //Special mob information that does not needs to be zero'ed on mob respawn.
 	struct {
 		unsigned int aggressive : 1; //Signals whether the mob AI is in aggressive mode or reactive mode. [Skotlex]
@@ -134,7 +137,7 @@ struct mob_data {
 		unsigned char attacked_count; //For rude attacked.
 		int provoke_flag; // Celest
 	} state;
-	struct guardian_data* guardian_data; 
+	struct guardian_data *guardian_data;
 	struct {
 		int id;
 		unsigned int dmg;
@@ -146,17 +149,17 @@ struct mob_data {
 	short class_;
 	unsigned int tdmg; //Stores total damage given to the mob, for exp calculations. [Skotlex]
 	int level;
-	int target_id,attacked_id;
+	int target_id, attacked_id;
 	int areanpc_id; //Required in OnTouchNPC (to avoid multiple area touchs)
 	unsigned int bg_id; // BattleGround System
 
-	unsigned int next_walktime,last_thinktime,last_linktime,last_pcneartime;
+	unsigned int next_walktime, last_thinktime, last_linktime, last_pcneartime;
 	short move_fail_count;
 	short lootitem_count;
 	short min_chase;
-	
+
 	int deletetimer;
-	int master_id,master_dist;
+	int master_id, master_dist;
 
 	short skillidx;
 	unsigned int skilldelay[MAX_MOBSKILL];
@@ -209,74 +212,74 @@ enum {
 // The data structures for storing delayed item drops
 struct item_drop {
 	struct item item_data;
-	struct item_drop* next;
+	struct item_drop *next;
 };
 struct item_drop_list {
 	int m, x, y;                       // coordinates
 	int first_charid, second_charid, third_charid; // charid's of players with higher pickup priority
-	struct item_drop* item;            // linked list of drops
+	struct item_drop *item;            // linked list of drops
 };
 
-struct mob_db* mob_db(int class_);
-int mobdb_searchname(const char *str);
-int mobdb_searchname_array(struct mob_db** data, int size, const char *str);
-int mobdb_checkid(const int id);
-struct view_data* mob_get_viewdata(int class_);
-struct mob_data *mob_once_spawn_sub(struct block_list *bl, int m,
-	short x, short y, const char *mobname, int class_, const char *event);
-int mob_once_spawn(struct map_session_data* sd,int m,short x,short y,const char* mobname,int class_,int amount,const char* event);
-int mob_once_spawn_area(struct map_session_data* sd,int m,int x0,int y0,int x1,int y1,const char* mobname,int class_,int amount,const char* event);
+struct mob_db *mob_db (int class_);
+int mobdb_searchname (const char *str);
+int mobdb_searchname_array (struct mob_db **data, int size, const char *str);
+int mobdb_checkid (const int id);
+struct view_data *mob_get_viewdata (int class_);
+struct mob_data *mob_once_spawn_sub (struct block_list *bl, int m,
+									 short x, short y, const char *mobname, int class_, const char *event);
+int mob_once_spawn (struct map_session_data *sd, int m, short x, short y, const char *mobname, int class_, int amount, const char *event);
+int mob_once_spawn_area (struct map_session_data *sd, int m, int x0, int y0, int x1, int y1, const char *mobname, int class_, int amount, const char *event);
 
 bool mob_ksprotected (struct block_list *src, struct block_list *target);
 
-int mob_spawn_guardian(const char* mapname, short x, short y, const char* mobname, int class_, const char* event, int guardian, bool has_index);	// Spawning Guardians [Valaris]
-int mob_spawn_bg(const char* mapname, short x, short y, const char* mobname, int class_, const char* event, unsigned int bg_id);
-int mob_guardian_guildchange(struct block_list *bl,va_list ap); //Change Guardian's ownership. [Skotlex]
+int mob_spawn_guardian (const char *mapname, short x, short y, const char *mobname, int class_, const char *event, int guardian, bool has_index);	// Spawning Guardians [Valaris]
+int mob_spawn_bg (const char *mapname, short x, short y, const char *mobname, int class_, const char *event, unsigned int bg_id);
+int mob_guardian_guildchange (struct block_list *bl, va_list ap); //Change Guardian's ownership. [Skotlex]
 
-int mob_randomwalk(struct mob_data *md,unsigned int tick);
-int mob_warpchase(struct mob_data *md, struct block_list *target);
-int mob_target(struct mob_data *md,struct block_list *bl,int dist);
-int mob_unlocktarget(struct mob_data *md, unsigned int tick);
-struct mob_data* mob_spawn_dataset(struct spawn_data *data);
-int mob_spawn(struct mob_data *md);
-int mob_delayspawn(int tid, unsigned int tick, int id, intptr_t data);
-int mob_setdelayspawn(struct mob_data *md);
-int mob_parse_dataset(struct spawn_data *data);
-void mob_log_damage(struct mob_data *md, struct block_list *src, int damage);
-void mob_damage(struct mob_data *md, struct block_list *src, int damage);
-int mob_dead(struct mob_data *md, struct block_list *src, int type);
-void mob_revive(struct mob_data *md, unsigned int hp);
-void mob_heal(struct mob_data *md,unsigned int heal);
+int mob_randomwalk (struct mob_data *md, unsigned int tick);
+int mob_warpchase (struct mob_data *md, struct block_list *target);
+int mob_target (struct mob_data *md, struct block_list *bl, int dist);
+int mob_unlocktarget (struct mob_data *md, unsigned int tick);
+struct mob_data *mob_spawn_dataset (struct spawn_data *data);
+int mob_spawn (struct mob_data *md);
+int mob_delayspawn (int tid, unsigned int tick, int id, intptr_t data);
+int mob_setdelayspawn (struct mob_data *md);
+int mob_parse_dataset (struct spawn_data *data);
+void mob_log_damage (struct mob_data *md, struct block_list *src, int damage);
+void mob_damage (struct mob_data *md, struct block_list *src, int damage);
+int mob_dead (struct mob_data *md, struct block_list *src, int type);
+void mob_revive (struct mob_data *md, unsigned int hp);
+void mob_heal (struct mob_data *md, unsigned int heal);
 
 #define mob_stop_walking(md, type) unit_stop_walking(&(md)->bl, type)
 #define mob_stop_attack(md) unit_stop_attack(&(md)->bl)
 #define mob_is_battleground(md) ( map[(md)->bl.m].flag.battleground && ((md)->class_ == 1906 || ((md)->class_ >= 1909 && (md)->class_ <= 1915)) )
 
 void mob_clear_spawninfo();
-int do_init_mob(void);
-int do_final_mob(void);
+int do_init_mob (void);
+int do_final_mob (void);
 
-int mob_timer_delete(int tid, unsigned int tick, int id, intptr_t data);
-int mob_deleteslave(struct mob_data *md);
+int mob_timer_delete (int tid, unsigned int tick, int id, intptr_t data);
+int mob_deleteslave (struct mob_data *md);
 
 int mob_random_class (int *value, size_t count);
-int mob_get_random_id(int type, int flag, int lv);
-int mob_class_change(struct mob_data *md,int class_);
-int mob_warpslave(struct block_list *bl, int range);
-int mob_linksearch(struct block_list *bl,va_list ap);
+int mob_get_random_id (int type, int flag, int lv);
+int mob_class_change (struct mob_data *md, int class_);
+int mob_warpslave (struct block_list *bl, int range);
+int mob_linksearch (struct block_list *bl, va_list ap);
 
-int mobskill_use(struct mob_data *md,unsigned int tick,int event);
-int mobskill_event(struct mob_data *md,struct block_list *src,unsigned int tick, int flag);
-int mobskill_castend_id( int tid, unsigned int tick, int id,int data );
-int mobskill_castend_pos( int tid, unsigned int tick, int id,int data );
-int mob_summonslave(struct mob_data *md2,int *value,int amount,int skill_id);
-int mob_countslave(struct block_list *bl);
+int mobskill_use (struct mob_data *md, unsigned int tick, int event);
+int mobskill_event (struct mob_data *md, struct block_list *src, unsigned int tick, int flag);
+int mobskill_castend_id (int tid, unsigned int tick, int id, int data);
+int mobskill_castend_pos (int tid, unsigned int tick, int id, int data);
+int mob_summonslave (struct mob_data *md2, int *value, int amount, int skill_id);
+int mob_countslave (struct block_list *bl);
 
-int mob_is_clone(int class_);
+int mob_is_clone (int class_);
 
-int mob_clone_spawn(struct map_session_data *sd, int m, int x, int y, const char *event, int master_id, int mode, int flag, unsigned int duration);
-int mob_clone_delete(struct mob_data *md);
+int mob_clone_spawn (struct map_session_data *sd, int m, int x, int y, const char *event, int master_id, int mode, int flag, unsigned int duration);
+int mob_clone_delete (struct mob_data *md);
 
-void mob_reload(void);
+void mob_reload (void);
 
 #endif /* _MOB_H_ */
