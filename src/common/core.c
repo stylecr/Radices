@@ -2,7 +2,6 @@
 // For more information, see LICENCE in the main folder
 
 #include "../common/mmo.h"
-#include "../common/version.h"
 #include "../common/showmsg.h"
 #include "../common/malloc.h"
 #include "core.h"
@@ -10,10 +9,6 @@
 #include "../common/db.h"
 #include "../common/socket.h"
 #include "../common/timer.h"
-#include "../common/plugins.h"
-#endif
-#ifndef _WIN32
-#include "svnversion.h"
 #endif
 
 #include <stdio.h>
@@ -22,6 +17,8 @@
 #include <string.h>
 #ifndef _WIN32
 #include <unistd.h>
+#else
+#include "../common/winapi.h" // Console close event handling
 #endif
 
 /// Called when a terminate signal is received.
@@ -34,9 +31,9 @@ char **arg_v = NULL;
 
 char *SERVER_NAME = NULL;
 char SERVER_TYPE = ATHENA_SERVER_NONE;
-#ifndef SVNVERSION
-static char CR_svn_version[13] = ""; // Para caber "Desconhecida" na array [Keoy]
-#endif
+
+static char rA_git_version[50] = "";
+static char rA_svn_version[10] = "";
 
 #ifndef MINICORE	// minimalist Core
 // Added by Gabuzomeu
@@ -66,6 +63,37 @@ sigfunc *compat_signal (int signo, sigfunc *func)
 		return (SIG_ERR);
 
 	return (oact.sa_handler);
+}
+#endif
+
+/*======================================
+ *	CORE : Console events for Windows
+ *--------------------------------------*/
+#ifdef _WIN32
+static BOOL WINAPI console_handler (DWORD c_event)
+{
+	switch (c_event) {
+		case CTRL_CLOSE_EVENT:
+		case CTRL_LOGOFF_EVENT:
+		case CTRL_SHUTDOWN_EVENT:
+			if (shutdown_callback != NULL)
+				shutdown_callback();
+			else
+				runflag = CORE_ST_STOP;// auto-shutdown
+
+			break;
+
+		default:
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+static void cevents_init()
+{
+	if (SetConsoleCtrlHandler (console_handler, TRUE) == FALSE)
+		ShowWarning ("Não foi possível instalar o manipulador do console!\n");
 }
 #endif
 
@@ -100,8 +128,7 @@ static void sig_proc (int sn)
 
 		case SIGXFSZ:
 			// ignore and allow it to set errno to EFBIG
-			//ShowWarning ("Max file size reached!\n");
-			ShowWarning ("Tamanho maximo do arquivo alcancado!\n");
+			ShowWarning ("Tamanho máximo do arquivo alcançado!\n");
 			//run_flag = 0;	// should we quit?
 			break;
 
@@ -130,20 +157,39 @@ void signals_init (void)
 }
 #endif
 
-#ifdef SVNVERSION
-#define xstringify(x) stringify(x)
-#define stringify(x) #x
-const char *get_svn_revision (void)
+const char *get_git_revision (void)
 {
-	return xstringify (SVNVERSION);
+	FILE *fp;
+
+	if (*rA_git_version)
+		return rA_git_version;
+
+	if ( (fp = fopen (".git/refs/heads/master", "r")) != NULL) {
+		char line[64];
+		char *rev = malloc (sizeof (char) * 50);
+
+		if (fgets (line, sizeof (line), fp) && sscanf (line, "%s", rev))
+			snprintf (rA_git_version, sizeof (rA_git_version), "%s", rev);
+
+		free (rev);
+		fclose (fp);
+	} else {
+		snprintf (rA_git_version, sizeof (rA_git_version), "no");
+	}
+
+	if (! (*rA_git_version)) {
+		snprintf (rA_git_version, sizeof (rA_git_version), "Desconhecido");
+	}
+
+	return rA_git_version;
 }
-#else// not SVNVERSION
+
 const char *get_svn_revision (void)
 {
 	FILE *fp;
 
-	if (*CR_svn_version)
-		return CR_svn_version;
+	if (*rA_svn_version)
+		return rA_svn_version;
 
 	if ( (fp = fopen (".svn/entries", "r")) != NULL) {
 		char line[1024];
@@ -154,31 +200,60 @@ const char *get_svn_revision (void)
 			if (!ISDIGIT (line[0])) {
 				// XML File format
 				while (fgets (line, sizeof (line), fp))
-					if (strstr (line, "revision=")) break;
+					if (strstr (line, "revisão=")) break;
 
 				if (sscanf (line, " %*[^\"]\"%d%*[^\n]", &rev) == 1) {
-					snprintf (CR_svn_version, sizeof (CR_svn_version), "%d", rev);
+					snprintf (rA_svn_version, sizeof (rA_svn_version), "%d", rev);
 				}
 			} else {
 				// Bin File format
-				fgets (line, sizeof (line), fp); // Get the name
-				fgets (line, sizeof (line), fp); // Get the entries kind
+				if (fgets (line, sizeof (line), fp) == NULL) { printf ("Can't get bin name\n"); }
+
+				if (fgets (line, sizeof (line), fp) == NULL) { printf ("Can't get entries kind\n"); }
 
 				if (fgets (line, sizeof (line), fp)) { // Get the rev numver
-					snprintf (CR_svn_version, sizeof (CR_svn_version), "%d", atoi (line));
+					snprintf (rA_svn_version, sizeof (rA_svn_version), "%d", atoi (line));
 				}
 			}
 		}
 
 		fclose (fp);
+	} else {
+		snprintf (rA_svn_version, sizeof (rA_svn_version), "no");
 	}
 
-	if (! (*CR_svn_version))
-		snprintf (CR_svn_version, sizeof (CR_svn_version), "Desconhecida");
+	/**
+	 * subversion 1.7 introduces the use of a .db file to store it, and we go through it
+	 * TODO: In some cases it may be not accurate
+	 **/
+	if (! (*rA_svn_version) && ( (fp = fopen (".svn/wc.db", "rb")) != NULL || (fp = fopen ("../.svn/wc.db", "rb")) != NULL)) {
+		char lines[64];
+		int revision, last_known = 0;
 
-	return CR_svn_version;
+		while (fread (lines, sizeof (char), sizeof (lines), fp)) {
+			if (strstr (lines, "!svn/ver/")) {
+				if (sscanf (strstr (lines, "!svn/ver/"), "!svn/ver/%d/%*s", &revision) == 1) {
+					if (revision > last_known) {
+						last_known = revision;
+					}
+				}
+			}
+		}
+
+		fclose (fp);
+
+		if (last_known != 0)
+			snprintf (rA_svn_version, sizeof (rA_svn_version), "%d", last_known);
+	}
+
+	/**
+	 * we definitely didn't find it.
+	 **/
+	if (! (*rA_svn_version))
+		snprintf (rA_svn_version, sizeof (rA_svn_version), "Desconhecido");
+
+	return rA_svn_version;
 }
-#endif
 
 /*======================================
  *	CORE : Display title
@@ -195,25 +270,30 @@ static void display_title (void)
 	ShowMessage (""CL_XXBL"          ("CL_BOLD"      \\     \\____|  | \\(  <_> )   |  \\  |  /\\___ \\       "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
 	ShowMessage (""CL_XXBL"          ("CL_BOLD"       \\______  /|__|   \\____/|___|  /____//____  >      "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
 	ShowMessage (""CL_XXBL"          ("CL_BOLD"              \\/                   \\/           \\/       "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
-	ShowMessage (""CL_XXBL"          ("CL_BT_RED"                          Radices                         "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
+	ShowMessage (""CL_XXBL"          ("CL_BT_RED"                          Radices                        "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
 	ShowMessage (""CL_XXBL"          ("CL_BOLD"                  www.cronus-emulator.com                "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
 	ShowMessage (""CL_XXBL"          ("CL_BT_YELLOW"      Baseado no eAthena (c) 2005-2013 Projeto Cronus    "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
 	ShowMessage (""CL_XXBL"          ("CL_BOLD"                                                         "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
 	ShowMessage (""CL_WTBL"          (=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=)"CL_CLL""CL_NORMAL"\n\n");
-	ShowInfo ("Revisão SVN: '"CL_WHITE"%s"CL_RESET"'.\n", get_svn_revision());
+	if (strcmpi (get_git_revision(), "no") != 0) {
+		ShowInfo ("Revisão GIT: '"CL_WHITE"%s"CL_RESET"'.\n", get_git_revision());
+	} else if (strcmpi (get_svn_revision(), "no") != 0) {
+		ShowInfo ("Revisão SVN: '"CL_WHITE"%s"CL_RESET"'.\n", get_svn_revision());
+	} else {
+		ShowInfo ("Revisão: Desconhecida.\n");
+	}
 }
 
+#ifndef _WIN32
 // Avisa se o usuário está logado como ROOT
 void usercheck (void)
 {
-#ifndef _WIN32
-
-	if ( (getuid() == 0) && (getgid() == 0)) {
-		ShowWarning ("Você está rodando o Cronus como root, isso não é necessário e é inseguro.\n");
+	if (geteuid() == 0) {
+		ShowWarning ("Você está iniciando o Cronus-Emulator com privilégios ROOT.\n");
+		ShowWarning ("Isto é inseguro e desnecessário.\n");
 	}
-
-#endif
 }
+#endif
 
 /*======================================
  *	CORE : MAINROUTINE
@@ -233,51 +313,42 @@ int main (int argc, char **argv)
 		arg_c = argc;
 		arg_v = argv;
 	}
-	// Não precisamos chamar o malloc_init se o Memory Manager não está ativo [Keoy]
-#ifdef USE_MEMMGR
 	malloc_init(); // needed for Show* in display_title() [FlavioJS]
-#endif
-#ifdef MINICORE // minimalist Core
-	display_title();
+
 #ifndef _WIN32
 	usercheck();
 #endif
+
+#ifdef MINICORE // minimalist Core
+	display_title();
 	do_init (argc, argv);
 	do_final();
 #else// not MINICORE
 	set_server_type();	// Define o tipo de servidor (função exclusiva de cada servidor)
 	display_title();	// Mostra o título
-	// Não precisamos verificar se estamos em root se não estamos em um sistema WIN32 [Keoy]
-#ifndef _WIN32
-	usercheck();
-#endif
 	db_init();
 	signals_init();
+#ifdef _WIN32
+	cevents_init();
+#endif
 	timer_init();
 	socket_init();
-	plugins_init();
 	do_init (argc, argv);	// Inicializa as funções do servidor
-	plugin_event_trigger (EVENT_ATHENA_INIT); // Evento inicial dos plugins
 	{
 		// Ciclo principal do servidor
 		int next;
 
-		// Enquanto a runflag for verdadeira (1) o servidor rodará, do contrário entrará em processo de finalização
+		// Enquanto a runflag não for a de Parar, o servidor rodará; do contrário, entrará em processo de finalização
 		while (runflag != CORE_ST_STOP) {
 			next = do_timer (gettick_nocache());
 			do_sockets (next);
 		}
 	}
-	plugin_event_trigger (EVENT_ATHENA_FINAL); // Evento final dos plugins
 	do_final();
 	timer_final();
-	plugins_final();
 	socket_final();
 	db_final();
 #endif
-	// Não precisamos chamar o malloc_init se o Memory Manager não está ativo [Keoy]
-#ifdef USE_MEMMGR
 	malloc_final();
-#endif
 	return 0;
 }

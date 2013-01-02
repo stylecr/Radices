@@ -8,7 +8,7 @@
 #include "../common/malloc.h"
 #include "../common/socket.h" // WFIFO*()
 #include "../common/showmsg.h"
-#include "../common/version.h"
+
 #include "../common/nullpo.h"
 #include "../common/strlib.h"
 #include "../common/utils.h"
@@ -3523,11 +3523,11 @@ void do_abort (void)
 /*======================================================
  * Map-Server Version Screen [MC Cameri]
  *------------------------------------------------------*/
-void map_helpscreen (int flag)
+void map_helpscreen (bool do_exit)
 {
-	puts ("Usage: map-server [options]");
-	puts ("Options:");
-	puts (CL_WHITE"  Commands\t\t\tDescription"CL_RESET);
+	puts ("Uso: map-server [opções]");
+	puts ("Opções:");
+	puts (CL_WHITE"  Comandos\t\t\tDescrição"CL_RESET);
 	puts ("-----------------------------------------------------------------------------");
 	puts ("  --help, --h, --?, /?		Displays this help screen");
 	puts ("  --map-config <file>		Load map-server configuration from <file>");
@@ -3543,20 +3543,30 @@ void map_helpscreen (int flag)
 	puts ("  --version, --v, -v, /v	Displays the server's version");
 	puts ("\n");
 
-	if (flag) exit (EXIT_FAILURE);
+	if (do_exit)
+		exit (EXIT_SUCCESS);
 }
 
 /*======================================================
  * Map-Server Version Screen [MC Cameri]
  *------------------------------------------------------*/
-void map_versionscreen (void)
+static void map_versionscreen (bool do_exit)
 {
-	ShowInfo (CL_WHITE "eAthena version %d.%02d.%02d, Athena Mod version %d" CL_RESET"\n",
-			  ATHENA_MAJOR_VERSION, ATHENA_MINOR_VERSION, ATHENA_REVISION,
-			  ATHENA_MOD_VERSION);
-	ShowInfo (CL_GREEN "Website/Forum:" CL_RESET "\thttp://eathena.deltaanime.net/\n");
-	ShowInfo (CL_GREEN "IRC Channel:" CL_RESET "\tirc://irc.deltaanime.net/#athena\n");
-	ShowInfo ("\nOpen " CL_WHITE "readme.html" CL_RESET " for more information.");
+	char * rev;
+	if (strcmpi (get_git_revision(), "no") != 0) {
+		rev = (char *)get_git_revision();
+	} else if (strcmpi (get_svn_revision(), "no") != 0) {
+		rev = (char *)get_svn_revision();
+	} else {
+		rev = "Desconhecida";
+	}
+
+	ShowInfo (CL_WHITE"Revisão do Cronus: "CL_GREEN"%s" CL_RESET"\n", rev);
+	ShowInfo (CL_WHITE"Website/Forum:"CL_GREEN"\thttp://portal.cronus-emulator.com/"CL_RESET"\n");
+	ShowInfo (CL_WHITE"Teamspeak: "CL_GREEN"ts3.forbrazil.com.br"CL_RESET"\n");
+
+	if (do_exit)
+		exit (EXIT_SUCCESS);
 }
 
 /*======================================================
@@ -3606,9 +3616,9 @@ int do_init (int argc, char *argv[])
 
 	for (i = 1; i < argc ; i++) {
 		if (strcmp (argv[i], "--help") == 0 || strcmp (argv[i], "--h") == 0 || strcmp (argv[i], "--?") == 0 || strcmp (argv[i], "/?") == 0)
-			map_helpscreen (1);
+			map_helpscreen (true);
 		else if (strcmp (argv[i], "--version") == 0 || strcmp (argv[i], "--v") == 0 || strcmp (argv[i], "-v") == 0 || strcmp (argv[i], "/v") == 0)
-			map_versionscreen();
+			map_versionscreen(true);
 		else if (strcmp (argv[i], "--map_config") == 0 || strcmp (argv[i], "--map-config") == 0)
 			MAP_CONF_NAME = argv[i + 1];
 		else if (strcmp (argv[i], "--battle_config") == 0 || strcmp (argv[i], "--battle-config") == 0)

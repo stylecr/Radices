@@ -133,13 +133,10 @@
     <ClInclude Include="..\src\common\core.h" />
     <ClInclude Include="..\src\common\db.h" />
     <ClInclude Include="..\src\common\ers.h" />
-    <ClInclude Include="..\src\common\lock.h" />
     <ClInclude Include="..\src\common\malloc.h" />
     <ClInclude Include="..\src\common\mapindex.h" />
     <ClInclude Include="..\src\common\mmo.h" />
     <ClInclude Include="..\src\common\nullpo.h" />
-    <ClInclude Include="..\src\common\plugin.h" />
-    <ClInclude Include="..\src\common\plugins.h" />
     <ClInclude Include="..\src\common\random.h" />
     <ClInclude Include="..\src\common\showmsg.h" />
     <ClInclude Include="..\src\common\socket.h" />
@@ -147,7 +144,6 @@
     <ClInclude Include="..\src\common\strlib.h" />
     <ClInclude Include="..\src\common\timer.h" />
     <ClInclude Include="..\src\common\utils.h" />
-    <ClInclude Include="..\src\common\version.h" />
     <ClInclude Include="..\src\char_sql\char.h" />
     <ClInclude Include="..\src\char_sql\int_auction.h" />
     <ClInclude Include="..\src\char_sql\int_guild.h" />
@@ -165,11 +161,9 @@
     <ClCompile Include="..\src\common\core.c" />
     <ClCompile Include="..\src\common\db.c" />
     <ClCompile Include="..\src\common\ers.c" />
-    <ClCompile Include="..\src\common\lock.c" />
     <ClCompile Include="..\src\common\malloc.c" />
     <ClCompile Include="..\src\common\mapindex.c" />
     <ClCompile Include="..\src\common\nullpo.c" />
-    <ClCompile Include="..\src\common\plugins.c" />
     <ClCompile Include="..\src\common\random.c" />
     <ClCompile Include="..\src\common\showmsg.c" />
     <ClCompile Include="..\src\common\socket.c" />

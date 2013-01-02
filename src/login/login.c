@@ -9,7 +9,7 @@
 #include "../common/socket.h"
 #include "../common/strlib.h"
 #include "../common/timer.h"
-#include "../common/version.h"
+
 #include "account.h"
 #include "ipban.h"
 #include "login.h"
