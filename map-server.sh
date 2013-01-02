@@ -5,10 +5,10 @@ ulimit -Sc unlimited
 
 while [ 1 ] ; do
 if [ -f .stopserver ] ; then
-echo Servidor estava offline >> servlog.txt
+echo servidor desligado >> servlog.txt
 else
-echo Reiniciado o servidor em `date +"%d-%m-%H:%M-%S"`>> startlog.txt
-./map-server
+echo reiniciando servidor em `date +"%m-%d-%H:%M-%S"`>> startlog.txt
+./map-server_sql
 fi
 
 sleep 5
