@@ -25,7 +25,7 @@ MAP_H = map.h chrif.h clif.h pc.h status.h npc.h \
 	storage.h skill.h atcommand.h battle.h battleground.h \
 	intif.h trade.h party.h vending.h guild.h pet.h \
 	log.h mail.h date.h unit.h homunculus.h mercenary.h quest.h instance.h mapreg.h \
-	buyingstore.h searchstore.h duel.h
+	buyingstore.h searchstore.h duel.h ..\config\versao.h
 
 	
 	
@@ -59,9 +59,8 @@ clean:
 	@rm -rf *.o obj_txt obj_sql ../../map-server@EXEEXT@ ../../map-server_sql@EXEEXT@
 
 help:
-	@echo "possible targets are 'sql' 'txt' 'all' 'clean' 'help'"
+	@echo "possible targets are 'sql' 'all' 'clean' 'help'"
 	@echo "'sql'   - map server (SQL version)"
-	@echo "'txt'   - map server (TXT version)"
 	@echo "'all'   - builds all above targets"
 	@echo "'clean' - cleans builds and objects"
 	@echo "'help'  - outputs this message"
