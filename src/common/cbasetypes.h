@@ -344,7 +344,8 @@ template <typename T1, typename T2>
 void SET_FUNCPOINTER (T1 &var, T2 p)
 {
 	char ASSERT_POINTERSIZE[sizeof (T1) == sizeof (void *) && sizeof (T2) == sizeof (void *) ? 1 : -1]; // 1 if true, -1 if false
-	union {
+	union
+	{
 		T1 out;
 		T2 in;
 	} tmp;// /!\ WARNING casting a pointer to a function pointer is against the C++ standard

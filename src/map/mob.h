@@ -42,7 +42,8 @@ extern const int mob_manuk[8];
 extern const int mob_splendide[5];
 
 //Mob skill states.
-enum MobSkillState {
+enum MobSkillState
+{
 	MSS_ANY = -1,
 	MSS_IDLE,
 	MSS_WALK,
@@ -55,13 +56,15 @@ enum MobSkillState {
 	MSS_ANYTARGET,
 };
 
-enum MobDamageLogFlag {
+enum MobDamageLogFlag
+{
 	MDLF_NORMAL = 0,
 	MDLF_HOMUN,
 	MDLF_PET,
 };
 
-struct mob_skill {
+struct mob_skill
+{
 	enum MobSkillState state;
 	short skill_id, skill_lv;
 	short permillage;
@@ -74,28 +77,33 @@ struct mob_skill {
 	unsigned short msg_id;
 };
 
-struct mob_chat {
+struct mob_chat
+{
 	unsigned short msg_id;
 	unsigned long color;
 	char msg[CHAT_SIZE_MAX];
 };
 
-struct spawn_info {
+struct spawn_info
+{
 	unsigned short mapindex;
 	unsigned short qty;
 };
 
-struct mob_db {
+struct mob_db
+{
 	char sprite[NAME_LENGTH], name[NAME_LENGTH], jname[NAME_LENGTH];
 	unsigned int base_exp, job_exp;
 	unsigned int mexp, mexpper;
 	short range2, range3;
 	short race2;	// celest
 	unsigned short lv;
-	struct {
+	struct
+	{
 		int nameid, p;
 	} dropitem[MAX_MOB_DROP];
-	struct {
+	struct
+	{
 		int nameid, p;
 	} mvpitem[3];
 	struct status_data status;
@@ -107,7 +115,8 @@ struct mob_db {
 	struct spawn_info spawn[10];
 };
 
-struct mob_data {
+struct mob_data
+{
 	struct block_list bl;
 	struct unit_data  ud;
 	struct view_data *vd;
@@ -115,7 +124,8 @@ struct mob_data {
 	struct status_change sc;
 	struct mob_db *db;	//For quick data access (saves doing mob_db(md->class_) all the time) [Skotlex]
 	char name[NAME_LENGTH];
-	struct {
+	struct
+	{
 		unsigned int size : 2; //Small/Big monsters.
 		unsigned int ai : 2; //Special ai for summoned monsters.
 		//0: Normal mob.
@@ -123,7 +133,8 @@ struct mob_data {
 		//2: Alchemist Marine Sphere
 		//3: Alchemist Summon Flora
 	} special_state; //Special mob information that does not needs to be zero'ed on mob respawn.
-	struct {
+	struct
+	{
 		unsigned int aggressive : 1; //Signals whether the mob AI is in aggressive mode or reactive mode. [Skotlex]
 		unsigned int steal_coin_flag : 1;
 		unsigned int soul_change_flag : 1; // Celest
@@ -138,7 +149,8 @@ struct mob_data {
 		int provoke_flag; // Celest
 	} state;
 	struct guardian_data *guardian_data;
-	struct {
+	struct
+	{
 		int id;
 		unsigned int dmg;
 		unsigned int flag : 2; //0: Normal. 1: Homunc exp. 2: Pet exp
@@ -168,7 +180,8 @@ struct mob_data {
 
 
 
-enum {
+enum
+{
 	MST_TARGET =	0,
 	MST_RANDOM,	//Random Target!
 	MST_SELF,
@@ -210,11 +223,13 @@ enum {
 };
 
 // The data structures for storing delayed item drops
-struct item_drop {
+struct item_drop
+{
 	struct item item_data;
 	struct item_drop *next;
 };
-struct item_drop_list {
+struct item_drop_list
+{
 	int m, x, y;                       // coordinates
 	int first_charid, second_charid, third_charid; // charid's of players with higher pickup priority
 	struct item_drop *item;            // linked list of drops

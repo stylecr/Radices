@@ -4,7 +4,8 @@
 #ifndef _QUEST_H_
 #define _QUEST_H_
 
-struct s_quest_db {
+struct s_quest_db
+{
 	int id;
 	unsigned int time;
 	int mob[MAX_QUEST_OBJECTIVES];

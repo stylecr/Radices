@@ -11,7 +11,8 @@ extern char **arg_v;
 extern int runflag;
 extern char *SERVER_NAME;
 
-enum {
+enum
+{
 	ATHENA_SERVER_NONE = 0,	// not defined
 	ATHENA_SERVER_LOGIN	= 1,	// login server
 	ATHENA_SERVER_CHAR = 2,	// char server
@@ -30,7 +31,8 @@ extern void do_abort (void);
 extern void do_final (void);
 
 /// The main loop continues until runflag is CORE_ST_STOP
-enum E_CORE_ST {
+enum E_CORE_ST
+{
 	CORE_ST_STOP = 0,
 	CORE_ST_RUN,
 	CORE_ST_LAST

@@ -7,7 +7,8 @@
 #define MAX_PET_DB	300
 #define MAX_PETLOOT_SIZE	30
 
-struct s_pet_db {
+struct s_pet_db
+{
 	short class_;
 	char name[NAME_LENGTH], jname[NAME_LENGTH];
 	short itemID;
@@ -34,13 +35,15 @@ extern struct s_pet_db pet_db[MAX_PET_DB];
 
 enum { PET_CLASS, PET_CATCH, PET_EGG, PET_EQUIP, PET_FOOD };
 
-struct pet_recovery { //Stat recovery
+struct pet_recovery   //Stat recovery
+{
 	enum sc_type type;	//Status Change id
 	unsigned short delay; //How long before curing (secs).
 	int timer;
 };
 
-struct pet_bonus {
+struct pet_bonus
+{
 	unsigned short type; //bStr, bVit?
 	unsigned short val;	//Qty
 	unsigned short duration; //in secs
@@ -48,7 +51,8 @@ struct pet_bonus {
 	int timer;
 };
 
-struct pet_skill_attack { //Attack Skill
+struct pet_skill_attack   //Attack Skill
+{
 	unsigned short id;
 	unsigned short lv;
 	unsigned short div_; //0 = Normal skill. >0 = Fixed damage (lv), fixed div_.
@@ -56,7 +60,8 @@ struct pet_skill_attack { //Attack Skill
 	unsigned short bonusrate; //How being 100% loyal affects cast rate (10 = At 1000 intimacy->rate+10%
 };
 
-struct pet_skill_support { //Support Skill
+struct pet_skill_support   //Support Skill
+{
 	unsigned short id;
 	unsigned short lv;
 	unsigned short hp; //Max HP% for skill to trigger (50 -> 50% for Magnificat)
@@ -65,14 +70,16 @@ struct pet_skill_support { //Support Skill
 	int timer;
 };
 
-struct pet_loot {
+struct pet_loot
+{
 	struct item *item;
 	unsigned short count;
 	unsigned short weight;
 	unsigned short max;
 };
 
-struct pet_data {
+struct pet_data
+{
 	struct block_list bl;
 	struct unit_data ud;
 	struct view_data vd;
@@ -82,7 +89,8 @@ struct pet_data {
 	struct s_pet_db *petDB;
 	int pet_hungry_timer;
 	int target_id;
-	struct {
+	struct
+	{
 		unsigned skillbonus : 1;
 	} state;
 	int move_fail_count;

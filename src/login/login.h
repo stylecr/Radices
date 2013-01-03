@@ -7,7 +7,8 @@
 #include "../common/mmo.h" // NAME_LENGTH,SEX_*
 #include "../common/core.h" // CORE_ST_LAST
 
-enum E_LOGINSERVER_ST {
+enum E_LOGINSERVER_ST
+{
 	LOGINSERVER_ST_RUNNING = CORE_ST_LAST,
 	LOGINSERVER_ST_SHUTDOWN,
 	LOGINSERVER_ST_LAST
@@ -19,7 +20,8 @@ enum E_LOGINSERVER_ST {
 // supported encryption types: 1- passwordencrypt, 2- passwordencrypt2, 3- both
 #define PASSWORDENC 3
 
-struct login_session_data {
+struct login_session_data
+{
 
 	int account_id;
 	long login_id1;
@@ -40,7 +42,8 @@ struct login_session_data {
 	int fd;
 };
 
-struct mmo_char_server {
+struct mmo_char_server
+{
 
 	char name[20];
 	int fd;
@@ -51,7 +54,8 @@ struct mmo_char_server {
 	uint16 new_;        // should display as 'new'?
 };
 
-struct Login_Config {
+struct Login_Config
+{
 
 	uint32 login_ip;                                // the address to bind to
 	uint16 login_port;                              // the port to bind to

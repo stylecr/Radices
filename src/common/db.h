@@ -81,7 +81,8 @@
  * @see #DBReleaser
  * @see #db_custom_release(DBRelease)
  */
-typedef enum DBRelease {
+typedef enum DBRelease
+{
 	DB_RELEASE_NOTHING = 0,
 	DB_RELEASE_KEY     = 1,
 	DB_RELEASE_DATA    = 2,
@@ -105,7 +106,8 @@ typedef enum DBRelease {
  * @see #db_default_release(DBType,DBOptions)
  * @see #db_alloc(const char *,int,DBType,DBOptions,unsigned short)
  */
-typedef enum DBType {
+typedef enum DBType
+{
 	DB_INT,
 	DB_UINT,
 	DB_STRING,
@@ -133,7 +135,8 @@ typedef enum DBType {
  * @see #db_default_release(DBType,DBOptions)
  * @see #db_alloc(const char *,int,DBType,DBOptions,unsigned short)
  */
-typedef enum DBOptions {
+typedef enum DBOptions
+{
 	DB_OPT_BASE            = 0,
 	DB_OPT_DUP_KEY         = 1,
 	DB_OPT_RELEASE_KEY     = 2,
@@ -154,7 +157,8 @@ typedef enum DBOptions {
  * @see DBMap#put
  * @see DBMap#remove
  */
-typedef union DBKey {
+typedef union DBKey
+{
 	int i;
 	unsigned int ui;
 	const char *str;
@@ -258,7 +262,8 @@ typedef struct DBMap DBMap;
  * @public
  * @see #DBMap
  */
-struct DBIterator {
+struct DBIterator
+{
 
 	/**
 	 * Fetches the first entry in the database.
@@ -341,7 +346,8 @@ struct DBIterator {
  * @public
  * @see #db_alloc(const char*,int,DBType,DBOptions,unsigned short)
  */
-struct DBMap {
+struct DBMap
+{
 
 	/**
 	 * Returns a new iterator for this database.
@@ -776,7 +782,8 @@ void db_init (void);
 void db_final (void);
 
 // Link DB System - From jAthena
-struct linkdb_node {
+struct linkdb_node
+{
 	struct linkdb_node *next;
 	struct linkdb_node *prev;
 	void               *key;

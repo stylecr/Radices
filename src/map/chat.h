@@ -9,7 +9,8 @@ struct map_session_data;
 struct chat_data;
 
 
-struct chat_data {
+struct chat_data
+{
 	struct block_list bl;            // data for this map object
 	char title[CHATROOM_TITLE_SIZE]; // room title
 	char pass[CHATROOM_PASS_SIZE];   // password

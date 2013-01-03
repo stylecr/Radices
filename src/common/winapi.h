@@ -2,7 +2,7 @@
 
 
 #define WIN32_LEAN_AND_MEAN
-#define NOCOMM 
+#define NOCOMM
 #define NOKANJI
 #define NOHELP
 #define NOMCX

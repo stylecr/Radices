@@ -5,7 +5,8 @@
 #define _BATTLE_H_
 
 // state of a single attack attempt; used in flee/def penalty calculations when mobbed
-typedef enum damage_lv {
+typedef enum damage_lv
+{
 	ATK_NONE,    // not an attack
 	ATK_LUCKY,   // attack was lucky-dodged
 	ATK_FLEE,    // attack was dodged
@@ -15,7 +16,8 @@ typedef enum damage_lv {
 } damage_lv;
 
 // ダメージ
-struct Damage {
+struct Damage
+{
 	int damage, damage2;
 	int type, div_;
 	int amotion, dmotion;
@@ -47,7 +49,8 @@ int battle_calc_damage (struct block_list *src, struct block_list *bl, struct Da
 int battle_calc_gvg_damage (struct block_list *src, struct block_list *bl, int damage, int div_, int skill_num, int skill_lv, int flag);
 int battle_calc_bg_damage (struct block_list *src, struct block_list *bl, int damage, int div_, int skill_num, int skill_lv, int flag);
 
-enum {	// 最終計算のフラグ
+enum  	// 最終計算のフラグ
+{
 	BF_WEAPON	= 0x0001,
 	BF_MAGIC	= 0x0002,
 	BF_MISC		= 0x0004,
@@ -72,7 +75,8 @@ struct block_list *battle_getenemy (struct block_list *target, int type, int ran
 int battle_gettarget (struct block_list *bl);
 int battle_getcurrentskill (struct block_list *bl);
 
-enum e_battle_check_target {
+enum e_battle_check_target
+{
 	//New definitions [Skotlex]
 	BCT_ENEMY   = 0x020000,
 	BCT_NOENEMY = 0x1d0000, //This should be (~BCT_ENEMY&BCT_ALL)
@@ -102,7 +106,8 @@ void battle_consume_ammo (struct map_session_data *sd, int skill, int lv);
 #define MIN_CLOTH_COLOR battle_config.min_cloth_color
 #define MAX_CLOTH_COLOR battle_config.max_cloth_color
 
-extern struct Battle_Config {
+extern struct Battle_Config
+{
 	int warp_point_debug;
 	int enable_critical;
 	int mob_critical_rate;

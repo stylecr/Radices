@@ -39,7 +39,8 @@
 //Use apple for unknown items.
 #define UNKNOWN_ITEM_ID 512
 
-struct item_data {
+struct item_data
+{
 	int nameid;
 	char name[ITEM_NAME_LENGTH], jname[ITEM_NAME_LENGTH];
 	//Do not add stuff between value_buy and wlv (see how getiteminfo works)
@@ -63,14 +64,16 @@ struct item_data {
 	//		some script commands should be revised as well...
 	unsigned int class_base[3];	//Specifies if the base can wear this item (split in 3 indexes per type: 1-1, 2-1, 2-2)
 	unsigned class_upper : 3; //Specifies if the upper-type can equip it (bitfield, 1: normal, 2: upper, 3: baby)
-	struct {
+	struct
+	{
 		unsigned short chance;
 		int id;
 	} mob[MAX_SEARCH]; //Holds the mobs that have the highest drop rate for this item. [Skotlex]
 	struct script_code *script;	//Default script for everything.
 	struct script_code *equip_script;	//Script executed once when equipping.
 	struct script_code *unequip_script;//Script executed once when unequipping.
-	struct {
+	struct
+	{
 		unsigned available : 1;
 		short no_equip;
 		unsigned no_refine : 1;	// [celest]
@@ -82,7 +85,8 @@ struct item_data {
 	short gm_lv_trade_override;	//GM-level to override trade_restriction
 };
 
-struct item_group {
+struct item_group
+{
 	int nameid[MAX_RANDITEM];
 	int qty; //Counts amount of items in the group.
 };

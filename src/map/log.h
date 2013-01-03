@@ -11,7 +11,8 @@ struct mob_data;
 struct item;
 
 
-typedef enum e_log_chat_type {
+typedef enum e_log_chat_type
+{
 	LOG_CHAT_GLOBAL      = 0x01,
 	LOG_CHAT_WHISPER     = 0x02,
 	LOG_CHAT_PARTY       = 0x04,
@@ -23,7 +24,8 @@ typedef enum e_log_chat_type {
 e_log_chat_type;
 
 
-typedef enum e_log_pick_type {
+typedef enum e_log_pick_type
+{
 	LOG_TYPE_TRADE            = 0x0001,
 	LOG_TYPE_VENDING          = 0x0002,
 	LOG_TYPE_PICKDROP_PLAYER  = 0x0004,
@@ -64,7 +66,8 @@ void log_mvpdrop (struct map_session_data *sd, int monster_id, int *log_mvp);
 
 int log_config_read (const char *cfgName);
 
-extern struct Log_Config {
+extern struct Log_Config
+{
 	e_log_pick_type enable_logs;
 	int filter;
 	bool sql_logs;

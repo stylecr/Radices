@@ -9,13 +9,15 @@
 
 #define MAX_BG_MEMBERS 30
 
-struct battleground_member_data {
+struct battleground_member_data
+{
 	unsigned short x, y;
 	struct map_session_data *sd;
 	unsigned afk : 1;
 };
 
-struct battleground_data {
+struct battleground_data
+{
 	unsigned int bg_id;
 	unsigned char count;
 	struct battleground_member_data members[MAX_BG_MEMBERS];

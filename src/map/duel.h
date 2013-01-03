@@ -4,7 +4,8 @@
 #ifndef _DUEL_H_
 #define _DUEL_H_
 
-struct duel {
+struct duel
+{
 	int members_count;
 	int invites_count;
 	int max_players_limit;

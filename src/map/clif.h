@@ -29,14 +29,16 @@ struct quest;
 struct party_booking_ad_info;
 #include <stdarg.h>
 
-enum {
+enum
+{
 	// packet DB
 	MAX_PACKET_DB  = 0x900,
 	MAX_PACKET_VER = 26,
 	MAX_PACKET_POS = 20,
 };
 
-struct s_packet_db {
+struct s_packet_db
+{
 	short len;
 	void (*func) (int, struct map_session_data *);
 	short pos[MAX_PACKET_POS];
@@ -48,7 +50,8 @@ struct s_packet_db {
 extern struct s_packet_db packet_db[MAX_PACKET_VER + 1][MAX_PACKET_DB + 1];
 
 // local define
-typedef enum send_target {
+typedef enum send_target
+{
 	ALL_CLIENT,
 	ALL_SAMEMAP,
 	AREA,				// area
@@ -83,7 +86,8 @@ typedef enum send_target {
 	BG_AREA_WOS,
 } send_target;
 
-typedef enum emotion_type {
+typedef enum emotion_type
+{
 	E_GASP = 0,     // /!
 	E_WHAT,         // /?
 	E_HO,
@@ -169,7 +173,8 @@ typedef enum emotion_type {
 	E_MAX
 } emotion_type;
 
-typedef enum clr_type {
+typedef enum clr_type
+{
 	CLR_OUTSIGHT = 0,
 	CLR_DEAD,
 	CLR_RESPAWN,
@@ -177,7 +182,8 @@ typedef enum clr_type {
 	CLR_TRICKDEAD,
 } clr_type;
 
-enum map_property {
+enum map_property
+{
 	// clif_map_property
 	MAPPROPERTY_NOTHING       = 0,
 	MAPPROPERTY_FREEPVPZONE   = 1,
@@ -188,7 +194,8 @@ enum map_property {
 	MAPPROPERTY_DENYSKILLZONE = 6,
 };
 
-enum map_type {
+enum map_type
+{
 	// clif_map_type
 	MAPTYPE_VILLAGE              = 0,
 	MAPTYPE_VILLAGE_IN           = 1,
@@ -214,7 +221,8 @@ enum map_type {
 	MAPTYPE_UNUSED               = 29,
 };
 
-enum useskill_fail_cause {
+enum useskill_fail_cause
+{
 	// clif_skill_fail
 	USESKILL_FAIL_LEVEL = 0,
 	USESKILL_FAIL_SP_INSUFFICIENT = 1,

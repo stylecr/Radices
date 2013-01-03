@@ -21,7 +21,8 @@
 #define MAX_PC_SKILL_REQUIRE 5
 #define MAX_PC_FEELHATE 3
 
-struct weapon_data {
+struct weapon_data
+{
 	int atkmods[3];
 	// all the variables except atkmods get zero'ed in each call of status_calc_pc
 	// NOTE: if you want to add a non-zeroed variable, you need to update the memset call
@@ -37,46 +38,54 @@ struct weapon_data {
 	int addrace2[RC2_MAX];
 	int addsize[3];
 
-	struct drain_data {
+	struct drain_data
+	{
 		short rate;
 		short per;
 		short value;
 		unsigned type: 1;
 	} hp_drain[RC_MAX], sp_drain[RC_MAX];
 
-	struct {
+	struct
+	{
 		short class_, rate;
 	}	add_dmg[MAX_PC_BONUS];
 
-	struct {
+	struct
+	{
 		short flag, rate;
 		unsigned char ele;
 	} addele2[MAX_PC_BONUS];
 };
 
-struct s_autospell {
+struct s_autospell
+{
 	short id, lv, rate, card_id, flag;
 	bool lock;  // bAutoSpellOnSkill: blocks autospell from triggering again, while being executed
 };
 
-struct s_addeffect {
+struct s_addeffect
+{
 	enum sc_type id;
 	short rate, arrow_rate;
 	unsigned char flag;
 };
 
-struct s_addeffectonskill {
+struct s_addeffectonskill
+{
 	enum sc_type id;
 	short rate, skill;
 	unsigned char target;
 };
 
-struct s_add_drop {
+struct s_add_drop
+{
 	short id, group;
 	int race, rate;
 };
 
-struct s_autobonus {
+struct s_autobonus
+{
 	short rate, atk_type;
 	unsigned int duration;
 	char *bonus_script, *other_script;
@@ -84,7 +93,8 @@ struct s_autobonus {
 	unsigned short pos;
 };
 
-struct map_session_data {
+struct map_session_data
+{
 	struct block_list bl;
 	struct unit_data ud;
 	struct view_data vd;
@@ -94,7 +104,8 @@ struct map_session_data {
 	struct regen_data_sub sregen, ssregen;
 	//NOTE: When deciding to add a flag to state or special_state, take into consideration that state is preserved in
 	//status_calc_pc, while special_state is recalculated in each call. [Skotlex]
-	struct {
+	struct
+	{
 		unsigned int active : 1; //Marks active player (not active is logging in/out, or changing map servers)
 		unsigned int menu_or_input : 1;// if a script is waiting for feedback from the player
 		unsigned int dead_sit : 2;
@@ -138,7 +149,8 @@ struct map_session_data {
 		unsigned short autobonus; //flag to indicate if an autobonus is activated. [Inkfish]
 		struct guild *gmaster_flag;
 	} state;
-	struct {
+	struct
+	{
 		unsigned char no_weapon_damage, no_magic_damage, no_misc_damage;
 		unsigned int restart_full_recover : 1;
 		unsigned int no_castcancel : 1;
@@ -176,12 +188,14 @@ struct map_session_data {
 	unsigned int chatID;
 	time_t idletime;
 
-	struct {
+	struct
+	{
 		int npc_id;
 		unsigned int timeout;
 	} progressbar; //Progress Bar [Inkfish]
 
-	struct {
+	struct
+	{
 		char name[NAME_LENGTH];
 	} ignore[MAX_IGNORE_LIST];
 
@@ -207,7 +221,8 @@ struct map_session_data {
 	unsigned int cansendmail_tick; // [Mail System Flood Protection]
 	unsigned int ks_floodprotect_tick; // [Kill Steal Protection]
 
-	struct {
+	struct
+	{
 		int nameid;
 		unsigned int tick;
 	} item_delay[MAX_ITEMDELAYS]; // [Paradox924X]
@@ -246,24 +261,29 @@ struct map_session_data {
 	struct s_addeffect addeff[MAX_PC_BONUS], addeff2[MAX_PC_BONUS];
 	struct s_addeffectonskill addeff3[MAX_PC_BONUS];
 
-	struct { //skillatk raises bonus dmg% of skills, skillheal increases heal%, skillblown increases bonus blewcount for some skills.
+	struct   //skillatk raises bonus dmg% of skills, skillheal increases heal%, skillblown increases bonus blewcount for some skills.
+	{
 		unsigned short id;
 		short val;
 	} skillatk[MAX_PC_BONUS], skillheal[5], skillheal2[5], skillblown[MAX_PC_BONUS], skillcast[MAX_PC_BONUS];
-	struct {
+	struct
+	{
 		short value;
 		int rate;
 		int tick;
 	} hp_loss, sp_loss, hp_regen, sp_regen;
-	struct {
+	struct
+	{
 		short class_, rate;
 	}	add_def[MAX_PC_BONUS], add_mdef[MAX_PC_BONUS], add_mdmg[MAX_PC_BONUS];
 	struct s_add_drop add_drop[MAX_PC_BONUS];
-	struct {
+	struct
+	{
 		int nameid;
 		int rate;
 	} itemhealrate[MAX_PC_BONUS];
-	struct {
+	struct
+	{
 		short flag, rate;
 		unsigned char ele;
 	} subele2[MAX_PC_BONUS];
@@ -332,8 +352,10 @@ struct map_session_data {
 	struct script_regstr *regstr;
 
 	int trade_partner;
-	struct {
-		struct {
+	struct
+	{
+		struct
+		{
 			short index, amount;
 		} item[10];
 		int zeny, weight;
@@ -365,7 +387,8 @@ struct map_session_data {
 	struct homun_data *hd;	// [blackhole89]
 	struct mercenary_data *md;
 
-	struct {
+	struct
+	{
 		int  m; //-1 - none, other: map index corresponding to map name.
 		unsigned short index; //map index
 	} feel_map[3]; // 0 - Sun; 1 - Moon; 2 - Stars
@@ -393,12 +416,14 @@ struct map_session_data {
 	int rental_timer;
 
 	// Auction System [Zephyrus]
-	struct {
+	struct
+	{
 		int index, amount;
 	} auction;
 
 	// Mail System [Zephyrus]
-	struct {
+	struct
+	{
 		short nameid;
 		int index, amount, zeny;
 		struct mail_data inbox;
@@ -430,7 +455,8 @@ struct map_session_data {
 //Total number of classes (for data storage)
 #define CLASS_COUNT (JOB_MAX - JOB_NOVICE_HIGH + JOB_MAX_BASIC)
 
-enum weapon_type {
+enum weapon_type
+{
 	W_FIST,	//Bare hands
 	W_DAGGER,	//1
 	W_1HSWORD,	//2
@@ -465,7 +491,8 @@ enum weapon_type {
 	W_DOUBLE_SA, // sword + axe
 };
 
-enum ammo_type {
+enum ammo_type
+{
 	A_ARROW = 1,
 	A_DAGGER,   //2
 	A_BULLET,   //3
@@ -476,7 +503,8 @@ enum ammo_type {
 };
 
 //Equip position constants
-enum equip_pos {
+enum equip_pos
+{
 	EQP_HEAD_LOW = 0x0001,
 	EQP_HEAD_MID = 0x0200, //512
 	EQP_HEAD_TOP = 0x0100, //256
@@ -505,7 +533,8 @@ enum equip_pos {
 
 //Equip indexes constants. (eg: sd->equip_index[EQI_AMMO] returns the index
 //where the arrows are equipped)
-enum equip_index {
+enum equip_index
+{
 	EQI_ACC_L = 0,
 	EQI_ACC_R,
 	EQI_SHOES,
@@ -732,18 +761,21 @@ int pc_mapid2jobid (unsigned short class_, int sex);	// Skotlex
 
 const char *job_name (int class_);
 
-struct skill_tree_entry {
+struct skill_tree_entry
+{
 	short id;
 	unsigned char max;
 	unsigned char joblv;
-	struct {
+	struct
+	{
 		short id;
 		unsigned char lv;
 	} need[MAX_PC_SKILL_REQUIRE];
 }; // Celest
 extern struct skill_tree_entry skill_tree[CLASS_COUNT][MAX_SKILL_TREE];
 
-struct sg_data {
+struct sg_data
+{
 	short anger_id;
 	short bless_id;
 	short comfort_id;

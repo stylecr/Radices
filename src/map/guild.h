@@ -14,7 +14,8 @@ struct map_session_data;
 struct mob_data;
 
 //For quick linking to a guardian's info. [Skotlex]
-struct guardian_data {
+struct guardian_data
+{
 	int number; //0-MAX_GUARDIANS-1 = Guardians. MAX_GUARDIANS = Emperium.
 	int guild_id;
 	int emblem_id;

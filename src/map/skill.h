@@ -22,7 +22,8 @@ struct status_change_entry;
 #define MAX_SKILL_LEVEL 100
 
 //Constants to identify the skill's inf value:
-enum e_skill_inf {
+enum e_skill_inf
+{
 	INF_ATTACK_SKILL  = 0x01,
 	INF_GROUND_SKILL  = 0x02,
 	INF_SELF_SKILL    = 0x04, // Skills casted on self where target is automatically chosen
@@ -34,7 +35,8 @@ enum e_skill_inf {
 //Constants to identify a skill's nk value (damage properties)
 //The NK value applies only to non INF_GROUND_SKILL skills
 //when determining skill castend function to invoke.
-enum e_skill_nk {
+enum e_skill_nk
+{
 	NK_NO_DAMAGE      = 0x01,
 	NK_SPLASH         = 0x02 | 0x04, // 0x4 = splash & split
 	NK_SPLASHSPLIT    = 0x04,
@@ -47,7 +49,8 @@ enum e_skill_nk {
 
 //A skill with 3 would be no damage + splash: area of effect.
 //Constants to identify a skill's inf2 value.
-enum e_skill_inf2 {
+enum e_skill_inf2
+{
 	INF2_QUEST_SKILL    = 0x0001,
 	INF2_NPC_SKILL      = 0x0002, //NPC skills are those that players can't have in their skill tree.
 	INF2_WEDDING_SKILL  = 0x0004,
@@ -67,7 +70,8 @@ enum e_skill_inf2 {
 #define WALK_SKILL_INTERVAL 5
 
 // Flags passed to skill_attack/skill_area_sub
-enum e_skill_display {
+enum e_skill_display
+{
 	SD_LEVEL     = 0x1000, // skill_attack will send -1 instead of skill level (affects display of some skills)
 	SD_ANIMATION = 0x2000, // skill_attack will use '5' instead of the skill's 'type' (this makes skills show an animation)
 	SD_SPLASH    = 0x4000, // skill_area_sub will count targets in skill_area_temp[2]
@@ -75,13 +79,15 @@ enum e_skill_display {
 };
 
 #define MAX_SKILL_ITEM_REQUIRE	10
-struct skill_condition {
+struct skill_condition
+{
 	int weapon, ammo, ammo_qty, hp, sp, zeny, spiritball, mhp, state;
 	int itemid[MAX_SKILL_ITEM_REQUIRE], amount[MAX_SKILL_ITEM_REQUIRE];
 };
 
 // スキルデ?タベ?ス
-struct s_skill_db {
+struct s_skill_db
+{
 	char name[NAME_LENGTH];
 	char desc[40];
 	int range[MAX_SKILL_LEVEL], hit, inf, element[MAX_SKILL_LEVEL], nk, splash[MAX_SKILL_LEVEL], max;
@@ -108,14 +114,16 @@ extern struct s_skill_db skill_db[MAX_SKILL_DB];
 #define MAX_SKILL_UNIT_LAYOUT	50
 #define MAX_SQUARE_LAYOUT		5	// 11*11のユニット配置が最大
 #define MAX_SKILL_UNIT_COUNT ((MAX_SQUARE_LAYOUT*2+1)*(MAX_SQUARE_LAYOUT*2+1))
-struct s_skill_unit_layout {
+struct s_skill_unit_layout
+{
 	int count;
 	int dx[MAX_SKILL_UNIT_COUNT];
 	int dy[MAX_SKILL_UNIT_COUNT];
 };
 
 #define MAX_SKILLTIMERSKILL 15
-struct skill_timerskill {
+struct skill_timerskill
+{
 	int timer;
 	int src_id;
 	int target_id;
@@ -127,7 +135,8 @@ struct skill_timerskill {
 };
 
 #define MAX_SKILLUNITGROUP 25
-struct skill_unit_group {
+struct skill_unit_group
+{
 	int src_id;
 	int party_id;
 	int guild_id;
@@ -145,14 +154,16 @@ struct skill_unit_group {
 	int group_id;
 	int unit_count, alive_count;
 	struct skill_unit *unit;
-	struct {
+	struct
+	{
 		unsigned ammo_consume : 1;
 		unsigned magic_power : 1;
 		unsigned song_dance : 2; //0x1 Song/Dance, 0x2 Ensemble
 	} state;
 };
 
-struct skill_unit {
+struct skill_unit
+{
 	struct block_list bl;
 
 	struct skill_unit_group *group;
@@ -163,13 +174,15 @@ struct skill_unit {
 };
 
 #define MAX_SKILLUNITGROUPTICKSET 25
-struct skill_unit_group_tickset {
+struct skill_unit_group_tickset
+{
 	unsigned int tick;
 	int id;
 };
 
 
-enum {
+enum
+{
 	UF_DEFNOTENEMY   = 0x0001,	// If 'defunit_not_enemy' is set, the target is changed to 'friend'
 	UF_NOREITERATION = 0x0002,	// Spell cannot be stacked
 	UF_NOFOOTSET     = 0x0004,	// Spell cannot be cast near/on targets
@@ -185,7 +198,8 @@ enum {
 };
 
 // アイテム作成デ?タベ?ス
-struct s_skill_produce_db {
+struct s_skill_produce_db
+{
 	int nameid, trigger;
 	int req_skill, req_skill_lv, itemlv;
 	int mat_id[MAX_PRODUCE_RESOURCE], mat_amount[MAX_PRODUCE_RESOURCE];
@@ -193,14 +207,16 @@ struct s_skill_produce_db {
 extern struct s_skill_produce_db skill_produce_db[MAX_SKILL_PRODUCE_DB];
 
 // 矢作成デ?タベ?ス
-struct s_skill_arrow_db {
+struct s_skill_arrow_db
+{
 	int nameid, trigger;
 	int cre_id[MAX_ARROW_RESOURCE], cre_amount[MAX_ARROW_RESOURCE];
 };
 extern struct s_skill_arrow_db skill_arrow_db[MAX_SKILL_ARROW_DB];
 
 // アブラカダブラデ?タベ?ス
-struct s_skill_abra_db {
+struct s_skill_abra_db
+{
 	int skillid;
 	int req_lv;
 	int per;
@@ -349,7 +365,8 @@ int skill_attack (int attack_type, struct block_list *src, struct block_list *ds
 
 void skill_reload (void);
 
-enum {
+enum
+{
 	ST_NONE,
 	ST_HIDING,
 	ST_CLOAKING,
@@ -366,7 +383,8 @@ enum {
 	ST_WATER,
 };
 
-enum e_skill {
+enum e_skill
+{
 	NV_BASIC = 1,
 
 	SM_SWORD,
@@ -1420,7 +1438,8 @@ enum e_skill {
 };
 
 /// The client view ids for land skills.
-enum {
+enum
+{
 	UNT_SAFETYWALL = 0x7e,
 	UNT_FIREWALL,
 	UNT_WARP_WAITING,

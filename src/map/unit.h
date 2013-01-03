@@ -14,7 +14,8 @@ struct map_session_data;
 #include "path.h" // struct walkpath_data
 #include "skill.h" // struct skill_timerskill, struct skill_unit_group, struct skill_unit_group_tickset
 
-struct unit_data {
+struct unit_data
+{
 	struct block_list *bl;
 	struct walkpath_data walkpath;
 	struct skill_timerskill *skilltimerskill[MAX_SKILLTIMERSKILL];
@@ -35,7 +36,8 @@ struct unit_data {
 	unsigned int canmove_tick;
 	uint8 dir;
 	unsigned char walk_count;
-	struct {
+	struct
+	{
 		unsigned change_walk_target : 1 ;
 		unsigned skillcastcancel : 1 ;
 		unsigned attack_continue : 1 ;
@@ -45,7 +47,8 @@ struct unit_data {
 	} state;
 };
 
-struct view_data {
+struct view_data
+{
 	unsigned short
 	class_,
 	weapon,

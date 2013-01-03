@@ -10,7 +10,8 @@ extern int potion_flag; //For use on Alchemist improved potions/Potion Pitcher. 
 extern int potion_hp, potion_per_hp, potion_sp, potion_per_sp;
 extern int potion_target;
 
-extern struct Script_Config {
+extern struct Script_Config
+{
 	unsigned warn_func_mismatch_argtypes : 1;
 	unsigned warn_func_mismatch_paramnum : 1;
 	int check_cmdcount;
@@ -31,7 +32,8 @@ extern struct Script_Config {
 	const char *ontouch2_name;
 } script_config;
 
-typedef enum c_op {
+typedef enum c_op
+{
 	C_NOP, // end of script/no value (nil)
 	C_POS,
 	C_INT, // number
@@ -71,7 +73,8 @@ typedef enum c_op {
 	C_L_SHIFT // a << b
 } c_op;
 
-struct script_retinfo {
+struct script_retinfo
+{
 	struct linkdb_node **var_function;// scope variables
 	struct script_code *script;// script code
 	int pos;// script location
@@ -79,9 +82,11 @@ struct script_retinfo {
 	int defsp;// default stack pointer
 };
 
-struct script_data {
+struct script_data
+{
 	enum c_op type;
-	union script_data_val {
+	union script_data_val
+	{
 		int num;
 		char *str;
 		struct script_retinfo *ri;
@@ -91,13 +96,15 @@ struct script_data {
 
 // Moved defsp from script_state to script_stack since
 // it must be saved when script state is RERUNLINE. [Eoe / jA 1094]
-struct script_code {
+struct script_code
+{
 	int script_size;
 	unsigned char *script_buf;
 	struct linkdb_node *script_vars;
 };
 
-struct script_stack {
+struct script_stack
+{
 	int sp;// number of entries in the stack
 	int sp_max;// capacity of the stack
 	int defsp;
@@ -111,14 +118,16 @@ struct script_stack {
 //
 enum e_script_state { RUN, STOP, END, RERUNLINE, GOTO, RETFUNC };
 
-struct script_state {
+struct script_state
+{
 	struct script_stack *stack;
 	int start, end;
 	int pos;
 	enum e_script_state state;
 	int rid, oid;
 	struct script_code *script, *scriptroot;
-	struct sleep_data {
+	struct sleep_data
+	{
 		int tick, timer, charid;
 	} sleep;
 	int instance_id;
@@ -127,17 +136,20 @@ struct script_state {
 	int bk_npcid;
 };
 
-struct script_reg {
+struct script_reg
+{
 	int index;
 	int data;
 };
 
-struct script_regstr {
+struct script_regstr
+{
 	int index;
 	char *data;
 };
 
-enum script_parse_options {
+enum script_parse_options
+{
 	SCRIPT_USE_LABEL_DB = 0x1,// records labels in scriptlabel_db
 	SCRIPT_IGNORE_EXTERNAL_BRACKETS = 0x2,// ignores the check for {} brackets around the script
 	SCRIPT_RETURN_EMPTY_SCRIPT = 0x4// returns the script object instead of NULL for empty scripts

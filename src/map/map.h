@@ -15,7 +15,8 @@
 struct npc_data;
 struct item_data;
 
-enum E_MAPSERVER_ST {
+enum E_MAPSERVER_ST
+{
 	MAPSERVER_ST_RUNNING = CORE_ST_LAST,
 	MAPSERVER_ST_SHUTDOWN,
 	MAPSERVER_ST_LAST
@@ -74,7 +75,8 @@ enum E_MAPSERVER_ST {
 //First Jobs
 //Note the oddity of the novice:
 //Super Novices are considered the 2-1 version of the novice! Novices are considered a first class type, too...
-enum {
+enum
+{
 	MAPID_NOVICE = 0x0,
 	MAPID_SWORDMAN,
 	MAPID_MAGE,
@@ -180,7 +182,8 @@ enum {
 
 //This stackable implementation does not means a BL can be more than one type at a time, but it's
 //meant to make it easier to check for multiple types at a time on invocations such as map_foreach* calls [Skotlex]
-enum bl_type {
+enum bl_type
+{
 	BL_NUL   = 0x000,
 	BL_PC    = 0x001,
 	BL_MOB   = 0x002,
@@ -200,7 +203,8 @@ enum bl_type {
 
 enum npc_subtype { WARP, SHOP, SCRIPT, CASHSHOP };
 
-enum {
+enum
+{
 	RC_FORMLESS = 0,
 	RC_UNDEAD,
 	RC_BRUTE,
@@ -217,7 +221,8 @@ enum {
 	RC_MAX
 };
 
-enum {
+enum
+{
 	RC2_NONE = 0,
 	RC2_GOBLIN,
 	RC2_KOBOLD,
@@ -228,7 +233,8 @@ enum {
 	RC2_MAX
 };
 
-enum {
+enum
+{
 	ELE_NEUTRAL = 0,
 	ELE_WATER,
 	ELE_EARTH,
@@ -242,7 +248,8 @@ enum {
 	ELE_MAX
 };
 
-enum auto_trigger_flag {
+enum auto_trigger_flag
+{
 	ATF_SELF = 0x01,
 	ATF_TARGET = 0x02,
 	ATF_SHORT = 0x04,
@@ -252,7 +259,8 @@ enum auto_trigger_flag {
 	ATF_MISC = 0x40,
 };
 
-struct block_list {
+struct block_list
+{
 	struct block_list *next, *prev;
 	int id;
 	short m, x, y;
@@ -262,14 +270,16 @@ struct block_list {
 
 // Mob List Held in memory for Dynamic Mobs [Wizputer]
 // Expanded to specify all mob-related spawn data by [Skotlex]
-struct spawn_data {
+struct spawn_data
+{
 	short class_; //Class, used because a mob can change it's class
 	unsigned short m, x, y;	//Spawn information (map, point, spawn-area around point)
 	signed short xs, ys;
 	unsigned short num; //Number of mobs using this structure
 	unsigned short active; //Number of mobs that are already spawned (for mob_remove_damaged: no)
 	unsigned int delay1, delay2; //Min delay before respawning after spawn/death
-	struct {
+	struct
+	{
 		unsigned int size : 2; //Holds if mob has to be tiny/large
 		unsigned int ai : 2;	//Holds if mob is special ai.
 		unsigned int dynamic : 1; //Whether this data is indexed by a map's dynamic mob list
@@ -281,7 +291,8 @@ struct spawn_data {
 
 
 
-struct flooritem_data {
+struct flooritem_data
+{
 	struct block_list bl;
 	unsigned char subx, suby;
 	int cleartimer;
@@ -290,7 +301,8 @@ struct flooritem_data {
 	struct item item_data;
 };
 
-enum _sp {
+enum _sp
+{
 	SP_SPEED, SP_BASEEXP, SP_JOBEXP, SP_KARMA, SP_MANNER, SP_HP, SP_MAXHP, SP_SP,	// 0-7
 	SP_MAXSP, SP_STATUSPOINT, SP_0a, SP_BASELEVEL, SP_SKILLPOINT, SP_STR, SP_AGI, SP_VIT,	// 8-15
 	SP_INT, SP_DEX, SP_LUK, SP_CLASS, SP_ZENY, SP_SEX, SP_NEXTBASEEXP, SP_NEXTJOBEXP,	// 16-23
@@ -351,7 +363,8 @@ enum _sp {
 	SP_ADD_SKILL_BLOW, SP_SP_VANISH_RATE, SP_MAGIC_SP_GAIN_VALUE, SP_MAGIC_HP_GAIN_VALUE, SP_ADD_CLASS_DROP_ITEM //2041-2045
 };
 
-enum _look {
+enum _look
+{
 	LOOK_BASE,
 	LOOK_HAIR,
 	LOOK_WEAPON,
@@ -368,7 +381,8 @@ enum _look {
 };
 
 // used by map_setcell()
-typedef enum {
+typedef enum
+{
 	CELL_WALKABLE,
 	CELL_SHOOTABLE,
 	CELL_WATER,
@@ -381,7 +395,8 @@ typedef enum {
 } cell_t;
 
 // used by map_getcell()
-typedef enum {
+typedef enum
+{
 	CELL_GETTYPE,		// retrieves a cell's 'gat' type
 
 	CELL_CHKWALL,		// wall (gat type 1)
@@ -401,7 +416,8 @@ typedef enum {
 	CELL_CHKNOCHAT,
 } cell_chk;
 
-struct mapcell {
+struct mapcell
+{
 	// terrain flags
 	unsigned char
 	walkable : 1,
@@ -421,13 +437,15 @@ struct mapcell {
 #endif
 };
 
-struct iwall_data {
+struct iwall_data
+{
 	char wall_name[50];
 	short m, x, y, size, dir;
 	bool shootable;
 };
 
-struct map_data {
+struct map_data
+{
 	char name[MAP_NAME_LENGTH];
 	unsigned short index; // The map index used by the mapindex* functions.
 	struct mapcell *cell; // Holds the information of each map cell (NULL if the map is not on this map-server).
@@ -440,7 +458,8 @@ struct map_data {
 	int npc_num;
 	int users;
 	int iwall_num; // Total of invisible walls in this map
-	struct map_flag {
+	struct map_flag
+	{
 		unsigned town : 1; // [Suggestion to protect Mail System]
 		unsigned autotrade : 1;
 		unsigned allowks : 1; // [Kill Steal Protection]
@@ -495,7 +514,8 @@ struct map_data {
 	} flag;
 	struct point save;
 	struct npc_data *npc[MAX_NPC_PER_MAP];
-	struct {
+	struct
+	{
 		int drop_id;
 		int drop_type;
 		int drop_per;
@@ -514,7 +534,8 @@ struct map_data {
 
 /// Stores information about a remote map (for multi-mapserver setups).
 /// Beginning of data structure matches 'map_data', to allow typecasting.
-struct map_data_other_server {
+struct map_data_other_server
+{
 	char name[MAP_NAME_LENGTH];
 	unsigned short index; //Index is the map index used by the mapindex* functions.
 	struct mapcell *cell; // If this is NULL, the map is not on this map-server
@@ -617,7 +638,8 @@ struct mob_data *map_getmob_boss (int m);
 struct mob_data *map_id2boss (int id);
 
 /// Bitfield of flags for the iterator.
-enum e_mapitflags {
+enum e_mapitflags
+{
 	MAPIT_NORMAL = 0,
 	//	MAPIT_PCISPLAYING = 1,// Unneeded as pc_db/id_db will only hold auth'ed, active players.
 };

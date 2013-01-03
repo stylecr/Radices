@@ -19,7 +19,8 @@
 
 typedef int (*TimerFunc) (int tid, unsigned int tick, int id, intptr_t data);
 
-struct TimerData {
+struct TimerData
+{
 	unsigned int tick;
 	TimerFunc func;
 	int type;

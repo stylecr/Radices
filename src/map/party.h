@@ -15,18 +15,21 @@ struct item;
 #define PARTY_BOOKING_JOBS 6
 #define PARTY_BOOKING_RESULTS 10
 
-struct party_member_data {
+struct party_member_data
+{
 	struct map_session_data *sd;
 	unsigned int hp; //For HP,x,y refreshing.
 	unsigned short x, y;
 };
 
-struct party_data {
+struct party_data
+{
 	struct party party;
 	struct party_member_data data[MAX_PARTY];
 	uint8 itemc; //For item distribution, position of last picker in party
 	unsigned int instance_id;
-	struct {
+	struct
+	{
 		unsigned monk : 1; //There's at least one monk in party?
 		unsigned sg : 1;	//There's at least one Star Gladiator in party?
 		unsigned snovice : 1; //There's a Super Novice
@@ -34,13 +37,15 @@ struct party_data {
 	} state;
 };
 
-struct party_booking_detail {
+struct party_booking_detail
+{
 	short level;
 	short mapid;
 	short job[PARTY_BOOKING_JOBS];
 };
 
-struct party_booking_ad_info {
+struct party_booking_ad_info
+{
 	unsigned long index;
 	char charname[NAME_LENGTH];
 	long starttime;

@@ -19,7 +19,8 @@ extern unsigned long StatusChangeFlagTable[];
 
 
 // Status changes listing. These code are for use by the server.
-typedef enum sc_type {
+typedef enum sc_type
+{
 	SC_NONE = -1,
 
 	//First we enumerate common status ailments which are often used around.
@@ -335,7 +336,8 @@ typedef enum sc_type {
 } sc_type;
 
 // Official status change ids, used to display status icons on the client.
-enum si_type {
+enum si_type
+{
 	SI_BLANK		= -1,
 	SI_PROVOKE		= 0,
 	SI_ENDURE		= 1,
@@ -916,7 +918,8 @@ enum si_type {
 };
 
 // JOINTBEAT stackable ailments
-enum e_joint_break {
+enum e_joint_break
+{
 	BREAK_ANKLE    = 0x01, // MoveSpeed reduced by 50%
 	BREAK_WRIST    = 0x02, // ASPD reduced by 25%
 	BREAK_KNEE     = 0x04, // MoveSpeed reduced by 30%, ASPD reduced by 10%
@@ -932,7 +935,8 @@ extern int current_equip_card_id;
 extern int percentrefinery[5][MAX_REFINE + 1]; //The last slot always has a 0% success chance [Skotlex]
 
 //Mode definitions to clear up code reading. [Skotlex]
-enum e_mode {
+enum e_mode
+{
 	MD_CANMOVE            = 0x0001,
 	MD_LOOTER             = 0x0002,
 	MD_AGGRESSIVE         = 0x0004,
@@ -955,7 +959,8 @@ enum e_mode {
 //who were not on your field of sight when it happened)
 
 //opt1: Non stackable status changes.
-enum {
+enum
+{
 	OPT1_STONE = 1, //Petrified
 	OPT1_FREEZE,
 	OPT1_STUN,
@@ -967,7 +972,8 @@ enum {
 };
 
 //opt2: Stackable status changes.
-enum {
+enum
+{
 	OPT2_POISON       = 0x0001,
 	OPT2_CURSE        = 0x0002,
 	OPT2_SILENCE      = 0x0004,
@@ -980,7 +986,8 @@ enum {
 };
 
 //opt3: (SHOW_EFST_*)
-enum {
+enum
+{
 	OPT3_NORMAL           = 0x00000000,
 	OPT3_QUICKEN          = 0x00000001,
 	OPT3_OVERTHRUST       = 0x00000002,
@@ -1002,7 +1009,8 @@ enum {
 	OPT3_CONTRACT         = 0x00020000,
 };
 
-enum {
+enum
+{
 	OPTION_NOTHING   = 0x00000000,
 	OPTION_SIGHT     = 0x00000001,
 	OPTION_HIDE      = 0x00000002,
@@ -1038,7 +1046,8 @@ enum {
 };
 
 //Defines for the manner system [Skotlex]
-enum manner_flags {
+enum manner_flags
+{
 	MANNER_NOCHAT    = 0x01,
 	MANNER_NOSKILL   = 0x02,
 	MANNER_NOCOMMAND = 0x04,
@@ -1047,7 +1056,8 @@ enum manner_flags {
 };
 
 //Define flags for the status_calc_bl function. [Skotlex]
-enum scb_flag {
+enum scb_flag
+{
 	SCB_NONE    = 0x00000000,
 	SCB_BASE    = 0x00000001,
 	SCB_MAXHP   = 0x00000002,
@@ -1094,7 +1104,8 @@ enum scb_flag {
 //Basic damage info of a weapon
 //Required because players have two of these, one in status_data
 //and another for their left hand weapon.
-struct weapon_atk {
+struct weapon_atk
+{
 	unsigned short atk, atk2;
 	unsigned short range;
 	unsigned char ele;
@@ -1102,7 +1113,8 @@ struct weapon_atk {
 
 
 //For holding basic status (which can be modified by status changes)
-struct status_data {
+struct status_data
+{
 	unsigned int
 	hp, sp,
 		max_hp, max_sp;
@@ -1126,39 +1138,46 @@ struct status_data {
 };
 
 //Additional regen data that only players have.
-struct regen_data_sub {
+struct regen_data_sub
+{
 	unsigned short
 	hp, sp;
 
 	//tick accumulation before healing.
-	struct {
+	struct
+	{
 		unsigned int hp, sp;
 	} tick;
 
 	//Regen rates (where every 1 means +100% regen)
-	struct {
+	struct
+	{
 		unsigned char hp, sp;
 	} rate;
 };
 
-struct regen_data {
+struct regen_data
+{
 
 	unsigned short flag; //Marks what stuff you may heal or not.
 	unsigned short
 	hp, sp, shp, ssp;
 
 	//tick accumulation before healing.
-	struct {
+	struct
+	{
 		unsigned int hp, sp, shp, ssp;
 	} tick;
 
 	//Regen rates (where every 1 means +100% regen)
-	struct {
+	struct
+	{
 		unsigned char
 		hp, sp, shp, ssp;
 	} rate;
 
-	struct {
+	struct
+	{
 		unsigned walk: 1; //Can you regen even when walking?
 		unsigned gc: 1;	//Tags when you should have double regen due to GVG castle
 		unsigned overweight : 2; //overweight state (1: 50%, 2: 90%)
@@ -1169,12 +1188,14 @@ struct regen_data {
 	struct regen_data_sub *sregen, *ssregen;
 };
 
-struct status_change_entry {
+struct status_change_entry
+{
 	int timer;
 	int val1, val2, val3, val4;
 };
 
-struct status_change {
+struct status_change
+{
 	unsigned int option;// effect state (bitfield)
 	unsigned int opt3;// skill state (bitfield)
 	unsigned short opt1;// body state

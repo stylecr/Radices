@@ -7,7 +7,8 @@
 #include "../common/core.h" // CORE_ST_LAST
 #ifndef TXT_SQL_CONVERT
 
-enum E_CHARSERVER_ST {
+enum E_CHARSERVER_ST
+{
 	CHARSERVER_ST_RUNNING = CORE_ST_LAST,
 	CHARSERVER_ST_SHUTDOWN,
 	CHARSERVER_ST_LAST
@@ -20,7 +21,8 @@ struct mmo_charstatus;
 
 #define DEFAULT_AUTOSAVE_INTERVAL 300*1000
 
-enum {
+enum
+{
 	TABLE_INVENTORY,
 	TABLE_CART,
 	TABLE_STORAGE,

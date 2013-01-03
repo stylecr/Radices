@@ -174,7 +174,8 @@
 #define MAX_MERCSKILL 40
 #define MAX_MERCENARY_CLASS 44
 
-enum item_types {
+enum item_types
+{
 	IT_HEALING = 0,
 	IT_UNKNOWN, //1
 	IT_USABLE,  //2
@@ -195,14 +196,16 @@ enum item_types {
 //Questlog system [Kevin] [Inkfish]
 typedef enum quest_state { Q_INACTIVE, Q_ACTIVE, Q_COMPLETE } quest_state;
 
-struct quest {
+struct quest
+{
 	int quest_id;
 	unsigned int time;
 	int count[MAX_QUEST_OBJECTIVES];
 	quest_state state;
 };
 
-struct item {
+struct item
+{
 	int id;
 	short nameid;
 	short amount;
@@ -214,12 +217,14 @@ struct item {
 	unsigned int expire_time;
 };
 
-struct point {
+struct point
+{
 	unsigned short map;
 	short x, y;
 };
 
-enum e_skill_flag {
+enum e_skill_flag
+{
 	SKILL_FLAG_PERMANENT,
 	SKILL_FLAG_TEMPORARY,
 	SKILL_FLAG_PLAGIARIZED,
@@ -227,36 +232,42 @@ enum e_skill_flag {
 	//...
 };
 
-struct s_skill {
+struct s_skill
+{
 	unsigned short id;
 	unsigned short lv;
 	unsigned short flag; // see enum e_skill_flag
 };
 
-struct global_reg {
+struct global_reg
+{
 	char str[32];
 	char value[256];
 };
 
 //Holds array of global registries, used by the char server and converter.
-struct accreg {
+struct accreg
+{
 	int account_id, char_id;
 	int reg_num;
 	struct global_reg reg[MAX_REG_NUM];
 };
 
 //For saving status changes across sessions. [Skotlex]
-struct status_change_data {
+struct status_change_data
+{
 	unsigned short type; //SC_type
 	long val1, val2, val3, val4, tick; //Remaining duration.
 };
 
-struct storage_data {
+struct storage_data
+{
 	int storage_amount;
 	struct item items[MAX_STORAGE];
 };
 
-struct guild_storage {
+struct guild_storage
+{
 	int dirty;
 	int guild_id;
 	short storage_status;
@@ -264,7 +275,8 @@ struct guild_storage {
 	struct item items[MAX_GUILD_STORAGE];
 };
 
-struct s_pet {
+struct s_pet
+{
 	int account_id;
 	int char_id;
 	int pet_id;
@@ -279,7 +291,8 @@ struct s_pet {
 	char incuvate;
 };
 
-struct s_homunculus {	//[orn]
+struct s_homunculus  	//[orn]
+{
 	char name[NAME_LENGTH];
 	int hom_id;
 	int char_id;
@@ -301,7 +314,8 @@ struct s_homunculus {	//[orn]
 	int luk ;
 };
 
-struct s_mercenary {
+struct s_mercenary
+{
 	int mercenary_id;
 	int char_id;
 	short class_;
@@ -310,21 +324,24 @@ struct s_mercenary {
 	unsigned int life_time;
 };
 
-struct s_friend {
+struct s_friend
+{
 	int account_id;
 	int char_id;
 	char name[NAME_LENGTH];
 };
 
 #ifdef HOTKEY_SAVING
-struct hotkey {
+struct hotkey
+{
 	unsigned int id;
 	unsigned short lv;
 	unsigned char type; // 0: item, 1: skill
 };
 #endif
 
-struct mmo_charstatus {
+struct mmo_charstatus
+{
 	int char_id;
 	int account_id;
 	int partner_id;
@@ -378,13 +395,15 @@ struct mmo_charstatus {
 	time_t delete_date;
 };
 
-typedef enum mail_status {
+typedef enum mail_status
+{
 	MAIL_NEW,
 	MAIL_UNREAD,
 	MAIL_READ,
 } mail_status;
 
-struct mail_message {
+struct mail_message
+{
 	unsigned int id;
 	int send_id;
 	char send_name[NAME_LENGTH];
@@ -400,14 +419,16 @@ struct mail_message {
 	struct item item;
 };
 
-struct mail_data {
+struct mail_data
+{
 	short amount;
 	bool full;
 	short unchecked, unread;
 	struct mail_message msg[MAIL_MAX_INBOX];
 };
 
-struct auction_data {
+struct auction_data
+{
 	unsigned int auction_id;
 	int seller_id;
 	char seller_name[NAME_LENGTH];
@@ -425,7 +446,8 @@ struct auction_data {
 	int auction_end_timer;
 };
 
-struct registry {
+struct registry
+{
 	int global_num;
 	struct global_reg global[GLOBAL_REG_NUM];
 	int account_num;
@@ -434,7 +456,8 @@ struct registry {
 	struct global_reg account2[ACCOUNT_REG2_NUM];
 };
 
-struct party_member {
+struct party_member
+{
 	int account_id;
 	int char_id;
 	char name[NAME_LENGTH];
@@ -445,7 +468,8 @@ struct party_member {
 			 online : 1;
 };
 
-struct party {
+struct party
+{
 	int party_id;
 	char name[NAME_LENGTH];
 	unsigned char count; //Count of online characters.
@@ -455,7 +479,8 @@ struct party {
 };
 
 struct map_session_data;
-struct guild_member {
+struct guild_member
+{
 	int account_id, char_id;
 	short hair, hair_color, gender, class_, lv;
 	uint64 exp;
@@ -466,30 +491,35 @@ struct guild_member {
 	unsigned char modified;
 };
 
-struct guild_position {
+struct guild_position
+{
 	char name[NAME_LENGTH];
 	int mode;
 	int exp_mode;
 	unsigned char modified;
 };
 
-struct guild_alliance {
+struct guild_alliance
+{
 	int opposition;
 	int guild_id;
 	char name[NAME_LENGTH];
 };
 
-struct guild_expulsion {
+struct guild_expulsion
+{
 	char name[NAME_LENGTH];
 	char mes[40];
 	int account_id;
 };
 
-struct guild_skill {
+struct guild_skill
+{
 	int id, lv;
 };
 
-struct guild {
+struct guild
+{
 	int guild_id;
 	short guild_lv, connect_member, max_member, average_lv;
 	uint64 exp;
@@ -508,7 +538,8 @@ struct guild {
 	unsigned short save_flag; // for TXT saving
 };
 
-struct guild_castle {
+struct guild_castle
+{
 	int castle_id;
 	int mapindex;
 	char castle_name[NAME_LENGTH];
@@ -522,7 +553,8 @@ struct guild_castle {
 	int payTime;
 	int createTime;
 	int visibleC;
-	struct {
+	struct
+	{
 		unsigned visible : 1;
 		int id; // object id
 	} guardian[MAX_GUARDIANS];
@@ -530,20 +562,23 @@ struct guild_castle {
 	int temp_guardians_max;
 };
 
-struct fame_list {
+struct fame_list
+{
 	int id;
 	int fame;
 	char name[NAME_LENGTH];
 };
 
-enum {
+enum
+{
 	GBI_EXP	= 1,		// ギルドのEXP
 	GBI_GUILDLV,		// ギルドのLv
 	GBI_SKILLPOINT,		// ギルドのスキルポイント
 	GBI_SKILLLV,		// ギルドスキルLv
 };
 
-enum {
+enum
+{
 	GMI_POSITION	= 0,		// メンバーの役職変更
 	GMI_EXP,
 	GMI_HAIR,
@@ -553,7 +588,8 @@ enum {
 	GMI_LEVEL,
 };
 
-enum {
+enum
+{
 	GD_SKILLBASE = 10000,
 	GD_APPROVAL = 10000,
 	GD_KAFRACONTRACT = 10001,
@@ -574,7 +610,8 @@ enum {
 
 
 //These mark the ID of the jobs, as expected by the client. [Skotlex]
-enum {
+enum
+{
 	JOB_NOVICE,
 	JOB_SWORDMAN,
 	JOB_MAGE,
@@ -659,7 +696,8 @@ enum {
 	JOB_MAX,
 };
 
-enum {
+enum
+{
 	SEX_FEMALE = 0,
 	SEX_MALE,
 	SEX_SERVER

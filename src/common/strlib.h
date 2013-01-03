@@ -59,7 +59,8 @@ bool bin2hex (char *output, unsigned char *input, size_t count);
 
 
 /// Bitfield determining the behaviour of sv_parse and sv_split.
-typedef enum e_svopt {
+typedef enum e_svopt
+{
 	// default: no escapes and no line terminator
 	SV_NOESCAPE_NOTERMINATE = 0,
 	// Escapes according to the C compiler.
@@ -77,7 +78,8 @@ typedef enum e_svopt {
 
 /// Parse state.
 /// The field is [start,end[
-struct s_svstate {
+struct s_svstate
+{
 	const char *str; //< string to parse
 	int len; //< string length
 	int off; //< current offset in the string
@@ -130,7 +132,8 @@ bool sv_readdb (const char *directory, const char *filename, char delim, int min
 
 
 /// StringBuf - dynamic string
-struct StringBuf {
+struct StringBuf
+{
 	char *buf_;
 	char *ptr_;
 	unsigned int max_;

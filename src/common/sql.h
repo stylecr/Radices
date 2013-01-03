@@ -18,7 +18,8 @@
 
 /// Data type identifier.
 /// String, enum and blob data types need the buffer length specified.
-enum SqlDataType {
+enum SqlDataType
+{
 	SQLDT_NULL,
 	// fixed size
 	SQLDT_INT8,

@@ -8,13 +8,15 @@ struct s_search_store_search;
 
 #define MAX_BUYINGSTORE_SLOTS 5
 
-struct s_buyingstore_item {
+struct s_buyingstore_item
+{
 	int price;
 	unsigned short amount;
 	unsigned short nameid;
 };
 
-struct s_buyingstore {
+struct s_buyingstore
+{
 	struct s_buyingstore_item items[MAX_BUYINGSTORE_SLOTS];
 	int zenylimit;
 	unsigned char slots;

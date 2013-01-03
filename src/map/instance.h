@@ -11,7 +11,8 @@
 
 typedef enum instance_state { INSTANCE_FREE, INSTANCE_IDLE, INSTANCE_BUSY } instance_state;
 
-struct s_instance {
+struct s_instance
+{
 	char name[INSTANCE_NAME_LENGTH]; // Instance Name - required for clif functions.
 	instance_state state;
 	short instance_id;

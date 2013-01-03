@@ -9,7 +9,8 @@
 struct map_session_data;
 struct s_search_store_search;
 
-struct s_vending {
+struct s_vending
+{
 	short index;
 	short amount;
 	unsigned int value;

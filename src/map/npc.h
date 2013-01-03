@@ -12,18 +12,22 @@ struct npc_data;
 struct view_data;
 
 
-struct npc_timerevent_list {
+struct npc_timerevent_list
+{
 	int timer, pos;
 };
-struct npc_label_list {
+struct npc_label_list
+{
 	char name[NAME_LENGTH];
 	int pos;
 };
-struct npc_item_list {
+struct npc_item_list
+{
 	unsigned int nameid, value;
 };
 
-struct npc_data {
+struct npc_data
+{
 	struct block_list bl;
 	struct unit_data  ud; //Because they need to be able to move....
 	struct view_data *vd;
@@ -42,8 +46,10 @@ struct npc_data {
 	void *chatdb; // pointer to a npc_parse struct (see npc_chat.c)
 	enum npc_subtype subtype;
 	int src_id;
-	union {
-		struct {
+	union
+	{
+		struct
+		{
 			struct script_code *script;
 			short xs, ys; // OnTouch area radius
 			int guild_id;
@@ -53,11 +59,13 @@ struct npc_data {
 			int label_list_num;
 			struct npc_label_list *label_list;
 		} scr;
-		struct {
+		struct
+		{
 			struct npc_item_list *shop_item;
 			int count;
 		} shop;
-		struct {
+		struct
+		{
 			short xs, ys; // OnTouch area radius
 			short x, y; // destination coords
 			unsigned short mapindex; // destination map
@@ -84,7 +92,8 @@ void npc_chat_finalize (struct npc_data *nd);
 #endif
 
 //Script NPC events.
-enum npce_event {
+enum npce_event
+{
 	NPCE_LOGIN,
 	NPCE_LOGOUT,
 	NPCE_LOADMAP,

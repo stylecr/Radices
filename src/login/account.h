@@ -12,12 +12,8 @@ typedef struct AccountDBIterator AccountDBIterator;
 
 
 // standard engines
-#ifdef WITH_TXT
-AccountDB *account_db_txt (void);
-#endif
-#ifdef WITH_SQL
 AccountDB *account_db_sql (void);
-#endif
+
 // extra engines (will probably use the other txt functions)
 #define ACCOUNTDB_CONSTRUCTOR_(engine) account_db_##engine
 #define ACCOUNTDB_CONSTRUCTOR(engine) ACCOUNTDB_CONSTRUCTOR_(engine)
@@ -38,7 +34,8 @@ AccountDB *ACCOUNTDB_CONSTRUCTOR (ACCOUNTDB_ENGINE_4) (void);
 #endif
 
 
-struct mmo_account {
+struct mmo_account
+{
 	int account_id;
 	char userid[NAME_LENGTH];
 	char pass[32 + 1];      // 23+1 for plaintext, 32+1 for md5-ed passwords
@@ -57,7 +54,8 @@ struct mmo_account {
 };
 
 
-struct AccountDBIterator {
+struct AccountDBIterator
+{
 	/// Destroys this iterator, releasing all allocated memory (including itself).
 	///
 	/// @param self Iterator
@@ -72,7 +70,8 @@ struct AccountDBIterator {
 };
 
 
-struct AccountDB {
+struct AccountDB
+{
 	/// Initializes this database, making it ready for use.
 	/// Call this after setting the properties.
 	///

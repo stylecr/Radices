@@ -7,27 +7,31 @@
 #include "status.h" // struct status_data, struct status_change
 #include "unit.h" // struct unit_data
 
-enum {
+enum
+{
 	ARCH_MERC_GUILD,
 	SPEAR_MERC_GUILD,
 	SWORD_MERC_GUILD,
 };
 
-struct s_mercenary_db {
+struct s_mercenary_db
+{
 	int class_;
 	char sprite[NAME_LENGTH], name[NAME_LENGTH];
 	unsigned short lv;
 	short range2, range3;
 	struct status_data status;
 	struct view_data vd;
-	struct {
+	struct
+	{
 		unsigned short id, lv;
 	} skill[MAX_MERCSKILL];
 };
 
 extern struct s_mercenary_db mercenary_db[MAX_MERCENARY_CLASS];
 
-struct mercenary_data {
+struct mercenary_data
+{
 	struct block_list bl;
 	struct unit_data ud;
 	struct view_data *vd;

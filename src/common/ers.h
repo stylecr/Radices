@@ -77,7 +77,8 @@
  * @param entry_size Return the size of the entries of this manager
  * @param destroy Destroy this instance of the manager
  */
-typedef struct eri {
+typedef struct eri
+{
 
 	/**
 	 * Allocate an entry from this entry manager.
