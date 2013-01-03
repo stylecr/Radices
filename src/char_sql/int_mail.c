@@ -41,7 +41,8 @@ static int mail_fromsql (int char_id, struct mail_data *md)
 
 	StringBuf_Destroy (&buf);
 
-	for (i = 0; i < MAIL_MAX_INBOX && SQL_SUCCESS == Sql_NextRow (sql_handle); ++i) {
+	for (i = 0; i < MAIL_MAX_INBOX && SQL_SUCCESS == Sql_NextRow (sql_handle); ++i)
+	{
 		msg = &md->msg[i];
 		Sql_GetData (sql_handle, 0, &data, NULL); msg->id = atoi (data);
 		Sql_GetData (sql_handle, 1, &data, NULL); safestrncpy (msg->send_name, data, NAME_LENGTH);
@@ -61,7 +62,8 @@ static int mail_fromsql (int char_id, struct mail_data *md)
 		Sql_GetData (sql_handle, 14, &data, NULL); item->identify = atoi (data);
 		item->expire_time = 0;
 
-		for (j = 0; j < MAX_SLOTS; j++) {
+		for (j = 0; j < MAX_SLOTS; j++)
+		{
 			Sql_GetData (sql_handle, 15 + j, &data, NULL);
 			item->card[j] = atoi (data);
 		}
@@ -73,16 +75,19 @@ static int mail_fromsql (int char_id, struct mail_data *md)
 	md->unchecked = 0;
 	md->unread = 0;
 
-	for (i = 0; i < md->amount; i++) {
+	for (i = 0; i < md->amount; i++)
+	{
 		msg = &md->msg[i];
 
-		if (msg->status == MAIL_NEW) {
+		if (msg->status == MAIL_NEW)
+		{
 			if (SQL_ERROR == Sql_Query (sql_handle, "UPDATE `%s` SET `status` = '%d' WHERE `id` = '%d'", mail_db, MAIL_UNREAD, msg->id))
 				Sql_ShowDebug (sql_handle);
 
 			msg->status = MAIL_UNREAD;
 			md->unchecked++;
-		} else if (msg->status == MAIL_UNREAD)
+		}
+		else if (msg->status == MAIL_UNREAD)
 			md->unread++;
 	}
 
@@ -119,10 +124,12 @@ int mail_savemessage (struct mail_message *msg)
 			||  SQL_SUCCESS != SqlStmt_BindParam (stmt, 1, SQLDT_STRING, msg->dest_name, strnlen (msg->dest_name, NAME_LENGTH))
 			||  SQL_SUCCESS != SqlStmt_BindParam (stmt, 2, SQLDT_STRING, msg->title, strnlen (msg->title, MAIL_TITLE_LENGTH))
 			||  SQL_SUCCESS != SqlStmt_BindParam (stmt, 3, SQLDT_STRING, msg->body, strnlen (msg->body, MAIL_BODY_LENGTH))
-			||  SQL_SUCCESS != SqlStmt_Execute (stmt)) {
+			||  SQL_SUCCESS != SqlStmt_Execute (stmt))
+	{
 		SqlStmt_ShowDebug (stmt);
 		msg->id = 0;
-	} else
+	}
+	else
 		msg->id = (int) SqlStmt_LastInsertId (stmt);
 
 	SqlStmt_Free (stmt);
@@ -146,12 +153,15 @@ static bool mail_loadmessage (int mail_id, struct mail_message *msg)
 	StringBuf_Printf (&buf, " FROM `%s` WHERE `id` = '%d'", mail_db, mail_id);
 
 	if (SQL_ERROR == Sql_Query (sql_handle, StringBuf_Value (&buf))
-			||  SQL_SUCCESS != Sql_NextRow (sql_handle)) {
+			||  SQL_SUCCESS != Sql_NextRow (sql_handle))
+	{
 		Sql_ShowDebug (sql_handle);
 		Sql_FreeResult (sql_handle);
 		StringBuf_Destroy (&buf);
 		return false;
-	} else {
+	}
+	else
+	{
 		char *data;
 		Sql_GetData (sql_handle, 0, &data, NULL); msg->id = atoi (data);
 		Sql_GetData (sql_handle, 1, &data, NULL); safestrncpy (msg->send_name, data, NAME_LENGTH);
@@ -170,7 +180,8 @@ static bool mail_loadmessage (int mail_id, struct mail_message *msg)
 		Sql_GetData (sql_handle, 14, &data, NULL); msg->item.identify = atoi (data);
 		msg->item.expire_time = 0;
 
-		for (j = 0; j < MAX_SLOTS; j++) {
+		for (j = 0; j < MAX_SLOTS; j++)
+		{
 			Sql_GetData (sql_handle, 15 + j, &data, NULL);
 			msg->item.card[j] = atoi (data);
 		}
@@ -229,7 +240,8 @@ static bool mail_DeleteAttach (int mail_id)
 
 	StringBuf_Printf (&buf, " WHERE `id` = '%d'", mail_id);
 
-	if (SQL_ERROR == Sql_Query (sql_handle, StringBuf_Value (&buf))) {
+	if (SQL_ERROR == Sql_Query (sql_handle, StringBuf_Value (&buf)))
+	{
 		Sql_ShowDebug (sql_handle);
 		StringBuf_Destroy (&buf);
 		return false;
@@ -279,7 +291,8 @@ static void mapif_Mail_delete (int fd, int char_id, int mail_id)
 {
 	bool failed = false;
 
-	if (SQL_ERROR == Sql_Query (sql_handle, "DELETE FROM `%s` WHERE `id` = '%d'", mail_db, mail_id)) {
+	if (SQL_ERROR == Sql_Query (sql_handle, "DELETE FROM `%s` WHERE `id` = '%d'", mail_db, mail_id))
+	{
 		Sql_ShowDebug (sql_handle);
 		failed = true;
 	}
@@ -323,12 +336,14 @@ static void mapif_Mail_return (int fd, int char_id, int mail_id)
 	struct mail_message msg;
 	int new_mail = 0;
 
-	if (mail_loadmessage (mail_id, &msg)) {
+	if (mail_loadmessage (mail_id, &msg))
+	{
 		if (msg.dest_id != char_id)
 			return;
 		else if (SQL_ERROR == Sql_Query (sql_handle, "DELETE FROM `%s` WHERE `id` = '%d'", mail_db, mail_id))
 			Sql_ShowDebug (sql_handle);
-		else {
+		else
+		{
 			char temp_[MAIL_TITLE_LENGTH];
 			// swap sender and receiver
 			swap (msg.send_id, msg.dest_id);
@@ -387,11 +402,13 @@ static void mapif_parse_Mail_send (int fd)
 
 	if (SQL_ERROR == Sql_Query (sql_handle, "SELECT `account_id`, `char_id` FROM `%s` WHERE `name` = '%s'", char_db, esc_name))
 		Sql_ShowDebug (sql_handle);
-	else if (SQL_SUCCESS == Sql_NextRow (sql_handle)) {
+	else if (SQL_SUCCESS == Sql_NextRow (sql_handle))
+	{
 		char *data;
 		Sql_GetData (sql_handle, 0, &data, NULL);
 
-		if (atoi (data) != account_id) {
+		if (atoi (data) != account_id)
+		{
 			// Cannot send mail to char in the same account
 			Sql_GetData (sql_handle, 1, &data, NULL);
 			msg.dest_id = atoi (data);
@@ -432,7 +449,8 @@ void mail_sendmail (int send_id, const char *send_name, int dest_id, const char 
  *------------------------------------------*/
 int inter_mail_parse_frommap (int fd)
 {
-	switch (RFIFOW (fd, 0)) {
+	switch (RFIFOW (fd, 0))
+	{
 		case 0x3048: mapif_parse_Mail_requestinbox (fd); break;
 
 		case 0x3049: mapif_parse_Mail_read (fd); break;

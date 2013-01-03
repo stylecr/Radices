@@ -44,7 +44,8 @@ unsigned int party_share_level = 10;
 char main_chat_nick[16] = "Main";
 
 // recv. packet list
-int inter_recv_packet_length[] = {
+int inter_recv_packet_length[] =
+{
 	-1, -1, 7, -1, -1, 13, 36, 0,  0, 0, 0, 0,  0, 0,  0, 0,	// 3000-
 	6, -1, 0, 0,  0, 0, 0, 0, 10, -1, 0, 0,  0, 0,  0, 0,	// 3010-
 	-1, 10, -1, 14, 14, 19, 6, -1, 14, 14, 0, 0,  0, 0,  0, 0,	// 3020- Party
@@ -57,7 +58,8 @@ int inter_recv_packet_length[] = {
 	-1, 10, -1, 6,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0,  0, 0,	// 3090-  Homunculus packets [albator]
 };
 
-struct WisData {
+struct WisData
+{
 	int id, fd, count, len;
 	unsigned long tick;
 	unsigned char src[24], dst[24], msg[512];
@@ -81,7 +83,8 @@ int inter_accreg_tosql (int account_id, int char_id, struct accreg *reg, int typ
 	reg->char_id = char_id;
 
 	//`global_reg_value` (`type`, `account_id`, `char_id`, `str`, `value`)
-	switch (type) {
+	switch (type)
+	{
 		case 3: //Char Reg
 			if (SQL_ERROR == Sql_Query (sql_handle, "DELETE FROM `%s` WHERE `type`=3 AND `char_id`='%d'", reg_db, char_id))
 				Sql_ShowDebug (sql_handle);
@@ -113,10 +116,12 @@ int inter_accreg_tosql (int account_id, int char_id, struct accreg *reg, int typ
 	if (SQL_ERROR == SqlStmt_Prepare (stmt, "INSERT INTO `%s` (`type`, `account_id`, `char_id`, `str`, `value`) VALUES ('%d','%d','%d',?,?)", reg_db, type, account_id, char_id))
 		SqlStmt_ShowDebug (stmt);
 
-	for (i = 0; i < reg->reg_num; ++i) {
+	for (i = 0; i < reg->reg_num; ++i)
+	{
 		r = &reg->reg[i];
 
-		if (r->str[0] != '\0' && r->value != '\0') {
+		if (r->str[0] != '\0' && r->value != '\0')
+		{
 			// str
 			SqlStmt_BindParam (stmt, 0, SQLDT_STRING, r->str, strnlen (r->str, sizeof (r->str)));
 			// value
@@ -148,7 +153,8 @@ int inter_accreg_fromsql (int account_id, int char_id, struct accreg *reg, int t
 	reg->char_id = char_id;
 
 	//`global_reg_value` (`type`, `account_id`, `char_id`, `str`, `value`)
-	switch (type) {
+	switch (type)
+	{
 		case 3: //char reg
 			if (SQL_ERROR == Sql_Query (sql_handle, "SELECT `str`, `value` FROM `%s` WHERE `type`=3 AND `char_id`='%d'", reg_db, char_id))
 				Sql_ShowDebug (sql_handle);
@@ -170,7 +176,8 @@ int inter_accreg_fromsql (int account_id, int char_id, struct accreg *reg, int t
 			return 0;
 	}
 
-	for (i = 0; i < MAX_REG_NUM && SQL_SUCCESS == Sql_NextRow (sql_handle); ++i) {
+	for (i = 0; i < MAX_REG_NUM && SQL_SUCCESS == Sql_NextRow (sql_handle); ++i)
+	{
 		r = &reg->reg[i];
 		// str
 		Sql_GetData (sql_handle, 0, &data, &len);
@@ -203,35 +210,48 @@ static int inter_config_read (const char *cfgName)
 	FILE *fp;
 	fp = fopen (cfgName, "r");
 
-	if (fp == NULL) {
+	if (fp == NULL)
+	{
 		ShowError ("file not found: %s\n", cfgName);
 		return 1;
 	}
 
 	ShowInfo ("reading file %s...\n", cfgName);
 
-	while (fgets (line, sizeof (line), fp)) {
+	while (fgets (line, sizeof (line), fp))
+	{
 		i = sscanf (line, "%[^:]: %[^\r\n]", w1, w2);
 
 		if (i != 2)
 			continue;
 
-		if (!strcmpi (w1, "char_server_ip")) {
+		if (!strcmpi (w1, "char_server_ip"))
+		{
 			strcpy (char_server_ip, w2);
 			ShowStatus ("set char_server_ip : %s\n", w2);
-		} else if (!strcmpi (w1, "char_server_port")) {
+		}
+		else if (!strcmpi (w1, "char_server_port"))
+		{
 			char_server_port = atoi (w2);
 			ShowStatus ("set char_server_port : %s\n", w2);
-		} else if (!strcmpi (w1, "char_server_id")) {
+		}
+		else if (!strcmpi (w1, "char_server_id"))
+		{
 			strcpy (char_server_id, w2);
 			ShowStatus ("set char_server_id : %s\n", w2);
-		} else if (!strcmpi (w1, "char_server_pw")) {
+		}
+		else if (!strcmpi (w1, "char_server_pw"))
+		{
 			strcpy (char_server_pw, w2);
 			ShowStatus ("set char_server_pw : %s\n", w2);
-		} else if (!strcmpi (w1, "char_server_db")) {
+		}
+		else if (!strcmpi (w1, "char_server_db"))
+		{
 			strcpy (char_server_db, w2);
 			ShowStatus ("set char_server_db : %s\n", w2);
-		} else if (!strcmpi (w1, "default_codepage")) {
+		}
+		else if (!strcmpi (w1, "default_codepage"))
+		{
 			strcpy (default_codepage, w2);
 			ShowStatus ("set default_codepage : %s\n", w2);
 		}
@@ -284,13 +304,15 @@ int inter_init_sql (const char *file)
 	sql_handle = Sql_Malloc();
 	ShowInfo ("Connect Character DB server.... (Character Server)\n");
 
-	if (SQL_ERROR == Sql_Connect (sql_handle, char_server_id, char_server_pw, char_server_ip, (uint16) char_server_port, char_server_db)) {
+	if (SQL_ERROR == Sql_Connect (sql_handle, char_server_id, char_server_pw, char_server_ip, (uint16) char_server_port, char_server_db))
+	{
 		Sql_ShowDebug (sql_handle);
 		Sql_Free (sql_handle);
 		exit (EXIT_FAILURE);
 	}
 
-	if (*default_codepage) {
+	if (*default_codepage)
+	{
 		if (SQL_ERROR == Sql_SetEncoding (sql_handle, default_codepage))
 			Sql_ShowDebug (sql_handle);
 	}
@@ -404,12 +426,16 @@ int mapif_account_reg_reply (int fd, int account_id, int char_id, int type)
 	WFIFOL (fd, 8) = char_id;
 	WFIFOB (fd, 12) = type;
 
-	if (reg->reg_num == 0) {
+	if (reg->reg_num == 0)
+	{
 		WFIFOW (fd, 2) = 13;
-	} else {
+	}
+	else
+	{
 		int i, p;
 
-		for (p = 13, i = 0; i < reg->reg_num && p < 5000; i++) {
+		for (p = 13, i = 0; i < reg->reg_num && p < 5000; i++)
+		{
 			p += sprintf ( (char *) WFIFOP (fd, p), "%s", reg->reg[i].str) + 1; //We add 1 to consider the '\0' in place.
 			p += sprintf ( (char *) WFIFOP (fd, p), "%s", reg->reg[i].value) + 1;
 		}
@@ -427,7 +453,8 @@ int mapif_account_reg_reply (int fd, int account_id, int char_id, int type)
 //Request to kick char from a certain map server. [Skotlex]
 int mapif_disconnectplayer (int fd, int account_id, int char_id, int reason)
 {
-	if (fd >= 0) {
+	if (fd >= 0)
+	{
 		WFIFOHEAD (fd, 7);
 		WFIFOW (fd, 0) = 0x2b1f;
 		WFIFOL (fd, 2) = account_id;
@@ -459,18 +486,21 @@ int check_ttl_wisdata (void)
 	unsigned long tick = gettick();
 	int i;
 
-	do {
+	do
+	{
 		wis_delnum = 0;
 		wis_db->foreach (wis_db, check_ttl_wisdata_sub, tick);
 
-		for (i = 0; i < wis_delnum; i++) {
+		for (i = 0; i < wis_delnum; i++)
+		{
 			struct WisData *wd = (struct WisData *) idb_get (wis_db, wis_dellist[i]);
 			ShowWarning ("inter: wis data id=%d time out : from %s to %s\n", wd->id, wd->src, wd->dst);
 			// removed. not send information after a timeout. Just no answer for the player
 			//mapif_wis_end(wd, 1); // flag: 0: success to send wisper, 1: target character is not loged in?, 2: ignored by target
 			idb_remove (wis_db, wd->id);
 		}
-	} while (wis_delnum >= WISDELLIST_MAX);
+	}
+	while (wis_delnum >= WISDELLIST_MAX);
 
 	return 0;
 }
@@ -495,14 +525,18 @@ int mapif_parse_WisRequest (int fd)
 	char *data;
 	size_t len;
 
-	if (fd <= 0) {
+	if (fd <= 0)
+	{
 		return 0;   // check if we have a valid fd
 	}
 
-	if (RFIFOW (fd, 2) - 52 >= sizeof (wd->msg)) {
+	if (RFIFOW (fd, 2) - 52 >= sizeof (wd->msg))
+	{
 		ShowWarning ("inter: Wis message size too long.\n");
 		return 0;
-	} else if (RFIFOW (fd, 2) - 52 <= 0) { // normaly, impossible, but who knows...
+	}
+	else if (RFIFOW (fd, 2) - 52 <= 0)     // normaly, impossible, but who knows...
+	{
 		ShowError ("inter: Wis message doesn't exist.\n");
 		return 0;
 	}
@@ -514,13 +548,16 @@ int mapif_parse_WisRequest (int fd)
 		Sql_ShowDebug (sql_handle);
 
 	// search if character exists before to ask all map-servers
-	if (SQL_SUCCESS != Sql_NextRow (sql_handle)) {
+	if (SQL_SUCCESS != Sql_NextRow (sql_handle))
+	{
 		unsigned char buf[27];
 		WBUFW (buf, 0) = 0x3802;
 		memcpy (WBUFP (buf, 2), RFIFOP (fd, 4), NAME_LENGTH);
 		WBUFB (buf, 26) = 1; // flag: 0: success to send wisper, 1: target character is not loged in?, 2: ignored by target
 		mapif_send (fd, buf, 27);
-	} else {
+	}
+	else
+	{
 		// Character exists. So, ask all map-servers
 		// to be sure of the correct name, rewrite it
 		Sql_GetData (sql_handle, 0, &data, &len);
@@ -528,13 +565,16 @@ int mapif_parse_WisRequest (int fd)
 		memcpy (name, data, min (len, NAME_LENGTH));
 
 		// if source is destination, don't ask other servers.
-		if (strncmp ( (const char *) RFIFOP (fd, 4), name, NAME_LENGTH) == 0) {
+		if (strncmp ( (const char *) RFIFOP (fd, 4), name, NAME_LENGTH) == 0)
+		{
 			uint8 buf[27];
 			WBUFW (buf, 0) = 0x3802;
 			memcpy (WBUFP (buf, 2), RFIFOP (fd, 4), NAME_LENGTH);
 			WBUFB (buf, 26) = 1; // flag: 0: success to send wisper, 1: target character is not loged in?, 2: ignored by target
 			mapif_send (fd, buf, 27);
-		} else {
+		}
+		else
+		{
 			CREATE (wd, struct WisData, 1);
 			// Whether the failure of previous wisp/page transmission (timeout)
 			check_ttl_wisdata();
@@ -567,7 +607,8 @@ int mapif_parse_WisReply (int fd)
 	if (wd == NULL)
 		return 0;	// This wisp was probably suppress before, because it was timeout of because of target was found on another map-server
 
-	if ( (--wd->count) <= 0 || flag != 1) {
+	if ( (--wd->count) <= 0 || flag != 1)
+	{
 		mapif_wis_end (wd, flag); // flag: 0: success to send wisper, 1: target character is not loged in?, 2: ignored by target
 		idb_remove (wis_db, id);
 	}
@@ -593,7 +634,8 @@ int mapif_parse_Registry (int fd)
 	struct accreg *reg = accreg_pt;
 	memset (accreg_pt, 0, sizeof (struct accreg));
 
-	switch (RFIFOB (fd, 12)) {
+	switch (RFIFOB (fd, 12))
+	{
 		case 3: //Character registry
 			max = GLOBAL_REG_NUM;
 			break;
@@ -609,7 +651,8 @@ int mapif_parse_Registry (int fd)
 			return 1;
 	}
 
-	for (j = 0, p = 13; j < max && p < RFIFOW (fd, 2); j++) {
+	for (j = 0, p = 13; j < max && p < RFIFOW (fd, 2); j++)
+	{
 		sscanf ( (char *) RFIFOP (fd, p), "%31c%n", reg->reg[j].str, &len);
 		reg->reg[j].str[len] = '\0';
 		p += len + 1; //+1 to skip the '\0' between strings.
@@ -662,15 +705,20 @@ int mapif_parse_NameChangeRequest (int fd)
 	name = (char *) RFIFOP (fd, 11);
 
 	// Check Authorised letters/symbols in the name
-	if (char_name_option == 1) { // only letters/symbols in char_name_letters are authorised
+	if (char_name_option == 1)   // only letters/symbols in char_name_letters are authorised
+	{
 		for (i = 0; i < NAME_LENGTH && name[i]; i++)
-			if (strchr (char_name_letters, name[i]) == NULL) {
+			if (strchr (char_name_letters, name[i]) == NULL)
+			{
 				mapif_namechange_ack (fd, account_id, char_id, type, 0, name);
 				return 0;
 			}
-	} else if (char_name_option == 2) { // letters/symbols in char_name_letters are forbidden
+	}
+	else if (char_name_option == 2)     // letters/symbols in char_name_letters are forbidden
+	{
 		for (i = 0; i < NAME_LENGTH && name[i]; i++)
-			if (strchr (char_name_letters, name[i]) != NULL) {
+			if (strchr (char_name_letters, name[i]) != NULL)
+			{
 				mapif_namechange_ack (fd, account_id, char_id, type, 0, name);
 				return 0;
 			}
@@ -692,7 +740,8 @@ int mapif_parse_NameChangeRequest (int fd)
 /// @param length The minimum allowed length, or -1 for dynamic lookup
 int inter_check_length (int fd, int length)
 {
-	if (length == -1) {
+	if (length == -1)
+	{
 		// variable-length packet
 		if (RFIFOREST (fd) < 4)
 			return 0;
@@ -720,7 +769,8 @@ int inter_parse_frommap (int fd)
 	if ( (len = inter_check_length (fd, inter_recv_packet_length[cmd - 0x3000])) == 0)
 		return 2;
 
-	switch (cmd) {
+	switch (cmd)
+	{
 		case 0x3000: mapif_parse_broadcast (fd); break;
 
 		case 0x3001: mapif_parse_WisRequest (fd); break;

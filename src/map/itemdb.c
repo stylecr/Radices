@@ -59,12 +59,14 @@ static int itemdb_searchname_sub (DBKey key, void *data, va_list ap)
 /*==========================================
  * 名前で検索
  *------------------------------------------*/
-struct item_data *itemdb_searchname (const char *str) {
+struct item_data *itemdb_searchname (const char *str)
+{
 	struct item_data *item;
 	struct item_data *item2 = NULL;
 	int i;
 
-	for (i = 0; i < ARRAYLENGTH (itemdb_array); ++i) {
+	for (i = 0; i < ARRAYLENGTH (itemdb_array); ++i)
+	{
 		item = itemdb_array[i];
 
 		if (item == NULL)
@@ -112,13 +114,15 @@ int itemdb_searchname_array (struct item_data **data, int size, const char *str)
 	int count = 0;
 
 	// Search in the array
-	for (i = 0; i < ARRAYLENGTH (itemdb_array); ++i) {
+	for (i = 0; i < ARRAYLENGTH (itemdb_array); ++i)
+	{
 		item = itemdb_array[i];
 
 		if (item == NULL)
 			continue;
 
-		if (stristr (item->jname, str) || stristr (item->name, str)) {
+		if (stristr (item->jname, str) || stristr (item->name, str))
+		{
 			if (count < size)
 				data[count] = item;
 
@@ -127,10 +131,13 @@ int itemdb_searchname_array (struct item_data **data, int size, const char *str)
 	}
 
 	// search in the db
-	if (count >= size) {
+	if (count >= size)
+	{
 		data = NULL;
 		size = 0;
-	} else {
+	}
+	else
+	{
 		data -= count;
 		size -= count;
 	}
@@ -144,7 +151,8 @@ int itemdb_searchname_array (struct item_data **data, int size, const char *str)
  *------------------------------------------*/
 int itemdb_searchrandomid (int group)
 {
-	if (group < 1 || group >= MAX_ITEMGROUP) {
+	if (group < 1 || group >= MAX_ITEMGROUP)
+	{
 		ShowError ("itemdb_searchrandomid: Invalid group id %d\n", group);
 		return UNKNOWN_ITEM_ID;
 	}
@@ -163,7 +171,8 @@ int itemdb_group_bonus (struct map_session_data *sd, int itemid)
 {
 	int bonus = 0, i, j;
 
-	for (i = 0; i < MAX_ITEMGROUP; i++) {
+	for (i = 0; i < MAX_ITEMGROUP; i++)
+	{
 		if (!sd->itemgrouphealrate[i])
 			continue;
 
@@ -178,7 +187,8 @@ int itemdb_group_bonus (struct map_session_data *sd, int itemid)
 
 /// Searches for the item_data.
 /// Returns the item_data or NULL if it does not exist.
-struct item_data *itemdb_exists (int nameid) {
+struct item_data *itemdb_exists (int nameid)
+{
 	struct item_data *item;
 
 	if (nameid >= 0 && nameid < ARRAYLENGTH (itemdb_array))
@@ -196,7 +206,8 @@ struct item_data *itemdb_exists (int nameid) {
 /// @param type Type id to retrieve name for ( IT_* ).
 const char *itemdb_typename (int type)
 {
-	switch (type) {
+	switch (type)
+	{
 		case IT_HEALING:        return "Potion/Food";
 
 		case IT_USABLE:         return "Usable";
@@ -233,13 +244,15 @@ static void itemdb_jobid2mapid (unsigned int *bclass, unsigned int jobmask)
 	bclass[0] = bclass[1] = bclass[2] = 0;
 
 	//Base classes
-	if (jobmask & 1 << JOB_NOVICE) {
+	if (jobmask & 1 << JOB_NOVICE)
+	{
 		//Both Novice/Super-Novice are counted with the same ID
 		bclass[0] |= 1 << MAPID_NOVICE;
 		bclass[1] |= 1 << MAPID_NOVICE;
 	}
 
-	for (i = JOB_NOVICE + 1; i <= JOB_THIEF; i++) {
+	for (i = JOB_NOVICE + 1; i <= JOB_THIEF; i++)
+	{
 		if (jobmask & 1 << i)
 			bclass[0] |= 1 << (MAPID_NOVICE + i);
 	}
@@ -314,7 +327,8 @@ static void create_dummy_data (void)
 	dummy_item.view_id = UNKNOWN_ITEM_ID;
 }
 
-static struct item_data *create_item_data (int nameid) {
+static struct item_data *create_item_data (int nameid)
+{
 	struct item_data *id;
 	CREATE (id, struct item_data, 1);
 	id->nameid = nameid;
@@ -326,10 +340,12 @@ static struct item_data *create_item_data (int nameid) {
 /*==========================================
  * Loads (and creates if not found) an item from the db.
  *------------------------------------------*/
-struct item_data *itemdb_load (int nameid) {
+struct item_data *itemdb_load (int nameid)
+{
 	struct item_data *id;
 
-	if (nameid >= 0 && nameid < ARRAYLENGTH (itemdb_array)) {
+	if (nameid >= 0 && nameid < ARRAYLENGTH (itemdb_array))
+	{
 		id = itemdb_array[nameid];
 
 		if (id == NULL || id == &dummy_item)
@@ -340,7 +356,8 @@ struct item_data *itemdb_load (int nameid) {
 
 	id = (struct item_data *) idb_get (itemdb_other, nameid);
 
-	if (id == NULL || id == &dummy_item) {
+	if (id == NULL || id == &dummy_item)
+	{
 		id = create_item_data (nameid);
 		idb_put (itemdb_other, nameid, id);
 	}
@@ -351,7 +368,8 @@ struct item_data *itemdb_load (int nameid) {
 /*==========================================
  * Loads an item from the db. If not found, it will return the dummy item.
  *------------------------------------------*/
-struct item_data *itemdb_search (int nameid) {
+struct item_data *itemdb_search (int nameid)
+{
 	struct item_data *id;
 
 	if (nameid >= 0 && nameid < ARRAYLENGTH (itemdb_array))
@@ -359,7 +377,8 @@ struct item_data *itemdb_search (int nameid) {
 	else
 		id = (struct item_data *) idb_get (itemdb_other, nameid);
 
-	if (id == NULL) {
+	if (id == NULL)
+	{
 		ShowWarning ("itemdb_search: Item ID %d does not exists in the item_db. Using dummy data.\n", nameid);
 		id = &dummy_item;
 		dummy_item.nameid = nameid;
@@ -375,7 +394,8 @@ int itemdb_isequip (int nameid)
 {
 	int type = itemdb_type (nameid);
 
-	switch (type) {
+	switch (type)
+	{
 		case IT_WEAPON:
 		case IT_ARMOR:
 		case IT_AMMO:
@@ -393,7 +413,8 @@ int itemdb_isequip2 (struct item_data *data)
 {
 	nullpo_ret (data);
 
-	switch (data->type) {
+	switch (data->type)
+	{
 		case IT_WEAPON:
 		case IT_ARMOR:
 		case IT_AMMO:
@@ -411,7 +432,8 @@ int itemdb_isstackable (int nameid)
 {
 	int type = itemdb_type (nameid);
 
-	switch (type) {
+	switch (type)
+	{
 		case IT_WEAPON:
 		case IT_ARMOR:
 		case IT_PETEGG:
@@ -430,7 +452,8 @@ int itemdb_isstackable2 (struct item_data *data)
 {
 	nullpo_ret (data);
 
-	switch (data->type) {
+	switch (data->type)
+	{
 		case IT_WEAPON:
 		case IT_ARMOR:
 		case IT_PETEGG:
@@ -492,7 +515,8 @@ int itemdb_isrestricted (struct item *item, int gmlv, int gmlv2, int (*func) (st
 	if (item_data->slot == 0 || itemdb_isspecial (item->card[0]))
 		return 1;
 
-	for (i = 0; i < item_data->slot; i++) {
+	for (i = 0; i < item_data->slot; i++)
+	{
 		if (!item->card[i]) continue;
 
 		if (!func (itemdb_search (item->card[i]), gmlv, gmlv2))
@@ -509,7 +533,8 @@ int itemdb_isidentified (int nameid)
 {
 	int type = itemdb_type (nameid);
 
-	switch (type) {
+	switch (type)
+	{
 		case IT_WEAPON:
 		case IT_ARMOR:
 		case IT_PETARMOR:
@@ -530,17 +555,21 @@ static bool itemdb_read_itemavail (char *str[], int columns, int current)
 	struct item_data *id;
 	nameid = atoi (str[0]);
 
-	if ( (id = itemdb_exists (nameid)) == NULL) {
+	if ( (id = itemdb_exists (nameid)) == NULL)
+	{
 		ShowWarning ("itemdb_read_itemavail: Invalid item id %d.\n", nameid);
 		return false;
 	}
 
 	sprite = atoi (str[1]);
 
-	if (sprite > 0) {
+	if (sprite > 0)
+	{
 		id->flag.available = 1;
 		id->view_id = sprite;
-	} else {
+	}
+	else
+	{
 		id->flag.available = 0;
 	}
 
@@ -559,20 +588,24 @@ static void itemdb_read_itemgroup_sub (const char *filename)
 	char *str[3], *p;
 	char w1[1024], w2[1024];
 
-	if ( (fp = fopen (filename, "r")) == NULL) {
+	if ( (fp = fopen (filename, "r")) == NULL)
+	{
 		ShowError ("can't read %s\n", filename);
 		return;
 	}
 
-	while (fgets (line, sizeof (line), fp)) {
+	while (fgets (line, sizeof (line), fp))
+	{
 		ln++;
 
 		if (line[0] == '/' && line[1] == '/')
 			continue;
 
-		if (strstr (line, "import")) {
+		if (strstr (line, "import"))
+		{
 			if (sscanf (line, "%[^:]: %[^\r\n]", w1, w2) == 2 &&
-					strcmpi (w1, "import") == 0) {
+					strcmpi (w1, "import") == 0)
+			{
 				itemdb_read_itemgroup_sub (w2);
 				continue;
 			}
@@ -580,7 +613,8 @@ static void itemdb_read_itemgroup_sub (const char *filename)
 
 		memset (str, 0, sizeof (str));
 
-		for (j = 0, p = line; j < 3 && p; j++) {
+		for (j = 0, p = line; j < 3 && p; j++)
+		{
 			str[j] = p;
 			p = strchr (p, ',');
 
@@ -590,7 +624,8 @@ static void itemdb_read_itemgroup_sub (const char *filename)
 		if (str[0] == NULL)
 			continue;
 
-		if (j < 3) {
+		if (j < 3)
+		{
 			if (j > 1) //Or else it barks on blank lines...
 				ShowWarning ("itemdb_read_itemgroup: Insufficient fields for entry at %s:%d\n", filename, ln);
 
@@ -599,21 +634,24 @@ static void itemdb_read_itemgroup_sub (const char *filename)
 
 		groupid = atoi (str[0]);
 
-		if (groupid < 0 || groupid >= MAX_ITEMGROUP) {
+		if (groupid < 0 || groupid >= MAX_ITEMGROUP)
+		{
 			ShowWarning ("itemdb_read_itemgroup: Invalid group %d in %s:%d\n", groupid, filename, ln);
 			continue;
 		}
 
 		nameid = atoi (str[1]);
 
-		if (!itemdb_exists (nameid)) {
+		if (!itemdb_exists (nameid))
+		{
 			ShowWarning ("itemdb_read_itemgroup: Non-existant item %d in %s:%d\n", nameid, filename, ln);
 			continue;
 		}
 
 		k = atoi (str[2]);
 
-		if (itemgroup_db[groupid].qty + k >= MAX_RANDITEM) {
+		if (itemgroup_db[groupid].qty + k >= MAX_RANDITEM)
+		{
 			ShowWarning ("itemdb_read_itemgroup: Group %d is full (%d entries) in %s:%d\n", groupid, MAX_RANDITEM, filename, ln);
 			continue;
 		}
@@ -646,7 +684,8 @@ static bool itemdb_read_noequip (char *str[], int columns, int current)
 	struct item_data *id;
 	nameid = atoi (str[0]);
 
-	if ( (id = itemdb_exists (nameid)) == NULL) {
+	if ( (id = itemdb_exists (nameid)) == NULL)
+	{
 		ShowWarning ("itemdb_read_noequip: Invalid item id %d.\n", nameid);
 		return false;
 	}
@@ -665,7 +704,8 @@ static bool itemdb_read_itemtrade (char *str[], int columns, int current)
 	struct item_data *id;
 	nameid = atoi (str[0]);
 
-	if ( (id = itemdb_exists (nameid)) == NULL) {
+	if ( (id = itemdb_exists (nameid)) == NULL)
+	{
 		//ShowWarning("itemdb_read_itemtrade: Invalid item id %d.\n", nameid);
 		//return false;
 		// FIXME: item_trade.txt contains items, which are commented in item database.
@@ -675,13 +715,15 @@ static bool itemdb_read_itemtrade (char *str[], int columns, int current)
 	flag = atoi (str[1]);
 	gmlv = atoi (str[2]);
 
-	if (flag < 0 || flag >= 128) {
+	if (flag < 0 || flag >= 128)
+	{
 		//Check range
 		ShowWarning ("itemdb_read_itemtrade: Invalid trading mask %d for item id %d.\n", flag, nameid);
 		return false;
 	}
 
-	if (gmlv < 1) {
+	if (gmlv < 1)
+	{
 		ShowWarning ("itemdb_read_itemtrade: Invalid override GM level %d for item id %d.\n", gmlv, nameid);
 		return false;
 	}
@@ -701,14 +743,16 @@ static bool itemdb_read_itemdelay (char *str[], int columns, int current)
 	struct item_data *id;
 	nameid = atoi (str[0]);
 
-	if ( (id = itemdb_exists (nameid)) == NULL) {
+	if ( (id = itemdb_exists (nameid)) == NULL)
+	{
 		ShowWarning ("itemdb_read_itemdelay: Invalid item id %d.\n", nameid);
 		return false;
 	}
 
 	delay = atoi (str[1]);
 
-	if (delay < 0) {
+	if (delay < 0)
+	{
 		ShowWarning ("itemdb_read_itemdelay: Invalid delay %d for item id %d.\n", id->delay, nameid);
 		return false;
 	}
@@ -726,12 +770,14 @@ static bool itemdb_read_buyingstore (char *fields[], int columns, int current)
 	struct item_data *id;
 	nameid = atoi (fields[0]);
 
-	if ( (id = itemdb_exists (nameid)) == NULL) {
+	if ( (id = itemdb_exists (nameid)) == NULL)
+	{
 		ShowWarning ("itemdb_read_buyingstore: Invalid item id %d.\n", nameid);
 		return false;
 	}
 
-	if (!itemdb_isstackable2 (id)) {
+	if (!itemdb_isstackable2 (id))
+	{
 		ShowWarning ("itemdb_read_buyingstore: Non-stackable item id %d cannot be enabled for buying store.\n", nameid);
 		return false;
 	}
@@ -777,7 +823,8 @@ static bool itemdb_parse_dbrow (char **str, const char *source, int line, int sc
 	struct item_data *id;
 	nameid = atoi (str[0]);
 
-	if (nameid <= 0) {
+	if (nameid <= 0)
+	{
 		ShowWarning ("itemdb_parse_dbrow: Invalid id %d in line %d of \"%s\", skipping.\n", nameid, line, source);
 		return false;
 	}
@@ -788,17 +835,20 @@ static bool itemdb_parse_dbrow (char **str, const char *source, int line, int sc
 	safestrncpy (id->jname, str[2], sizeof (id->jname));
 	id->type = atoi (str[3]);
 
-	if (id->type < 0 || id->type == IT_UNKNOWN || id->type == IT_UNKNOWN2 || (id->type > IT_DELAYCONSUME && id->type < IT_CASH) || id->type >= IT_MAX) {
+	if (id->type < 0 || id->type == IT_UNKNOWN || id->type == IT_UNKNOWN2 || (id->type > IT_DELAYCONSUME && id->type < IT_CASH) || id->type >= IT_MAX)
+	{
 		// catch invalid item types
 		ShowWarning ("itemdb_parse_dbrow: Invalid item type %d for item %d. IT_ETC will be used.\n", id->type, nameid);
 		id->type = IT_ETC;
 	}
 
-	if (id->type == IT_DELAYCONSUME) {
+	if (id->type == IT_DELAYCONSUME)
+	{
 		//Items that are consumed only after target confirmation
 		id->type = IT_USABLE;
 		id->flag.delay_consume = 1;
-	} else //In case of an itemdb reload and the item type changed.
+	}
+	else   //In case of an itemdb reload and the item type changed.
 		id->flag.delay_consume = 0;
 
 	//When a particular price is not given, we should base it off the other one
@@ -831,7 +881,8 @@ static bool itemdb_parse_dbrow (char **str, const char *source, int line, int sc
 	id->range = atoi (str[9]);
 	id->slot = atoi (str[10]);
 
-	if (id->slot > MAX_SLOTS) {
+	if (id->slot > MAX_SLOTS)
+	{
 		ShowWarning ("itemdb_parse_dbrow: Item %d (%s) specifies %d slots, but the server only supports up to %d. Using %d slots.\n", nameid, id->jname, id->slot, MAX_SLOTS, MAX_SLOTS);
 		id->slot = MAX_SLOTS;
 	}
@@ -841,7 +892,8 @@ static bool itemdb_parse_dbrow (char **str, const char *source, int line, int sc
 	id->sex	= atoi (str[13]);
 	id->equip = atoi (str[14]);
 
-	if (!id->equip && itemdb_isequip2 (id)) {
+	if (!id->equip && itemdb_isequip2 (id))
+	{
 		ShowWarning ("Item %d (%s) is an equipment with no equip-field! Making it an etc item.\n", nameid, id->jname);
 		id->type = IT_ETC;
 	}
@@ -854,17 +906,20 @@ static bool itemdb_parse_dbrow (char **str, const char *source, int line, int sc
 	id->view_id = 0;
 	id->sex = itemdb_gendercheck (id); //Apply gender filtering.
 
-	if (id->script) {
+	if (id->script)
+	{
 		script_free_code (id->script);
 		id->script = NULL;
 	}
 
-	if (id->equip_script) {
+	if (id->equip_script)
+	{
 		script_free_code (id->equip_script);
 		id->equip_script = NULL;
 	}
 
-	if (id->unequip_script) {
+	if (id->unequip_script)
+	{
 		script_free_code (id->unequip_script);
 		id->unequip_script = NULL;
 	}
@@ -889,7 +944,8 @@ static int itemdb_readdb (void)
 	const char *filename[] = { "item_db.txt", "item_db2.txt" };
 	int fi;
 
-	for (fi = 0; fi < ARRAYLENGTH (filename); ++fi) {
+	for (fi = 0; fi < ARRAYLENGTH (filename); ++fi)
+	{
 		uint32 lines = 0, count = 0;
 		char line[1024];
 		char path[256];
@@ -897,13 +953,15 @@ static int itemdb_readdb (void)
 		sprintf (path, "%s/%s", db_path, filename[fi]);
 		fp = fopen (path, "r");
 
-		if (fp == NULL) {
+		if (fp == NULL)
+		{
 			ShowWarning ("itemdb_readdb: File not found \"%s\", skipping.\n", path);
 			continue;
 		}
 
 		// process rows one by one
-		while (fgets (line, sizeof (line), fp)) {
+		while (fgets (line, sizeof (line), fp))
+		{
 			char *str[32], *p;
 			int i;
 			lines++;
@@ -920,7 +978,8 @@ static int itemdb_readdb (void)
 			if (*p == '\0')
 				continue;// empty line
 
-			for (i = 0; i < 19; ++i) {
+			for (i = 0; i < 19; ++i)
+			{
 				str[i] = p;
 				p = strchr (p, ',');
 
@@ -931,13 +990,15 @@ static int itemdb_readdb (void)
 				++p;
 			}
 
-			if (p == NULL) {
+			if (p == NULL)
+			{
 				ShowError ("itemdb_readdb: Insufficient columns in line %d of \"%s\" (item with id %d), skipping.\n", lines, path, atoi (str[0]));
 				continue;
 			}
 
 			// Script
-			if (*p != '{') {
+			if (*p != '{')
+			{
 				ShowError ("itemdb_readdb: Invalid format (Script column) in line %d of \"%s\" (item with id %d), skipping.\n", lines, path, atoi (str[0]));
 				continue;
 			}
@@ -945,7 +1006,8 @@ static int itemdb_readdb (void)
 			str[19] = p;
 			p = strstr (p + 1, "},");
 
-			if (p == NULL) {
+			if (p == NULL)
+			{
 				ShowError ("itemdb_readdb: Invalid format (Script column) in line %d of \"%s\" (item with id %d), skipping.\n", lines, path, atoi (str[0]));
 				continue;
 			}
@@ -954,7 +1016,8 @@ static int itemdb_readdb (void)
 			p += 2;
 
 			// OnEquip_Script
-			if (*p != '{') {
+			if (*p != '{')
+			{
 				ShowError ("itemdb_readdb: Invalid format (OnEquip_Script column) in line %d of \"%s\" (item with id %d), skipping.\n", lines, path, atoi (str[0]));
 				continue;
 			}
@@ -962,7 +1025,8 @@ static int itemdb_readdb (void)
 			str[20] = p;
 			p = strstr (p + 1, "},");
 
-			if (p == NULL) {
+			if (p == NULL)
+			{
 				ShowError ("itemdb_readdb: Invalid format (OnEquip_Script column) in line %d of \"%s\" (item with id %d), skipping.\n", lines, path, atoi (str[0]));
 				continue;
 			}
@@ -971,7 +1035,8 @@ static int itemdb_readdb (void)
 			p += 2;
 
 			// OnUnequip_Script (last column)
-			if (*p != '{') {
+			if (*p != '{')
+			{
 				ShowError ("itemdb_readdb: Invalid format (OnUnequip_Script column) in line %d of \"%s\" (item with id %d), skipping.\n", lines, path, atoi (str[0]));
 				continue;
 			}
@@ -999,24 +1064,28 @@ static int itemdb_read_sqldb (void)
 	const char *item_db_name[] = { item_db_db, item_db2_db };
 	int fi;
 
-	for (fi = 0; fi < ARRAYLENGTH (item_db_name); ++fi) {
+	for (fi = 0; fi < ARRAYLENGTH (item_db_name); ++fi)
+	{
 		uint32 lines = 0, count = 0;
 
 		// retrieve all rows from the item database
-		if (SQL_ERROR == Sql_Query (mmysql_handle, "SELECT * FROM `%s`", item_db_name[fi])) {
+		if (SQL_ERROR == Sql_Query (mmysql_handle, "SELECT * FROM `%s`", item_db_name[fi]))
+		{
 			Sql_ShowDebug (mmysql_handle);
 			continue;
 		}
 
 		// process rows one by one
-		while (SQL_SUCCESS == Sql_NextRow (mmysql_handle)) {
+		while (SQL_SUCCESS == Sql_NextRow (mmysql_handle))
+		{
 			// wrap the result into a TXT-compatible format
 			char *str[22];
 			char *dummy = "";
 			int i;
 			++lines;
 
-			for (i = 0; i < 22; ++i) {
+			for (i = 0; i < 22; ++i)
+			{
 				Sql_GetData (mmysql_handle, i, &str[i], NULL);
 
 				if (str[i] == NULL) str[i] = dummy;  // get rid of NULL columns
@@ -1112,7 +1181,8 @@ void itemdb_reload (void)
 	// readjust itemdb pointer cache for each player
 	iter = mapit_geteachpc();
 
-	for (sd = (struct map_session_data *) mapit_first (iter); mapit_exists (iter); sd = (struct map_session_data *) mapit_next (iter)) {
+	for (sd = (struct map_session_data *) mapit_first (iter); mapit_exists (iter); sd = (struct map_session_data *) mapit_next (iter))
+	{
 		memset (sd->item_delay, 0, sizeof (sd->item_delay)); // reset item delays
 		pc_setinventorydata (sd);
 	}

@@ -51,10 +51,13 @@ static void mapif_homunculus_loaded (int fd, int account_id, struct s_homunculus
 	WFIFOW (fd, 2) = sizeof (struct s_homunculus) + 9;
 	WFIFOL (fd, 4) = account_id;
 
-	if (hd != NULL) {
+	if (hd != NULL)
+	{
 		WFIFOB (fd, 8) = 1; // success
 		memcpy (WFIFOP (fd, 9), hd, sizeof (struct s_homunculus));
-	} else {
+	}
+	else
+	{
 		WFIFOB (fd, 8) = 0; // not found.
 		memset (WFIFOP (fd, 9), 0, sizeof (struct s_homunculus));
 	}
@@ -88,25 +91,34 @@ bool mapif_homunculus_save (struct s_homunculus *hd)
 	char esc_name[NAME_LENGTH * 2 + 1];
 	Sql_EscapeStringLen (sql_handle, esc_name, hd->name, strnlen (hd->name, NAME_LENGTH));
 
-	if (hd->hom_id == 0) {
+	if (hd->hom_id == 0)
+	{
 		// new homunculus
 		if (SQL_ERROR == Sql_Query (sql_handle, "INSERT INTO `homunculus` "
 									"(`char_id`, `class`,`name`,`level`,`exp`,`intimacy`,`hunger`, `str`, `agi`, `vit`, `int`, `dex`, `luk`, `hp`,`max_hp`,`sp`,`max_sp`,`skill_point`, `rename_flag`, `vaporize`) "
 									"VALUES ('%d', '%d', '%s', '%d', '%u', '%u', '%d', '%d', %d, '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d')",
 									hd->char_id, hd->class_, esc_name, hd->level, hd->exp, hd->intimacy, hd->hunger, hd->str, hd->agi, hd->vit, hd->int_, hd->dex, hd->luk,
-									hd->hp, hd->max_hp, hd->sp, hd->max_sp, hd->skillpts, hd->rename_flag, hd->vaporize)) {
+									hd->hp, hd->max_hp, hd->sp, hd->max_sp, hd->skillpts, hd->rename_flag, hd->vaporize))
+		{
 			Sql_ShowDebug (sql_handle);
 			flag = false;
-		} else {
+		}
+		else
+		{
 			hd->hom_id = (int) Sql_LastInsertId (sql_handle);
 		}
-	} else {
+	}
+	else
+	{
 		if (SQL_ERROR == Sql_Query (sql_handle, "UPDATE `homunculus` SET `char_id`='%d', `class`='%d',`name`='%s',`level`='%d',`exp`='%u',`intimacy`='%u',`hunger`='%d', `str`='%d', `agi`='%d', `vit`='%d', `int`='%d', `dex`='%d', `luk`='%d', `hp`='%d',`max_hp`='%d',`sp`='%d',`max_sp`='%d',`skill_point`='%d', `rename_flag`='%d', `vaporize`='%d' WHERE `homun_id`='%d'",
 									hd->char_id, hd->class_, esc_name, hd->level, hd->exp, hd->intimacy, hd->hunger, hd->str, hd->agi, hd->vit, hd->int_, hd->dex, hd->luk,
-									hd->hp, hd->max_hp, hd->sp, hd->max_sp, hd->skillpts, hd->rename_flag, hd->vaporize, hd->hom_id)) {
+									hd->hp, hd->max_hp, hd->sp, hd->max_sp, hd->skillpts, hd->rename_flag, hd->vaporize, hd->hom_id))
+		{
 			Sql_ShowDebug (sql_handle);
 			flag = false;
-		} else {
+		}
+		else
+		{
 			SqlStmt *stmt;
 			int i;
 			stmt = SqlStmt_Malloc (sql_handle);
@@ -114,12 +126,15 @@ bool mapif_homunculus_save (struct s_homunculus *hd)
 			if (SQL_ERROR == SqlStmt_Prepare (stmt, "REPLACE INTO `skill_homunculus` (`homun_id`, `id`, `lv`) VALUES (%d, ?, ?)", hd->hom_id))
 				SqlStmt_ShowDebug (stmt);
 
-			for (i = 0; i < MAX_HOMUNSKILL; ++i) {
-				if (hd->hskill[i].id > 0 && hd->hskill[i].lv != 0) {
+			for (i = 0; i < MAX_HOMUNSKILL; ++i)
+			{
+				if (hd->hskill[i].id > 0 && hd->hskill[i].lv != 0)
+				{
 					SqlStmt_BindParam (stmt, 0, SQLDT_USHORT, &hd->hskill[i].id, 0);
 					SqlStmt_BindParam (stmt, 1, SQLDT_USHORT, &hd->hskill[i].lv, 0);
 
-					if (SQL_ERROR == SqlStmt_Execute (stmt)) {
+					if (SQL_ERROR == SqlStmt_Execute (stmt))
+					{
 						SqlStmt_ShowDebug (stmt);
 						SqlStmt_Free (stmt);
 						flag = false;
@@ -145,18 +160,21 @@ bool mapif_homunculus_load (int homun_id, struct s_homunculus *hd)
 	size_t len;
 	memset (hd, 0, sizeof (*hd));
 
-	if (SQL_ERROR == Sql_Query (sql_handle, "SELECT `homun_id`,`char_id`,`class`,`name`,`level`,`exp`,`intimacy`,`hunger`, `str`, `agi`, `vit`, `int`, `dex`, `luk`, `hp`,`max_hp`,`sp`,`max_sp`,`skill_point`,`rename_flag`, `vaporize` FROM `homunculus` WHERE `homun_id`='%u'", homun_id)) {
+	if (SQL_ERROR == Sql_Query (sql_handle, "SELECT `homun_id`,`char_id`,`class`,`name`,`level`,`exp`,`intimacy`,`hunger`, `str`, `agi`, `vit`, `int`, `dex`, `luk`, `hp`,`max_hp`,`sp`,`max_sp`,`skill_point`,`rename_flag`, `vaporize` FROM `homunculus` WHERE `homun_id`='%u'", homun_id))
+	{
 		Sql_ShowDebug (sql_handle);
 		return false;
 	}
 
-	if (!Sql_NumRows (sql_handle)) {
+	if (!Sql_NumRows (sql_handle))
+	{
 		//No homunculus found.
 		Sql_FreeResult (sql_handle);
 		return false;
 	}
 
-	if (SQL_SUCCESS != Sql_NextRow (sql_handle)) {
+	if (SQL_SUCCESS != Sql_NextRow (sql_handle))
+	{
 		Sql_ShowDebug (sql_handle);
 		Sql_FreeResult (sql_handle);
 		return false;
@@ -188,12 +206,14 @@ bool mapif_homunculus_load (int homun_id, struct s_homunculus *hd)
 	hd->hunger = cap_value (hd->hunger, 0, 100);
 
 	// Load Homunculus Skill
-	if (SQL_ERROR == Sql_Query (sql_handle, "SELECT `id`,`lv` FROM `skill_homunculus` WHERE `homun_id`=%d", homun_id)) {
+	if (SQL_ERROR == Sql_Query (sql_handle, "SELECT `id`,`lv` FROM `skill_homunculus` WHERE `homun_id`=%d", homun_id))
+	{
 		Sql_ShowDebug (sql_handle);
 		return false;
 	}
 
-	while (SQL_SUCCESS == Sql_NextRow (sql_handle)) {
+	while (SQL_SUCCESS == Sql_NextRow (sql_handle))
+	{
 		// id
 		Sql_GetData (sql_handle, 0, &data, NULL);
 		i = atoi (data);
@@ -220,7 +240,8 @@ bool mapif_homunculus_delete (int homun_id)
 {
 	if (SQL_ERROR == Sql_Query (sql_handle, "DELETE FROM `homunculus` WHERE `homun_id` = '%u'", homun_id)
 			||	SQL_ERROR == Sql_Query (sql_handle, "DELETE FROM `skill_homunculus` WHERE `homun_id` = '%u'", homun_id)
-	   ) {
+	   )
+	{
 		Sql_ShowDebug (sql_handle);
 		return false;
 	}
@@ -233,12 +254,15 @@ bool mapif_homunculus_rename (char *name)
 	int i;
 
 	// Check Authorised letters/symbols in the name of the homun
-	if (char_name_option == 1) {
+	if (char_name_option == 1)
+	{
 		// only letters/symbols in char_name_letters are authorised
 		for (i = 0; i < NAME_LENGTH && name[i]; i++)
 			if (strchr (char_name_letters, name[i]) == NULL)
 				return false;
-	} else if (char_name_option == 2) {
+	}
+	else if (char_name_option == 2)
+	{
 		// letters/symbols in char_name_letters are forbidden
 		for (i = 0; i < NAME_LENGTH && name[i]; i++)
 			if (strchr (char_name_letters, name[i]) != NULL)
@@ -287,7 +311,8 @@ int inter_homunculus_parse_frommap (int fd)
 {
 	unsigned short cmd = RFIFOW (fd, 0);
 
-	switch (cmd) {
+	switch (cmd)
+	{
 		case 0x3090: mapif_parse_homunculus_create (fd, (int) RFIFOW (fd, 2), (int) RFIFOL (fd, 4), (struct s_homunculus *) RFIFOP (fd, 8)); break;
 
 		case 0x3091: mapif_parse_homunculus_load (fd, (int) RFIFOL (fd, 2), (int) RFIFOL (fd, 6)); break;

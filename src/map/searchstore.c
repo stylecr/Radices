@@ -12,7 +12,8 @@
 
 
 /// failure constants for clif functions
-enum e_searchstore_failure {
+enum e_searchstore_failure
+{
 	SSI_FAILED_NOTHING_SEARCH_ITEM         = 0,  // "No matching stores were found."
 	SSI_FAILED_OVER_MAXCOUNT               = 1,  // "There are too many results. Please enter more detailed search term."
 	SSI_FAILED_SEARCH_CNT                  = 2,  // "You cannot search anymore."
@@ -21,13 +22,15 @@ enum e_searchstore_failure {
 };
 
 
-enum e_searchstore_searchtype {
+enum e_searchstore_searchtype
+{
 	SEARCHTYPE_VENDING      = 0,
 	SEARCHTYPE_BUYING_STORE = 1,
 };
 
 
-enum e_searchstore_effecttype {
+enum e_searchstore_effecttype
+{
 	EFFECTTYPE_NORMAL = 0,
 	EFFECTTYPE_CASH   = 1,
 	EFFECTTYPE_MAX
@@ -42,7 +45,8 @@ typedef bool (*searchstore_searchall_t) (struct map_session_data *sd, const stru
 /// retrieves search function by type
 static searchstore_search_t searchstore_getsearchfunc (unsigned char type)
 {
-	switch (type) {
+	switch (type)
+	{
 		case SEARCHTYPE_VENDING:      return &vending_search;
 
 		case SEARCHTYPE_BUYING_STORE: return &buyingstore_search;
@@ -55,7 +59,8 @@ static searchstore_search_t searchstore_getsearchfunc (unsigned char type)
 /// retrieves search-all function by type
 static searchstore_searchall_t searchstore_getsearchallfunc (unsigned char type)
 {
-	switch (type) {
+	switch (type)
+	{
 		case SEARCHTYPE_VENDING:      return &vending_searchall;
 
 		case SEARCHTYPE_BUYING_STORE: return &buyingstore_searchall;
@@ -68,7 +73,8 @@ static searchstore_searchall_t searchstore_getsearchallfunc (unsigned char type)
 /// checks if the player has a store by type
 static bool searchstore_hasstore (struct map_session_data *sd, unsigned char type)
 {
-	switch (type) {
+	switch (type)
+	{
 		case SEARCHTYPE_VENDING:      return sd->state.vending;
 
 		case SEARCHTYPE_BUYING_STORE: return sd->state.buyingstore;
@@ -81,7 +87,8 @@ static bool searchstore_hasstore (struct map_session_data *sd, unsigned char typ
 /// returns player's store id by type
 static int searchstore_getstoreid (struct map_session_data *sd, unsigned char type)
 {
-	switch (type) {
+	switch (type)
+	{
 		case SEARCHTYPE_VENDING:      return sd->vender_id;
 
 		case SEARCHTYPE_BUYING_STORE: return sd->buyer_id;
@@ -93,11 +100,13 @@ static int searchstore_getstoreid (struct map_session_data *sd, unsigned char ty
 
 bool searchstore_open (struct map_session_data *sd, unsigned int uses, unsigned short effect)
 {
-	if (!battle_config.feature_search_stores || sd->searchstore.open) {
+	if (!battle_config.feature_search_stores || sd->searchstore.open)
+	{
 		return false;
 	}
 
-	if (!uses || effect >= EFFECTTYPE_MAX) {
+	if (!uses || effect >= EFFECTTYPE_MAX)
+	{
 		// invalid input
 		return false;
 	}
@@ -119,49 +128,59 @@ void searchstore_query (struct map_session_data *sd, unsigned char type, unsigne
 	searchstore_searchall_t store_searchall;
 	time_t querytime;
 
-	if (!battle_config.feature_search_stores) {
+	if (!battle_config.feature_search_stores)
+	{
 		return;
 	}
 
-	if (!sd->searchstore.open) {
+	if (!sd->searchstore.open)
+	{
 		return;
 	}
 
-	if ( (store_searchall = searchstore_getsearchallfunc (type)) == NULL) {
+	if ( (store_searchall = searchstore_getsearchallfunc (type)) == NULL)
+	{
 		ShowError ("searchstore_query: Unknown search type %u (account_id=%d).\n", (unsigned int) type, sd->bl.id);
 		return;
 	}
 
 	time (&querytime);
 
-	if (sd->searchstore.nextquerytime > querytime) {
+	if (sd->searchstore.nextquerytime > querytime)
+	{
 		clif_search_store_info_failed (sd, SSI_FAILED_LIMIT_SEARCH_TIME);
 		return;
 	}
 
-	if (!sd->searchstore.uses) {
+	if (!sd->searchstore.uses)
+	{
 		clif_search_store_info_failed (sd, SSI_FAILED_SEARCH_CNT);
 		return;
 	}
 
 	// validate lists
-	for (i = 0; i < item_count; i++) {
-		if (!itemdb_exists (itemlist[i])) {
+	for (i = 0; i < item_count; i++)
+	{
+		if (!itemdb_exists (itemlist[i]))
+		{
 			ShowWarning ("searchstore_query: Client resolved item %hu is not known.\n", itemlist[i]);
 			clif_search_store_info_failed (sd, SSI_FAILED_NOTHING_SEARCH_ITEM);
 			return;
 		}
 	}
 
-	for (i = 0; i < card_count; i++) {
-		if (!itemdb_exists (cardlist[i])) {
+	for (i = 0; i < card_count; i++)
+	{
+		if (!itemdb_exists (cardlist[i]))
+		{
 			ShowWarning ("searchstore_query: Client resolved card %hu is not known.\n", cardlist[i]);
 			clif_search_store_info_failed (sd, SSI_FAILED_NOTHING_SEARCH_ITEM);
 			return;
 		}
 	}
 
-	if (max_price < min_price) {
+	if (max_price < min_price)
+	{
 		swap (min_price, max_price);
 	}
 
@@ -182,13 +201,16 @@ void searchstore_query (struct map_session_data *sd, unsigned char type, unsigne
 	s.max_price  = max_price;
 	iter         = mapit_geteachpc();
 
-	for (pl_sd = (struct map_session_data *) mapit_first (iter); mapit_exists (iter);  pl_sd = (struct map_session_data *) mapit_next (iter)) {
-		if (sd == pl_sd) {
+	for (pl_sd = (struct map_session_data *) mapit_first (iter); mapit_exists (iter);  pl_sd = (struct map_session_data *) mapit_next (iter))
+	{
+		if (sd == pl_sd)
+		{
 			// skip own shop, if any
 			continue;
 		}
 
-		if (!store_searchall (pl_sd, &s)) {
+		if (!store_searchall (pl_sd, &s))
+		{
 			// exceeded result size
 			clif_search_store_info_failed (sd, SSI_FAILED_OVER_MAXCOUNT);
 			break;
@@ -197,14 +219,17 @@ void searchstore_query (struct map_session_data *sd, unsigned char type, unsigne
 
 	mapit_free (iter);
 
-	if (sd->searchstore.count) {
+	if (sd->searchstore.count)
+	{
 		// reclaim unused memory
 		sd->searchstore.items = (struct s_search_store_info_item *) aRealloc (sd->searchstore.items, sizeof (struct s_search_store_info_item) * sd->searchstore.count);
 		// present results
 		clif_search_store_info_ack (sd);
 		// one page displayed
 		sd->searchstore.pages++;
-	} else {
+	}
+	else
+	{
 		// cleanup
 		searchstore_clear (sd);
 		// update uses
@@ -218,7 +243,8 @@ void searchstore_query (struct map_session_data *sd, unsigned char type, unsigne
 /// checks whether or not more results are available for the client
 bool searchstore_querynext (struct map_session_data *sd)
 {
-	if (sd->searchstore.count && (sd->searchstore.count - 1) / SEARCHSTORE_RESULTS_PER_PAGE < sd->searchstore.pages) {
+	if (sd->searchstore.count && (sd->searchstore.count - 1) / SEARCHSTORE_RESULTS_PER_PAGE < sd->searchstore.pages)
+	{
 		return true;
 	}
 
@@ -228,7 +254,8 @@ bool searchstore_querynext (struct map_session_data *sd)
 
 void searchstore_next (struct map_session_data *sd)
 {
-	if (!battle_config.feature_search_stores || !sd->searchstore.open || sd->searchstore.count <= sd->searchstore.pages * SEARCHSTORE_RESULTS_PER_PAGE) {
+	if (!battle_config.feature_search_stores || !sd->searchstore.open || sd->searchstore.count <= sd->searchstore.pages * SEARCHSTORE_RESULTS_PER_PAGE)
+	{
 		// nothing (more) to display
 		return;
 	}
@@ -244,7 +271,8 @@ void searchstore_clear (struct map_session_data *sd)
 {
 	searchstore_clearremote (sd);
 
-	if (sd->searchstore.items) {
+	if (sd->searchstore.items)
+	{
 		// release results
 		aFree (sd->searchstore.items);
 		sd->searchstore.items = NULL;
@@ -257,7 +285,8 @@ void searchstore_clear (struct map_session_data *sd)
 
 void searchstore_close (struct map_session_data *sd)
 {
-	if (sd->searchstore.open) {
+	if (sd->searchstore.open)
+	{
 		searchstore_clear (sd);
 		sd->searchstore.uses = 0;
 		sd->searchstore.open = false;
@@ -271,27 +300,31 @@ void searchstore_click (struct map_session_data *sd, int account_id, int store_i
 	struct map_session_data *pl_sd;
 	searchstore_search_t store_search;
 
-	if (!battle_config.feature_search_stores || !sd->searchstore.open || !sd->searchstore.count) {
+	if (!battle_config.feature_search_stores || !sd->searchstore.open || !sd->searchstore.count)
+	{
 		return;
 	}
 
 	searchstore_clearremote (sd);
 	ARR_FIND (0, sd->searchstore.count, i,  sd->searchstore.items[i].store_id == store_id && sd->searchstore.items[i].account_id == account_id && sd->searchstore.items[i].nameid == nameid);
 
-	if (i == sd->searchstore.count) {
+	if (i == sd->searchstore.count)
+	{
 		// no such result, crafted
 		ShowWarning ("searchstore_click: Received request with item %hu of account %d, which is not part of current result set (account_id=%d, char_id=%d).\n", nameid, account_id, sd->bl.id, sd->status.char_id);
 		clif_search_store_info_failed (sd, SSI_FAILED_SSILIST_CLICK_TO_OPEN_STORE);
 		return;
 	}
 
-	if ( (pl_sd = map_id2sd (account_id)) == NULL) {
+	if ( (pl_sd = map_id2sd (account_id)) == NULL)
+	{
 		// no longer online
 		clif_search_store_info_failed (sd, SSI_FAILED_SSILIST_CLICK_TO_OPEN_STORE);
 		return;
 	}
 
-	if (!searchstore_hasstore (pl_sd, sd->searchstore.type) || searchstore_getstoreid (pl_sd, sd->searchstore.type) != store_id) {
+	if (!searchstore_hasstore (pl_sd, sd->searchstore.type) || searchstore_getstoreid (pl_sd, sd->searchstore.type) != store_id)
+	{
 		// no longer vending/buying or not same shop
 		clif_search_store_info_failed (sd, SSI_FAILED_SSILIST_CLICK_TO_OPEN_STORE);
 		return;
@@ -299,20 +332,25 @@ void searchstore_click (struct map_session_data *sd, int account_id, int store_i
 
 	store_search = searchstore_getsearchfunc (sd->searchstore.type);
 
-	if (!store_search (pl_sd, nameid)) {
+	if (!store_search (pl_sd, nameid))
+	{
 		// item no longer being sold/bought
 		clif_search_store_info_failed (sd, SSI_FAILED_SSILIST_CLICK_TO_OPEN_STORE);
 		return;
 	}
 
-	switch (sd->searchstore.effect) {
+	switch (sd->searchstore.effect)
+	{
 		case EFFECTTYPE_NORMAL:
 
 			// display coords
-			if (sd->bl.m != pl_sd->bl.m) {
+			if (sd->bl.m != pl_sd->bl.m)
+			{
 				// not on same map, wipe previous marker
 				clif_search_store_info_click_ack (sd, -1, -1);
-			} else {
+			}
+			else
+			{
 				clif_search_store_info_click_ack (sd, pl_sd->bl.x, pl_sd->bl.y);
 			}
 
@@ -323,7 +361,8 @@ void searchstore_click (struct map_session_data *sd, int account_id, int store_i
 			// to bypass range checks
 			sd->searchstore.remote_id = account_id;
 
-			switch (sd->searchstore.type) {
+			switch (sd->searchstore.type)
+			{
 				case SEARCHTYPE_VENDING:      vending_vendinglistreq (sd, account_id); break;
 
 				case SEARCHTYPE_BUYING_STORE: buyingstore_open (sd, account_id);       break;
@@ -357,7 +396,8 @@ bool searchstore_result (struct map_session_data *sd, int store_id, int account_
 {
 	struct s_search_store_info_item *ssitem;
 
-	if (sd->searchstore.count >= (unsigned int) battle_config.searchstore_maxresults) {
+	if (sd->searchstore.count >= (unsigned int) battle_config.searchstore_maxresults)
+	{
 		// no more
 		return false;
 	}

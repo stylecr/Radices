@@ -23,7 +23,8 @@ int chat_triggerevent (struct chat_data *cd); // forward declaration
 
 /// Initializes a chatroom object (common functionality for both pc and npc chatrooms).
 /// Returns a chatroom object on success, or NULL on failure.
-static struct chat_data *chat_createchat (struct block_list *bl, const char *title, const char *pass, int limit, bool pub, int trigger, const char *ev, int zeny, int minLvl, int maxLvl) {
+static struct chat_data *chat_createchat (struct block_list *bl, const char *title, const char *pass, int limit, bool pub, int trigger, const char *ev, int zeny, int minLvl, int maxLvl)
+{
 	struct chat_data *cd;
 	nullpo_retr (NULL, bl);
 
@@ -49,7 +50,8 @@ static struct chat_data *chat_createchat (struct block_list *bl, const char *tit
 	cd->bl.type = BL_CHAT;
 	cd->bl.next = cd->bl.prev = NULL;
 
-	if (cd->bl.id == 0) {
+	if (cd->bl.id == 0)
+	{
 		aFree (cd);
 		cd = NULL;
 	}
@@ -70,17 +72,20 @@ int chat_createpcchat (struct map_session_data *sd, const char *title, const cha
 	if (sd->chatID)
 		return 0; //Prevent people abusing the chat system by creating multiple chats, as pointed out by End of Exam. [Skotlex]
 
-	if (sd->state.vending || sd->state.buyingstore) {
+	if (sd->state.vending || sd->state.buyingstore)
+	{
 		// not chat, when you already have a store open
 		return 0;
 	}
 
-	if (map[sd->bl.m].flag.nochat) {
+	if (map[sd->bl.m].flag.nochat)
+	{
 		clif_displaymessage (sd->fd, msg_txt (281));
 		return 0; //Can't create chatrooms on this map.
 	}
 
-	if (map_getcell (sd->bl.m, sd->bl.x, sd->bl.y, CELL_CHKNOCHAT)) {
+	if (map_getcell (sd->bl.m, sd->bl.x, sd->bl.y, CELL_CHKNOCHAT))
+	{
 		clif_displaymessage (sd->fd, "Não é possível criar salas de conversação nessa área.");
 		return 0;
 	}
@@ -88,13 +93,15 @@ int chat_createpcchat (struct map_session_data *sd, const char *title, const cha
 	pc_stop_walking (sd, 1);
 	cd = chat_createchat (&sd->bl, title, pass, limit, pub, 0, "", 0, 1, MAX_LEVEL);
 
-	if (cd) {
+	if (cd)
+	{
 		cd->users = 1;
 		cd->usersd[0] = sd;
 		pc_setchatid (sd, cd->bl.id);
 		clif_createchat (sd, 0);
 		clif_dispchat (cd, 0);
-	} else
+	}
+	else
 		clif_createchat (sd, 1);
 
 	return 0;
@@ -109,17 +116,20 @@ int chat_joinchat (struct map_session_data *sd, int chatid, const char *pass)
 	nullpo_ret (sd);
 	cd = (struct chat_data *) map_id2bl (chatid);
 
-	if (cd == NULL || cd->bl.type != BL_CHAT || cd->bl.m != sd->bl.m || sd->state.vending || sd->state.buyingstore || sd->chatID || cd->users >= cd->limit) {
+	if (cd == NULL || cd->bl.type != BL_CHAT || cd->bl.m != sd->bl.m || sd->state.vending || sd->state.buyingstore || sd->chatID || cd->users >= cd->limit)
+	{
 		clif_joinchatfail (sd, 0);
 		return 0;
 	}
 
-	if (!cd->pub && strncmp (pass, cd->pass, sizeof (cd->pass)) != 0 && ! (battle_config.gm_join_chat && pc_isGM (sd) >= battle_config.gm_join_chat)) {
+	if (!cd->pub && strncmp (pass, cd->pass, sizeof (cd->pass)) != 0 && ! (battle_config.gm_join_chat && pc_isGM (sd) >= battle_config.gm_join_chat))
+	{
 		clif_joinchatfail (sd, 1);
 		return 0;
 	}
 
-	if (sd->status.base_level < cd->minLvl || sd->status.base_level > cd->maxLvl) {
+	if (sd->status.base_level < cd->minLvl || sd->status.base_level > cd->maxLvl)
+	{
 		if (sd->status.base_level < cd->minLvl)
 			clif_joinchatfail (sd, 5);
 		else
@@ -128,7 +138,8 @@ int chat_joinchat (struct map_session_data *sd, int chatid, const char *pass)
 		return 0;
 	}
 
-	if (sd->status.zeny < cd->zeny) {
+	if (sd->status.zeny < cd->zeny)
+	{
 		clif_joinchatfail (sd, 4);
 		return 0;
 	}
@@ -156,14 +167,16 @@ int chat_leavechat (struct map_session_data *sd, bool kicked)
 	nullpo_retr (1, sd);
 	cd = (struct chat_data *) map_id2bl (sd->chatID);
 
-	if (cd == NULL) {
+	if (cd == NULL)
+	{
 		pc_setchatid (sd, 0);
 		return 1;
 	}
 
 	ARR_FIND (0, cd->users, i, cd->usersd[i] == sd);
 
-	if (i == cd->users) {
+	if (i == cd->users)
+	{
 		// Not found in the chatroom?
 		pc_setchatid (sd, 0);
 		return -1;
@@ -177,7 +190,8 @@ int chat_leavechat (struct map_session_data *sd, bool kicked)
 	for (i = leavechar; i < cd->users; i++)
 		cd->usersd[i] = cd->usersd[i + 1];
 
-	if (cd->users == 0 && cd->owner->type == BL_PC) {
+	if (cd->users == 0 && cd->owner->type == BL_PC)
+	{
 		// Delete empty chatroom
 		clif_clearchat (cd, 0);
 		map_deliddb (&cd->bl);
@@ -186,7 +200,8 @@ int chat_leavechat (struct map_session_data *sd, bool kicked)
 		return 1;
 	}
 
-	if (leavechar == 0 && cd->owner->type == BL_PC) {
+	if (leavechar == 0 && cd->owner->type == BL_PC)
+	{
 		// Set and announce new owner
 		cd->owner = (struct block_list *) cd->usersd[0];
 		clif_changechatowner (cd, cd->usersd[0]);
@@ -197,7 +212,8 @@ int chat_leavechat (struct map_session_data *sd, bool kicked)
 		cd->bl.y = cd->usersd[0]->bl.y;
 		map_addblock (&cd->bl);
 		clif_dispchat (cd, 0);
-	} else
+	}
+	else
 		clif_dispchat (cd, 0); // refresh chatroom
 
 	return 0;
@@ -293,19 +309,22 @@ int chat_createnpcchat (struct npc_data *nd, const char *title, int limit, bool 
 	struct chat_data *cd;
 	nullpo_ret (nd);
 
-	if (nd->chat_id) {
+	if (nd->chat_id)
+	{
 		ShowError ("chat_createnpcchat: NPC '%s' ja esta numa sala de conversacao, nao e possível criar uma nova!\n", nd->exname);
 		return 0;
 	}
 
-	if (zeny > MAX_ZENY || maxLvl > MAX_LEVEL) {
+	if (zeny > MAX_ZENY || maxLvl > MAX_LEVEL)
+	{
 		ShowError ("chat_createnpcchat: npc '%s' has a required lvl or amount of zeny over the max limit!\n", nd->exname);
 		return 0;
 	}
 
 	cd = chat_createchat (&nd->bl, title, "", limit, pub, trigger, ev, zeny, minLvl, maxLvl);
 
-	if (cd) {
+	if (cd)
+	{
 		nd->chat_id = cd->bl.id;
 		clif_dispchat (cd, 0);
 	}

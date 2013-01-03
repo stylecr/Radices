@@ -26,7 +26,8 @@ int mapif_quests_fromsql (int char_id, struct quest questlog[])
 	SqlStmt *stmt;
 	stmt = SqlStmt_Malloc (sql_handle);
 
-	if (stmt == NULL) {
+	if (stmt == NULL)
+	{
 		SqlStmt_ShowDebug (stmt);
 		return 0;
 	}
@@ -54,7 +55,8 @@ int mapif_quests_fromsql (int char_id, struct quest questlog[])
 //Delete a quest
 bool mapif_quest_delete (int char_id, int quest_id)
 {
-	if (SQL_ERROR == Sql_Query (sql_handle, "DELETE FROM `%s` WHERE `quest_id` = '%d' AND `char_id` = '%d'", quest_db, quest_id, char_id)) {
+	if (SQL_ERROR == Sql_Query (sql_handle, "DELETE FROM `%s` WHERE `quest_id` = '%d' AND `char_id` = '%d'", quest_db, quest_id, char_id))
+	{
 		Sql_ShowDebug (sql_handle);
 		return false;
 	}
@@ -65,7 +67,8 @@ bool mapif_quest_delete (int char_id, int quest_id)
 //Add a quest to a questlog
 bool mapif_quest_add (int char_id, struct quest qd)
 {
-	if (SQL_ERROR == Sql_Query (sql_handle, "INSERT INTO `%s`(`quest_id`, `char_id`, `state`, `time`, `count1`, `count2`, `count3`) VALUES ('%d', '%d', '%d','%d', '%d', '%d', '%d')", quest_db, qd.quest_id, char_id, qd.state, qd.time, qd.count[0], qd.count[1], qd.count[2])) {
+	if (SQL_ERROR == Sql_Query (sql_handle, "INSERT INTO `%s`(`quest_id`, `char_id`, `state`, `time`, `count1`, `count2`, `count3`) VALUES ('%d', '%d', '%d','%d', '%d', '%d', '%d')", quest_db, qd.quest_id, char_id, qd.state, qd.time, qd.count[0], qd.count[1], qd.count[2]))
+	{
 		Sql_ShowDebug (sql_handle);
 		return false;
 	}
@@ -76,7 +79,8 @@ bool mapif_quest_add (int char_id, struct quest qd)
 //Update a questlog
 bool mapif_quest_update (int char_id, struct quest qd)
 {
-	if (SQL_ERROR == Sql_Query (sql_handle, "UPDATE `%s` SET `state`='%d', `count1`='%d', `count2`='%d', `count3`='%d' WHERE `quest_id` = '%d' AND `char_id` = '%d'", quest_db, qd.state, qd.count[0], qd.count[1], qd.count[2], qd.quest_id, char_id)) {
+	if (SQL_ERROR == Sql_Query (sql_handle, "UPDATE `%s` SET `state`='%d', `count1`='%d', `count2`='%d', `count3`='%d' WHERE `quest_id` = '%d' AND `char_id` = '%d'", quest_db, qd.state, qd.count[0], qd.count[1], qd.count[2], qd.quest_id, char_id))
+	{
 		Sql_ShowDebug (sql_handle);
 		return false;
 	}
@@ -98,21 +102,25 @@ int mapif_parse_quest_save (int fd)
 
 	num2 = mapif_quests_fromsql (char_id, qd2);
 
-	for (i = 0; i < num1; i++) {
+	for (i = 0; i < num1; i++)
+	{
 		ARR_FIND (0, num2, j, qd1[i].quest_id == qd2[j].quest_id);
 
-		if (j < num2) { // Update existed quests
+		if (j < num2)   // Update existed quests
+		{
 			// Only states and counts are changable.
 			ARR_FIND (0, MAX_QUEST_OBJECTIVES, k, qd1[i].count[k] != qd2[j].count[k]);
 
 			if (k != MAX_QUEST_OBJECTIVES || qd1[i].state != qd2[j].state)
 				success &= mapif_quest_update (char_id, qd1[i]);
 
-			if (j < (--num2)) {
+			if (j < (--num2))
+			{
 				memmove (&qd2[j], &qd2[j + 1], sizeof (struct quest) * (num2 - j));
 				memset (&qd2[num2], 0, sizeof (struct quest));
 			}
-		} else // Add new quests
+		}
+		else   // Add new quests
 			success &= mapif_quest_add (char_id, qd1[i]);
 	}
 
@@ -143,8 +151,10 @@ int mapif_parse_quest_load (int fd)
 	WFIFOL (fd, 4) = char_id;
 
 	//Active and inactive quests
-	for (i = 0; i < num_quests; i++) {
-		if (tmp_questlog[i].state == Q_COMPLETE) {
+	for (i = 0; i < num_quests; i++)
+	{
+		if (tmp_questlog[i].state == Q_COMPLETE)
+		{
 			complete[num_complete++] = i;
 			continue;
 		}
@@ -162,7 +172,8 @@ int mapif_parse_quest_load (int fd)
 
 int inter_quest_parse_frommap (int fd)
 {
-	switch (RFIFOW (fd, 0)) {
+	switch (RFIFOW (fd, 0))
+	{
 		case 0x3060: mapif_parse_quest_load (fd); break;
 
 		case 0x3061: mapif_parse_quest_save (fd); break;

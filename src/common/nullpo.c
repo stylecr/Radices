@@ -72,8 +72,10 @@ static void nullpo_info_core (const char *file, int line, const char *func,
 	ShowMessage ("--- nullpo info --------------------------------------------\n");
 	ShowMessage ("%s:%d: in func `%s'\n", file, line, func);
 
-	if (fmt != NULL) {
-		if (fmt[0] != '\0') {
+	if (fmt != NULL)
+	{
+		if (fmt[0] != '\0')
+		{
 			vprintf (fmt, ap);
 
 			// ç≈å„Ç…â¸çsÇµÇΩÇ©ämîF

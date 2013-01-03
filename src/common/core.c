@@ -72,7 +72,8 @@ sigfunc *compat_signal (int signo, sigfunc *func)
 #ifdef _WIN32
 static BOOL WINAPI console_handler (DWORD c_event)
 {
-	switch (c_event) {
+	switch (c_event)
+	{
 		case CTRL_CLOSE_EVENT:
 		case CTRL_LOGOFF_EVENT:
 		case CTRL_SHUTDOWN_EVENT:
@@ -104,7 +105,8 @@ static void sig_proc (int sn)
 {
 	static int is_called = 0;
 
-	switch (sn) {
+	switch (sn)
+	{
 		case SIGINT:
 		case SIGTERM:
 			if (++is_called > 3)
@@ -164,7 +166,8 @@ const char *get_git_revision (void)
 	if (*rA_git_version)
 		return rA_git_version;
 
-	if ( (fp = fopen (".git/refs/heads/master", "r")) != NULL) {
+	if ( (fp = fopen (".git/refs/heads/master", "r")) != NULL)
+	{
 		char line[64];
 		char *rev = malloc (sizeof (char) * 50);
 
@@ -173,11 +176,14 @@ const char *get_git_revision (void)
 
 		free (rev);
 		fclose (fp);
-	} else {
+	}
+	else
+	{
 		snprintf (rA_git_version, sizeof (rA_git_version), "no");
 	}
 
-	if (! (*rA_git_version)) {
+	if (! (*rA_git_version))
+	{
 		snprintf (rA_git_version, sizeof (rA_git_version), "Desconhecido");
 	}
 
@@ -191,34 +197,49 @@ const char *get_svn_revision (void)
 	if (*rA_svn_version)
 		return rA_svn_version;
 
-	if ( (fp = fopen (".svn/entries", "r")) != NULL) {
+	if ( (fp = fopen (".svn/entries", "r")) != NULL)
+	{
 		char line[1024];
 		int rev;
 
 		// Check the version
-		if (fgets (line, sizeof (line), fp)) {
-			if (!ISDIGIT (line[0])) {
+		if (fgets (line, sizeof (line), fp))
+		{
+			if (!ISDIGIT (line[0]))
+			{
 				// XML File format
 				while (fgets (line, sizeof (line), fp))
 					if (strstr (line, "revisão=")) break;
 
-				if (sscanf (line, " %*[^\"]\"%d%*[^\n]", &rev) == 1) {
+				if (sscanf (line, " %*[^\"]\"%d%*[^\n]", &rev) == 1)
+				{
 					snprintf (rA_svn_version, sizeof (rA_svn_version), "%d", rev);
 				}
-			} else {
+			}
+			else
+			{
 				// Bin File format
-				if (fgets (line, sizeof (line), fp) == NULL) { printf ("Can't get bin name\n"); }
+				if (fgets (line, sizeof (line), fp) == NULL)
+				{
+					printf ("Can't get bin name\n");
+				}
 
-				if (fgets (line, sizeof (line), fp) == NULL) { printf ("Can't get entries kind\n"); }
+				if (fgets (line, sizeof (line), fp) == NULL)
+				{
+					printf ("Can't get entries kind\n");
+				}
 
-				if (fgets (line, sizeof (line), fp)) { // Get the rev numver
+				if (fgets (line, sizeof (line), fp))   // Get the rev numver
+				{
 					snprintf (rA_svn_version, sizeof (rA_svn_version), "%d", atoi (line));
 				}
 			}
 		}
 
 		fclose (fp);
-	} else {
+	}
+	else
+	{
 		snprintf (rA_svn_version, sizeof (rA_svn_version), "no");
 	}
 
@@ -226,14 +247,19 @@ const char *get_svn_revision (void)
 	 * subversion 1.7 introduces the use of a .db file to store it, and we go through it
 	 * TODO: In some cases it may be not accurate
 	 **/
-	if (! (*rA_svn_version) && ( (fp = fopen (".svn/wc.db", "rb")) != NULL || (fp = fopen ("../.svn/wc.db", "rb")) != NULL)) {
+	if (! (*rA_svn_version) && ( (fp = fopen (".svn/wc.db", "rb")) != NULL || (fp = fopen ("../.svn/wc.db", "rb")) != NULL))
+	{
 		char lines[64];
 		int revision, last_known = 0;
 
-		while (fread (lines, sizeof (char), sizeof (lines), fp)) {
-			if (strstr (lines, "!svn/ver/")) {
-				if (sscanf (strstr (lines, "!svn/ver/"), "!svn/ver/%d/%*s", &revision) == 1) {
-					if (revision > last_known) {
+		while (fread (lines, sizeof (char), sizeof (lines), fp))
+		{
+			if (strstr (lines, "!svn/ver/"))
+			{
+				if (sscanf (strstr (lines, "!svn/ver/"), "!svn/ver/%d/%*s", &revision) == 1)
+				{
+					if (revision > last_known)
+					{
 						last_known = revision;
 					}
 				}
@@ -275,11 +301,17 @@ static void display_title (void)
 	ShowMessage (""CL_XXBL"          ("CL_BT_YELLOW"      Baseado no eAthena (c) 2005-2013 Projeto Cronus    "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
 	ShowMessage (""CL_XXBL"          ("CL_BOLD"                                                         "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
 	ShowMessage (""CL_WTBL"          (=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=)"CL_CLL""CL_NORMAL"\n\n");
-	if (strcmpi (get_git_revision(), "no") != 0) {
+
+	if (strcmpi (get_git_revision(), "no") != 0)
+	{
 		ShowInfo ("Revisão GIT: '"CL_WHITE"%s"CL_RESET"'.\n", get_git_revision());
-	} else if (strcmpi (get_svn_revision(), "no") != 0) {
+	}
+	else if (strcmpi (get_svn_revision(), "no") != 0)
+	{
 		ShowInfo ("Revisão SVN: '"CL_WHITE"%s"CL_RESET"'.\n", get_svn_revision());
-	} else {
+	}
+	else
+	{
 		ShowInfo ("Revisão: Desconhecida.\n");
 	}
 }
@@ -288,7 +320,8 @@ static void display_title (void)
 // Avisa se o usuário está logado como ROOT
 void usercheck (void)
 {
-	if (geteuid() == 0) {
+	if (geteuid() == 0)
+	{
 		ShowWarning ("Você está iniciando o Cronus-Emulator com privilégios ROOT.\n");
 		ShowWarning ("Isto é inseguro e desnecessário.\n");
 	}
@@ -305,7 +338,8 @@ int main (int argc, char **argv)
 		char *p1 = SERVER_NAME = argv[0];
 		char *p2 = p1;
 
-		while ( (p1 = strchr (p2, '/')) != NULL || (p1 = strchr (p2, '\\')) != NULL) {
+		while ( (p1 = strchr (p2, '/')) != NULL || (p1 = strchr (p2, '\\')) != NULL)
+		{
 			SERVER_NAME = ++p1;
 			p2 = p1;
 		}
@@ -314,11 +348,9 @@ int main (int argc, char **argv)
 		arg_v = argv;
 	}
 	malloc_init(); // needed for Show* in display_title() [FlavioJS]
-
 #ifndef _WIN32
 	usercheck();
 #endif
-
 #ifdef MINICORE // minimalist Core
 	display_title();
 	do_init (argc, argv);
@@ -339,7 +371,8 @@ int main (int argc, char **argv)
 		int next;
 
 		// Enquanto a runflag não for a de Parar, o servidor rodará; do contrário, entrará em processo de finalização
-		while (runflag != CORE_ST_STOP) {
+		while (runflag != CORE_ST_STOP)
+		{
 			next = do_timer (gettick_nocache());
 			do_sockets (next);
 		}

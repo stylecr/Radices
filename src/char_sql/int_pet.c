@@ -26,23 +26,28 @@ int inter_pet_tosql (int pet_id, struct s_pet *p)
 	p->hungry = cap_value (p->hungry, 0, 100);
 	p->intimate = cap_value (p->intimate, 0, 1000);
 
-	if (pet_id == -1) {
+	if (pet_id == -1)
+	{
 		// New pet.
 		if (SQL_ERROR == Sql_Query (sql_handle, "INSERT INTO `%s` "
 									"(`class`,`name`,`account_id`,`char_id`,`level`,`egg_id`,`equip`,`intimate`,`hungry`,`rename_flag`,`incuvate`) "
 									"VALUES ('%d', '%s', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d')",
 									pet_db, p->class_, esc_name, p->account_id, p->char_id, p->level, p->egg_id,
-									p->equip, p->intimate, p->hungry, p->rename_flag, p->incuvate)) {
+									p->equip, p->intimate, p->hungry, p->rename_flag, p->incuvate))
+		{
 			Sql_ShowDebug (sql_handle);
 			return 0;
 		}
 
 		p->pet_id = (int) Sql_LastInsertId (sql_handle);
-	} else {
+	}
+	else
+	{
 		// Update pet.
 		if (SQL_ERROR == Sql_Query (sql_handle, "UPDATE `%s` SET `class`='%d',`name`='%s',`account_id`='%d',`char_id`='%d',`level`='%d',`egg_id`='%d',`equip`='%d',`intimate`='%d',`hungry`='%d',`rename_flag`='%d',`incuvate`='%d' WHERE `pet_id`='%d'",
 									pet_db, p->class_, esc_name, p->account_id, p->char_id, p->level, p->egg_id,
-									p->equip, p->intimate, p->hungry, p->rename_flag, p->incuvate, p->pet_id)) {
+									p->equip, p->intimate, p->hungry, p->rename_flag, p->incuvate, p->pet_id))
+		{
 			Sql_ShowDebug (sql_handle);
 			return 0;
 		}
@@ -65,12 +70,14 @@ int inter_pet_fromsql (int pet_id, struct s_pet *p)
 
 	//`pet` (`pet_id`, `class`,`name`,`account_id`,`char_id`,`level`,`egg_id`,`equip`,`intimate`,`hungry`,`rename_flag`,`incuvate`)
 
-	if (SQL_ERROR == Sql_Query (sql_handle, "SELECT `pet_id`, `class`,`name`,`account_id`,`char_id`,`level`,`egg_id`,`equip`,`intimate`,`hungry`,`rename_flag`,`incuvate` FROM `%s` WHERE `pet_id`='%d'", pet_db, pet_id)) {
+	if (SQL_ERROR == Sql_Query (sql_handle, "SELECT `pet_id`, `class`,`name`,`account_id`,`char_id`,`level`,`egg_id`,`equip`,`intimate`,`hungry`,`rename_flag`,`incuvate` FROM `%s` WHERE `pet_id`='%d'", pet_db, pet_id))
+	{
 		Sql_ShowDebug (sql_handle);
 		return 0;
 	}
 
-	if (SQL_SUCCESS == Sql_NextRow (sql_handle)) {
+	if (SQL_SUCCESS == Sql_NextRow (sql_handle))
+	{
 		p->pet_id = pet_id;
 		Sql_GetData (sql_handle,  1, &data, NULL); p->class_ = atoi (data);
 		Sql_GetData (sql_handle,  2, &data, &len); memcpy (p->name, data, min (len, NAME_LENGTH));
@@ -124,11 +131,14 @@ int mapif_pet_created (int fd, int account_id, struct s_pet *p)
 	WFIFOW (fd, 0) = 0x3880;
 	WFIFOL (fd, 2) = account_id;
 
-	if (p != NULL) {
+	if (p != NULL)
+	{
 		WFIFOB (fd, 6) = 0;
 		WFIFOL (fd, 7) = p->pet_id;
 		ShowInfo ("int_pet: created pet %d - %s\n", p->pet_id, p->name);
-	} else {
+	}
+	else
+	{
 		WFIFOB (fd, 6) = 1;
 		WFIFOL (fd, 7) = 0;
 	}
@@ -188,7 +198,8 @@ int mapif_create_pet (int fd, int account_id, int char_id, short pet_class, shor
 
 	if (incuvate == 1)
 		pet_pt->account_id = pet_pt->char_id = 0;
-	else {
+	else
+	{
 		pet_pt->account_id = account_id;
 		pet_pt->char_id = char_id;
 	}
@@ -227,15 +238,19 @@ int mapif_load_pet (int fd, int account_id, int char_id, int pet_id)
 	memset (pet_pt, 0, sizeof (struct s_pet));
 	inter_pet_fromsql (pet_id, pet_pt);
 
-	if (pet_pt != NULL) {
-		if (pet_pt->incuvate == 1) {
+	if (pet_pt != NULL)
+	{
+		if (pet_pt->incuvate == 1)
+		{
 			pet_pt->account_id = pet_pt->char_id = 0;
 			mapif_pet_info (fd, account_id, pet_pt);
-		} else if (account_id == pet_pt->account_id && char_id == pet_pt->char_id)
+		}
+		else if (account_id == pet_pt->account_id && char_id == pet_pt->char_id)
 			mapif_pet_info (fd, account_id, pet_pt);
 		else
 			mapif_pet_noinfo (fd, account_id);
-	} else
+	}
+	else
 		mapif_pet_noinfo (fd, account_id);
 
 	return 0;
@@ -248,9 +263,12 @@ int mapif_save_pet (int fd, int account_id, struct s_pet *data)
 	RFIFOHEAD (fd);
 	len = RFIFOW (fd, 2);
 
-	if (sizeof (struct s_pet) != len - 8) {
+	if (sizeof (struct s_pet) != len - 8)
+	{
 		ShowError ("inter pet: data size error %d %d\n", sizeof (struct s_pet), len - 8);
-	} else {
+	}
+	else
+	{
 		if (data->hungry < 0)
 			data->hungry = 0;
 		else if (data->hungry > 100)
@@ -307,7 +325,8 @@ int inter_pet_parse_frommap (int fd)
 {
 	RFIFOHEAD (fd);
 
-	switch (RFIFOW (fd, 0)) {
+	switch (RFIFOW (fd, 0))
+	{
 		case 0x3080: mapif_parse_CreatePet (fd); break;
 
 		case 0x3081: mapif_parse_LoadPet (fd); break;

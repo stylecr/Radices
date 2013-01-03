@@ -19,7 +19,8 @@
 static unsigned int *pX;
 
 // String Table
-static const unsigned int T[] = {
+static const unsigned int T[] =
+{
 	0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, //0
 	0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501, //4
 	0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be, //8
@@ -173,7 +174,8 @@ static void MD5_String2binary (const char *string, unsigned char *output)
 
 	//1-4
 	//If 56 bytes or more (less than 64 bytes) of remainder becomes, it will calculate by extending to 64 bytes.
-	if (56 <= copy_len) {
+	if (56 <= copy_len)
+	{
 		MD5_Round_Calculate (padding_message, A, B, C, D);
 		memset (padding_message, 0, 56); //56 bytes is newly fill uped with 0.
 	}
@@ -183,10 +185,12 @@ static void MD5_String2binary (const char *string, unsigned char *output)
 	memcpy (&padding_message[56], &string_bit_len, 4); //32 bytes of low rank is set.
 
 	//When bit length cannot be expressed in 32 bytes of low rank, it is a beam raising to a higher rank.
-	if (UINT_MAX / 8 < string_byte_len) {
+	if (UINT_MAX / 8 < string_byte_len)
+	{
 		unsigned int high = (string_byte_len - UINT_MAX / 8) * 8;
 		memcpy (&padding_message[60], &high, 4);
-	} else
+	}
+	else
 		memset (&padding_message[60], 0, 4); //In this case, it is good for a higher rank at 0.
 
 	//Step 4.Process Message in 16-Word Blocks (calculation of MD5)

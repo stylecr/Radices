@@ -19,7 +19,8 @@
 #define AUTH_SAVING_INTERVAL 60000 // flush every 10 minutes
 
 /// internal structure
-typedef struct AccountDB_TXT {
+typedef struct AccountDB_TXT
+{
 	AccountDB vtable;      // public interface
 
 	DBMap *accounts;       // in-memory accounts storage
@@ -33,7 +34,8 @@ typedef struct AccountDB_TXT {
 } AccountDB_TXT;
 
 /// internal structure
-typedef struct AccountDBIterator_TXT {
+typedef struct AccountDBIterator_TXT
+{
 	AccountDBIterator vtable;      // public interface
 
 	DBIterator *iter;
@@ -101,14 +103,16 @@ static bool account_db_txt_init (AccountDB *self)
 	// open data file
 	fp = fopen (db->account_db, "r");
 
-	if (fp == NULL) {
+	if (fp == NULL)
+	{
 		// no account file -> no account -> no login, including char-server (ERROR)
 		ShowError (CL_RED"account_db_txt_init: Accounts file [%s] not found."CL_RESET"\n", db->account_db);
 		return false;
 	}
 
 	// load data file
-	while (fgets (line, sizeof (line), fp) != NULL) {
+	while (fgets (line, sizeof (line), fp) != NULL)
+	{
 		int account_id, n;
 		unsigned int v;
 		struct mmo_account acc;
@@ -121,7 +125,8 @@ static bool account_db_txt_init (AccountDB *self)
 
 		n = 0;
 
-		if (sscanf (line, "%d%n", &v, &n) == 1 && (line[n] == '\n' || line[n] == '\r')) {
+		if (sscanf (line, "%d%n", &v, &n) == 1 && (line[n] == '\n' || line[n] == '\r'))
+		{
 			// format version definition
 			version = v;
 			continue;
@@ -129,7 +134,8 @@ static bool account_db_txt_init (AccountDB *self)
 
 		n = 0;
 
-		if (sscanf (line, "%d\t%%newid%%%n", &account_id, &n) == 1 && (line[n] == '\n' || line[n] == '\r')) {
+		if (sscanf (line, "%d\t%%newid%%%n", &account_id, &n) == 1 && (line[n] == '\n' || line[n] == '\r'))
+		{
 			// auto-increment
 			if (account_id > db->next_account_id)
 				db->next_account_id = account_id;
@@ -137,7 +143,8 @@ static bool account_db_txt_init (AccountDB *self)
 			continue;
 		}
 
-		if (!mmo_auth_fromstr (&acc, line, version)) {
+		if (!mmo_auth_fromstr (&acc, line, version))
+		{
 			ShowError ("account_db_txt_init: skipping invalid data: %s", line);
 			continue;
 		}
@@ -154,12 +161,14 @@ static bool account_db_txt_init (AccountDB *self)
 
 		iter->destroy (iter);
 
-		if (tmp != NULL) {
+		if (tmp != NULL)
+		{
 			// entry with identical username
 			ShowWarning ("account_db_txt_init: account %d:'%s' has same username as account %d. The account will be inaccessible!\n", acc.account_id, acc.userid, tmp->account_id);
 		}
 
-		if (idb_get (accounts, acc.account_id) != NULL) {
+		if (idb_get (accounts, acc.account_id) != NULL)
+		{
 			// account id already occupied
 			ShowError ("account_db_txt_init: ID collision for account id %d! Discarding data for account '%s'...\n", acc.account_id, acc.userid);
 			continue;
@@ -204,17 +213,20 @@ static bool account_db_txt_get_property (AccountDB *self, const char *key, char 
 	AccountDB_TXT *db = (AccountDB_TXT *) self;
 	const char *signature = "account.txt.";
 
-	if (strcmp (key, "engine.name") == 0) {
+	if (strcmp (key, "engine.name") == 0)
+	{
 		safesnprintf (buf, buflen, "txt");
 		return true;
 	}
 
-	if (strcmp (key, "engine.version") == 0) {
+	if (strcmp (key, "engine.version") == 0)
+	{
 		safesnprintf (buf, buflen, "%d", ACCOUNT_TXT_DB_VERSION);
 		return true;
 	}
 
-	if (strcmp (key, "engine.comment") == 0) {
+	if (strcmp (key, "engine.comment") == 0)
+	{
 		safesnprintf (buf, buflen, "TXT Account Database %d", ACCOUNT_TXT_DB_VERSION);
 		return true;
 	}
@@ -273,7 +285,8 @@ static bool account_db_txt_create (AccountDB *self, struct mmo_account *acc)
 	// check if the account_id is free
 	tmp = (struct mmo_account *) idb_get (accounts, account_id);
 
-	if (tmp != NULL) {
+	if (tmp != NULL)
+	{
 		// error condition - entry already present
 		ShowError ("account_db_txt_create: cannot create account %d:'%s', this id is already occupied by %d:'%s'!\n", account_id, acc->userid, account_id, tmp->userid);
 		return false;
@@ -304,7 +317,8 @@ static bool account_db_txt_remove (AccountDB *self, const int account_id)
 	//TODO: find out if this really works
 	struct mmo_account *tmp = (struct mmo_account *) idb_remove (accounts, account_id);
 
-	if (tmp == NULL) {
+	if (tmp == NULL)
+	{
 		// error condition - entry not present
 		ShowError ("account_db_txt_remove: no such account with id %d\n", account_id);
 		return false;
@@ -324,7 +338,8 @@ static bool account_db_txt_save (AccountDB *self, const struct mmo_account *acc)
 	// retrieve previous data
 	struct mmo_account *tmp = (struct mmo_account *) idb_get (accounts, account_id);
 
-	if (tmp == NULL) {
+	if (tmp == NULL)
+	{
 		// error condition - entry not found
 		return false;
 	}
@@ -347,7 +362,8 @@ static bool account_db_txt_load_num (AccountDB *self, struct mmo_account *acc, c
 	// retrieve data
 	struct mmo_account *tmp = (struct mmo_account *) idb_get (accounts, account_id);
 
-	if (tmp == NULL) {
+	if (tmp == NULL)
+	{
 		// entry not found
 		return false;
 	}
@@ -373,7 +389,8 @@ static bool account_db_txt_load_str (AccountDB *self, struct mmo_account *acc, c
 
 	iter->destroy (iter);
 
-	if (tmp == NULL) {
+	if (tmp == NULL)
+	{
 		// entry not found
 		return false;
 	}
@@ -414,7 +431,8 @@ static bool account_db_txt_iter_next (AccountDBIterator *self, struct mmo_accoun
 	AccountDBIterator_TXT *iter = (AccountDBIterator_TXT *) self;
 	struct mmo_account *tmp = (struct mmo_account *) dbi_next (iter->iter);
 
-	if (dbi_exists (iter->iter)) {
+	if (dbi_exists (iter->iter))
+	{
 		memcpy (acc, tmp, sizeof (struct mmo_account));
 		return true;
 	}
@@ -437,7 +455,8 @@ static bool mmo_auth_fromstr (struct mmo_account *a, char *str, unsigned int ver
 	// extract tab-separated columns from line
 	count = sv_split (str, strlen (str), 0, '\t', fields, ARRAYLENGTH (fields), (e_svopt) (SV_TERMINATE_LF | SV_TERMINATE_CRLF));
 
-	if (version == ACCOUNT_TXT_DB_VERSION && count == 14) {
+	if (version == ACCOUNT_TXT_DB_VERSION && count == 14)
+	{
 		a->account_id = strtol (fields[1], NULL, 10);
 		safestrncpy (a->userid, fields[2], sizeof (a->userid));
 		safestrncpy (a->pass, fields[3], sizeof (a->pass));
@@ -452,7 +471,9 @@ static bool mmo_auth_fromstr (struct mmo_account *a, char *str, unsigned int ver
 		safestrncpy (a->last_ip, fields[12], sizeof (a->last_ip));
 		safestrncpy (a->birthdate, fields[13], sizeof (a->birthdate));
 		regs = fields[14];
-	} else if (version == ACCOUNT_TXT_DB_VERSION && count == 13) {
+	}
+	else if (version == ACCOUNT_TXT_DB_VERSION && count == 13)
+	{
 		a->account_id = strtol (fields[1], NULL, 10);
 		safestrncpy (a->userid, fields[2], sizeof (a->userid));
 		safestrncpy (a->pass, fields[3], sizeof (a->pass));
@@ -466,7 +487,9 @@ static bool mmo_auth_fromstr (struct mmo_account *a, char *str, unsigned int ver
 		safestrncpy (a->lastlogin, fields[11], sizeof (a->lastlogin));
 		safestrncpy (a->last_ip, fields[12], sizeof (a->last_ip));
 		regs = fields[13];
-	} else if (version == 0 && count == 14) {
+	}
+	else if (version == 0 && count == 14)
+	{
 		a->account_id = strtol (fields[1], NULL, 10);
 		safestrncpy (a->userid, fields[2], sizeof (a->userid));
 		safestrncpy (a->pass, fields[3], sizeof (a->pass));
@@ -481,7 +504,9 @@ static bool mmo_auth_fromstr (struct mmo_account *a, char *str, unsigned int ver
 		//safestrncpy(a->memo, fields[12], sizeof(a->memo));
 		a->unban_time = strtol (fields[13], NULL, 10);
 		regs = fields[14];
-	} else if (version == 0 && count == 13) {
+	}
+	else if (version == 0 && count == 13)
+	{
 		a->account_id = strtol (fields[1], NULL, 10);
 		safestrncpy (a->userid, fields[2], sizeof (a->userid));
 		safestrncpy (a->pass, fields[3], sizeof (a->pass));
@@ -495,7 +520,9 @@ static bool mmo_auth_fromstr (struct mmo_account *a, char *str, unsigned int ver
 		safestrncpy (a->last_ip, fields[11], sizeof (a->last_ip));
 		//safestrncpy(a->memo, fields[12], sizeof(a->memo));
 		regs = fields[13];
-	} else if (version == 0 && count == 8) {
+	}
+	else if (version == 0 && count == 8)
+	{
 		a->account_id = strtol (fields[1], NULL, 10);
 		safestrncpy (a->userid, fields[2], sizeof (a->userid));
 		safestrncpy (a->pass, fields[3], sizeof (a->pass));
@@ -504,7 +531,9 @@ static bool mmo_auth_fromstr (struct mmo_account *a, char *str, unsigned int ver
 		a->logincount = strtoul (fields[6], NULL, 10);
 		a->state = strtoul (fields[7], NULL, 10);
 		regs = fields[8];
-	} else {
+	}
+	else
+	{
 		// unmatched row
 		return false;
 	}
@@ -513,18 +542,22 @@ static bool mmo_auth_fromstr (struct mmo_account *a, char *str, unsigned int ver
 	// {reg name<COMMA>reg value<SPACE>}*
 	n = 0;
 
-	for (i = 0; i < ACCOUNT_REG2_NUM; ++i) {
+	for (i = 0; i < ACCOUNT_REG2_NUM; ++i)
+	{
 		char key[32];
 		char value[256];
 		regs += n;
 
-		if (sscanf (regs, "%31[^\t,],%255[^\t ] %n", key, value, &n) != 2) {
+		if (sscanf (regs, "%31[^\t,],%255[^\t ] %n", key, value, &n) != 2)
+		{
 			// We must check if a str is void. If it's, we can continue to read other REG2.
 			// Account line will have something like: str2,9 ,9 str3,1 (here, ,9 is not good)
-			if (regs[0] == ',' && sscanf (regs, ",%[^\t ] %n", value, &n) == 1) {
+			if (regs[0] == ',' && sscanf (regs, ",%[^\t ] %n", value, &n) == 1)
+			{
 				i--;
 				continue;
-			} else
+			}
+			else
 				break;
 		}
 
@@ -562,7 +595,8 @@ static void mmo_auth_sync (AccountDB_TXT *db)
 	struct mmo_account *acc;
 	fp = lock_fopen (db->account_db, &lock);
 
-	if (fp == NULL) {
+	if (fp == NULL)
+	{
 		return;
 	}
 
@@ -578,7 +612,8 @@ static void mmo_auth_sync (AccountDB_TXT *db)
 	//TODO: sort?
 	iter = db->accounts->iterator (db->accounts);
 
-	for (acc = (struct mmo_account *) iter->first (iter, NULL); iter->exists (iter); acc = (struct mmo_account *) iter->next (iter, NULL)) {
+	for (acc = (struct mmo_account *) iter->first (iter, NULL); iter->exists (iter); acc = (struct mmo_account *) iter->next (iter, NULL))
+	{
 		char buf[2048]; // ought to be big enough ^^
 		mmo_auth_tostr (acc, buf);
 		fprintf (fp, "%s\n", buf);

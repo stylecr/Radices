@@ -52,7 +52,8 @@ void ipban_init (void)
 	if (!login_config.ipban)
 		return;// ipban disabled
 
-	if (ipban_db_hostname[0] != '\0') {
+	if (ipban_db_hostname[0] != '\0')
+	{
 		// local settings
 		username = ipban_db_username;
 		password = ipban_db_password;
@@ -60,7 +61,9 @@ void ipban_init (void)
 		port     = ipban_db_port;
 		database = ipban_db_database;
 		codepage = ipban_codepage;
-	} else {
+	}
+	else
+	{
 		// global settings
 		username = global_db_username;
 		password = global_db_password;
@@ -73,7 +76,8 @@ void ipban_init (void)
 	// establish connections
 	sql_handle = Sql_Malloc();
 
-	if (SQL_ERROR == Sql_Connect (sql_handle, username, password, hostname, port, database)) {
+	if (SQL_ERROR == Sql_Connect (sql_handle, username, password, hostname, port, database))
+	{
 		Sql_ShowDebug (sql_handle);
 		Sql_Free (sql_handle);
 		exit (EXIT_FAILURE);
@@ -82,11 +86,13 @@ void ipban_init (void)
 	if (codepage[0] != '\0' && SQL_ERROR == Sql_SetEncoding (sql_handle, codepage))
 		Sql_ShowDebug (sql_handle);
 
-	if (login_config.ipban_cleanup_interval > 0) {
+	if (login_config.ipban_cleanup_interval > 0)
+	{
 		// set up periodic cleanup of connection history and active bans
 		add_timer_func_list (ipban_cleanup, "ipban_cleanup");
 		cleanup_timer_id = add_timer_interval (gettick() + 10, ipban_cleanup, 0, 0, login_config.ipban_cleanup_interval * 1000);
-	} else // make sure it gets cleaned up on login-server start regardless of interval-based cleanups
+	}
+	else   // make sure it gets cleaned up on login-server start regardless of interval-based cleanups
 		ipban_cleanup (0, 0, 0, 0);
 }
 
@@ -116,7 +122,8 @@ bool ipban_config_read (const char *key, const char *value)
 
 	signature = "sql.";
 
-	if (strncmpi (key, signature, strlen (signature)) == 0) {
+	if (strncmpi (key, signature, strlen (signature)) == 0)
+	{
 		key += strlen (signature);
 
 		if (strcmpi (key, "db_hostname") == 0)
@@ -139,7 +146,8 @@ bool ipban_config_read (const char *key, const char *value)
 
 	signature = "ipban.sql.";
 
-	if (strncmpi (key, signature, strlen (signature)) == 0) {
+	if (strncmpi (key, signature, strlen (signature)) == 0)
+	{
 		key += strlen (signature);
 
 		if (strcmpi (key, "db_hostname") == 0)
@@ -164,7 +172,8 @@ bool ipban_config_read (const char *key, const char *value)
 
 	signature = "ipban.";
 
-	if (strncmpi (key, signature, strlen (signature)) == 0) {
+	if (strncmpi (key, signature, strlen (signature)) == 0)
+	{
 		key += strlen (signature);
 
 		if (strcmpi (key, "enable") == 0)
@@ -197,7 +206,8 @@ bool ipban_check (uint32 ip)
 		return false;// ipban disabled
 
 	if (SQL_ERROR == Sql_Query (sql_handle, "SELECT count(*) FROM `%s` WHERE `rtime` > NOW() AND (`list` = '%u.*.*.*' OR `list` = '%u.%u.*.*' OR `list` = '%u.%u.%u.*' OR `list` = '%u.%u.%u.%u')",
-								ipban_table, p[3], p[3], p[2], p[3], p[2], p[1], p[3], p[2], p[1], p[0])) {
+								ipban_table, p[3], p[3], p[2], p[3], p[2], p[1], p[3], p[2], p[1], p[0]))
+	{
 		Sql_ShowDebug (sql_handle);
 		// close connection because we can't verify their connectivity.
 		return true;
@@ -223,7 +233,8 @@ void ipban_log (uint32 ip)
 	failures = loginlog_failedattempts (ip, login_config.dynamic_pass_failure_ban_interval); // how many times failed account? in one ip.
 
 	// if over the limit, add a temporary ban entry
-	if (failures >= login_config.dynamic_pass_failure_ban_limit) {
+	if (failures >= login_config.dynamic_pass_failure_ban_limit)
+	{
 		uint8 *p = (uint8 *) &ip;
 
 		if (SQL_ERROR == Sql_Query (sql_handle, "INSERT INTO `%s`(`list`,`btime`,`rtime`,`reason`) VALUES ('%u.%u.%u.*', NOW() , NOW() +  INTERVAL %d MINUTE ,'Password error ban')",

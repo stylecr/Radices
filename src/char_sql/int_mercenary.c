@@ -19,12 +19,14 @@ bool mercenary_owner_fromsql (int char_id, struct mmo_charstatus *status)
 {
 	char *data;
 
-	if (SQL_ERROR == Sql_Query (sql_handle, "SELECT `merc_id`, `arch_calls`, `arch_faith`, `spear_calls`, `spear_faith`, `sword_calls`, `sword_faith` FROM `mercenary_owner` WHERE `char_id` = '%d'", char_id)) {
+	if (SQL_ERROR == Sql_Query (sql_handle, "SELECT `merc_id`, `arch_calls`, `arch_faith`, `spear_calls`, `spear_faith`, `sword_calls`, `sword_faith` FROM `mercenary_owner` WHERE `char_id` = '%d'", char_id))
+	{
 		Sql_ShowDebug (sql_handle);
 		return false;
 	}
 
-	if (SQL_SUCCESS != Sql_NextRow (sql_handle)) {
+	if (SQL_SUCCESS != Sql_NextRow (sql_handle))
+	{
 		Sql_FreeResult (sql_handle);
 		return false;
 	}
@@ -43,7 +45,8 @@ bool mercenary_owner_fromsql (int char_id, struct mmo_charstatus *status)
 bool mercenary_owner_tosql (int char_id, struct mmo_charstatus *status)
 {
 	if (SQL_ERROR == Sql_Query (sql_handle, "REPLACE INTO `mercenary_owner` (`char_id`, `merc_id`, `arch_calls`, `arch_faith`, `spear_calls`, `spear_faith`, `sword_calls`, `sword_faith`) VALUES ('%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d')",
-								char_id, status->mer_id, status->arch_calls, status->arch_faith, status->spear_calls, status->spear_faith, status->sword_calls, status->sword_faith)) {
+								char_id, status->mer_id, status->arch_calls, status->arch_faith, status->spear_calls, status->spear_faith, status->sword_calls, status->sword_faith))
+	{
 		Sql_ShowDebug (sql_handle);
 		return false;
 	}
@@ -66,18 +69,23 @@ bool mapif_mercenary_save (struct s_mercenary *merc)
 {
 	bool flag = true;
 
-	if (merc->mercenary_id == 0) {
+	if (merc->mercenary_id == 0)
+	{
 		// Create new DB entry
 		if (SQL_ERROR == Sql_Query (sql_handle,
 									"INSERT INTO `mercenary` (`char_id`,`class`,`hp`,`sp`,`kill_counter`,`life_time`) VALUES ('%d','%d','%d','%d','%u','%u')",
-									merc->char_id, merc->class_, merc->hp, merc->sp, merc->kill_count, merc->life_time)) {
+									merc->char_id, merc->class_, merc->hp, merc->sp, merc->kill_count, merc->life_time))
+		{
 			Sql_ShowDebug (sql_handle);
 			flag = false;
-		} else
+		}
+		else
 			merc->mercenary_id = (int) Sql_LastInsertId (sql_handle);
-	} else if (SQL_ERROR == Sql_Query (sql_handle,
-									   "UPDATE `mercenary` SET `char_id` = '%d', `class` = '%d', `hp` = '%d', `sp` = '%d', `kill_counter` = '%u', `life_time` = '%u' WHERE `mer_id` = '%d'",
-									   merc->char_id, merc->class_, merc->hp, merc->sp, merc->kill_count, merc->life_time, merc->mercenary_id)) {
+	}
+	else if (SQL_ERROR == Sql_Query (sql_handle,
+									 "UPDATE `mercenary` SET `char_id` = '%d', `class` = '%d', `hp` = '%d', `sp` = '%d', `kill_counter` = '%u', `life_time` = '%u' WHERE `mer_id` = '%d'",
+									 merc->char_id, merc->class_, merc->hp, merc->sp, merc->kill_count, merc->life_time, merc->mercenary_id))
+	{
 		// Update DB entry
 		Sql_ShowDebug (sql_handle);
 		flag = false;
@@ -93,12 +101,14 @@ bool mapif_mercenary_load (int merc_id, int char_id, struct s_mercenary *merc)
 	merc->mercenary_id = merc_id;
 	merc->char_id = char_id;
 
-	if (SQL_ERROR == Sql_Query (sql_handle, "SELECT `class`, `hp`, `sp`, `kill_counter`, `life_time` FROM `mercenary` WHERE `mer_id` = '%d' AND `char_id` = '%d'", merc_id, char_id)) {
+	if (SQL_ERROR == Sql_Query (sql_handle, "SELECT `class`, `hp`, `sp`, `kill_counter`, `life_time` FROM `mercenary` WHERE `mer_id` = '%d' AND `char_id` = '%d'", merc_id, char_id))
+	{
 		Sql_ShowDebug (sql_handle);
 		return false;
 	}
 
-	if (SQL_SUCCESS != Sql_NextRow (sql_handle)) {
+	if (SQL_SUCCESS != Sql_NextRow (sql_handle))
+	{
 		Sql_FreeResult (sql_handle);
 		return false;
 	}
@@ -118,7 +128,8 @@ bool mapif_mercenary_load (int merc_id, int char_id, struct s_mercenary *merc)
 
 bool mapif_mercenary_delete (int merc_id)
 {
-	if (SQL_ERROR == Sql_Query (sql_handle, "DELETE FROM `mercenary` WHERE `mer_id` = '%d'", merc_id)) {
+	if (SQL_ERROR == Sql_Query (sql_handle, "DELETE FROM `mercenary` WHERE `mer_id` = '%d'", merc_id))
+	{
 		Sql_ShowDebug (sql_handle);
 		return false;
 	}
@@ -196,7 +207,8 @@ int inter_mercenary_parse_frommap (int fd)
 {
 	unsigned short cmd = RFIFOW (fd, 0);
 
-	switch (cmd) {
+	switch (cmd)
+	{
 		case 0x3070: mapif_parse_mercenary_create (fd, (struct s_mercenary *) RFIFOP (fd, 4)); break;
 
 		case 0x3071: mapif_parse_mercenary_load (fd, (int) RFIFOL (fd, 2), (int) RFIFOL (fd, 6)); break;

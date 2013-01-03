@@ -39,7 +39,8 @@ bool ladmin_auth (struct login_session_data *sd, const char *ip)
 		ShowNotice ("'ladmin'-login: Connection in administration mode REFUSED - remote administration is disabled (ip: %s)\n", ip);
 	else if (!check_password (sd->md5key, sd->passwdenc, sd->passwd, login_config.admin_pass))
 		ShowNotice ("'ladmin'-login: Connection in administration mode REFUSED - invalid password (ip: %s)\n", ip);
-	else {
+	else
+	{
 		ShowNotice ("'ladmin'-login: Connection in administration mode accepted (ip: %s)\n", ip);
 		session[sd->fd]->func_parse = parse_admin;
 		result = true;
@@ -84,16 +85,19 @@ int parse_admin (int fd)
 	char ip[16];
 	ip2str (ipl, ip);
 
-	if (session[fd]->flag.eof) {
+	if (session[fd]->flag.eof)
+	{
 		do_close (fd);
 		ShowInfo ("Remote administration has disconnected (session #%d).\n", fd);
 		return 0;
 	}
 
-	while (RFIFOREST (fd) >= 2) {
+	while (RFIFOREST (fd) >= 2)
+	{
 		uint16 command = RFIFOW (fd, 0);
 
-		switch (command) {
+		switch (command)
+		{
 			case 0x7530:	// Request of the server version
 				ShowStatus ("'ladmin': Sending of the server version (ip: %s)\n", ip);
 				WFIFOHEAD (fd, 10);
@@ -233,13 +237,16 @@ int parse_admin (int fd)
 					account_name[23] = '\0';
 					WFIFOW (fd, 0) = 0x7935;
 
-					if (accounts->load_str (accounts, &acc, account_name)) {
+					if (accounts->load_str (accounts, &acc, account_name))
+					{
 						WFIFOL (fd, 2) = acc.account_id;
 						safestrncpy ( (char *) WFIFOP (fd, 6), acc.userid, 24);
 						safestrncpy (acc.pass, (char *) RFIFOP (fd, 26), 24);
 						ShowNotice ("'ladmin': Modification of a password (account: %s, new password: %s, ip: %s)\n", acc.userid, acc.pass, ip);
 						accounts->save (accounts, &acc);
-					} else {
+					}
+					else
+					{
 						WFIFOL (fd, 2) = -1;
 						safestrncpy ( (char *) WFIFOP (fd, 6), account_name, 24);
 						ShowNotice ("'ladmin': Attempt to modify the password of an unknown account (account: %s, ip: %s)\n", account_name, ip);
@@ -261,16 +268,19 @@ int parse_admin (int fd)
 					account_name[23] = '\0';
 					WFIFOW (fd, 0) = 0x7937;
 
-					if (accounts->load_str (accounts, &acc, account_name)) {
+					if (accounts->load_str (accounts, &acc, account_name))
+					{
 						memcpy (WFIFOP (fd, 6), acc.userid, 24);
 						WFIFOL (fd, 2) = acc.account_id;
 
 						if (acc.state == state)
 							ShowNotice ("'ladmin': Modification of a state, but the state of the account already has this value (account: %s, received state: %d, ip: %s)\n", account_name, state, ip);
-						else {
+						else
+						{
 							ShowNotice ("'ladmin': Modification of a state (account: %s, new state: %d, ip: %s)\n", acc.userid, state, ip);
 
-							if (acc.state == 0) {
+							if (acc.state == 0)
+							{
 								unsigned char buf[16];
 								WBUFW (buf, 0) = 0x2731;
 								WBUFL (buf, 2) = acc.account_id;
@@ -282,7 +292,9 @@ int parse_admin (int fd)
 							acc.state = state;
 							accounts->save (accounts, &acc);
 						}
-					} else {
+					}
+					else
+					{
 						ShowNotice ("'ladmin': Attempt to modify the state of an unknown account (account: %s, received state: %d, ip: %s)\n", account_name, state, ip);
 						WFIFOL (fd, 2) = -1;
 						memcpy (WFIFOP (fd, 6), account_name, 24);
@@ -304,7 +316,8 @@ int parse_admin (int fd)
 					account_name = (char *) RFIFOP (fd, 2);
 					account_name[23] = '\0';
 
-					if (accounts->load_str (accounts, &acc, account_name)) {
+					if (accounts->load_str (accounts, &acc, account_name))
+					{
 						ShowNotice ("'ladmin': Sending information of an account (request by the name; account: %s, id: %d, ip: %s)\n", acc.userid, acc.account_id, ip);
 						WFIFOL (fd, 2) = acc.account_id;
 						WFIFOB (fd, 6) = acc.level;
@@ -319,7 +332,9 @@ int parse_admin (int fd)
 						WFIFOL (fd, 140) = (unsigned long) acc.expiration_time;
 						WFIFOL (fd, 144) = (unsigned long) acc.unban_time;
 						WFIFOW (fd, 148) = 0; // previously, this was strlen(memo), and memo went afterwards
-					} else {
+					}
+					else
+					{
 						ShowNotice ("'ladmin': Attempt to obtain information (by the name) of an unknown account (account: %s, ip: %s)\n", account_name, ip);
 						WFIFOL (fd, 2) = -1;
 						safestrncpy ( (char *) WFIFOP (fd, 7), account_name, 24); // not found
@@ -341,7 +356,8 @@ int parse_admin (int fd)
 					WFIFOW (fd, 0) = 0x7953;
 					WFIFOL (fd, 2) = account_id;
 
-					if (accounts->load_num (accounts, &acc, account_id)) {
+					if (accounts->load_num (accounts, &acc, account_id))
+					{
 						ShowNotice ("'ladmin': Sending information of an account (request by the id; account: %s, id: %d, ip: %s)\n", acc.userid, account_id, ip);
 						WFIFOB (fd, 6) = acc.level;
 						safestrncpy ( (char *) WFIFOP (fd, 7), acc.userid, 24);
@@ -355,7 +371,9 @@ int parse_admin (int fd)
 						WFIFOL (fd, 140) = (unsigned long) acc.expiration_time;
 						WFIFOL (fd, 144) = (unsigned long) acc.unban_time;
 						WFIFOW (fd, 148) = 0; // previously, this was strlen(memo), and memo went afterwards
-					} else {
+					}
+					else
+					{
 						ShowNotice ("'ladmin': Attempt to obtain information (by the id) of an unknown account (id: %d, ip: %s)\n", account_id, ip);
 						safestrncpy ( (char *) WFIFOP (fd, 7), "", 24); // not found
 					}

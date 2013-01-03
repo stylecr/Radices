@@ -127,7 +127,8 @@ int duel_leave (const unsigned int did, struct map_session_data *sd)
 	clif_disp_message (&sd->bl, output, strlen (output), DUEL_WOS);
 	duel_list[did].members_count--;
 
-	if (duel_list[did].members_count == 0) {
+	if (duel_list[did].members_count == 0)
+	{
 		map_foreachpc (duel_leave_sub, did);
 		duel_count--;
 	}

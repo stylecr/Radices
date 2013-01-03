@@ -62,17 +62,20 @@ int quest_add (TBL_PC *sd, int quest_id)
 {
 	int i, j;
 
-	if (sd->num_quests >= MAX_QUEST_DB) {
+	if (sd->num_quests >= MAX_QUEST_DB)
+	{
 		ShowError ("quest_add: Character %d has got all the quests.(max quests: %d)\n", sd->status.char_id, MAX_QUEST_DB);
 		return 1;
 	}
 
-	if (quest_check (sd, quest_id, HAVEQUEST) >= 0) {
+	if (quest_check (sd, quest_id, HAVEQUEST) >= 0)
+	{
 		ShowError ("quest_add: Character %d already has quest %d.\n", sd->status.char_id, quest_id);
 		return -1;
 	}
 
-	if ( (j = quest_search_db (quest_id)) < 0) {
+	if ( (j = quest_search_db (quest_id)) < 0)
+	{
 		ShowError ("quest_add: quest %d not found in DB.\n", quest_id);
 		return -1;
 	}
@@ -103,24 +106,28 @@ int quest_change (TBL_PC *sd, int qid1, int qid2)
 {
 	int i, j;
 
-	if (quest_check (sd, qid2, HAVEQUEST) >= 0) {
+	if (quest_check (sd, qid2, HAVEQUEST) >= 0)
+	{
 		ShowError ("quest_change: Character %d already has quest %d.\n", sd->status.char_id, qid2);
 		return -1;
 	}
 
-	if (quest_check (sd, qid1, HAVEQUEST) < 0) {
+	if (quest_check (sd, qid1, HAVEQUEST) < 0)
+	{
 		ShowError ("quest_change: Character %d doesn't have quest %d.\n", sd->status.char_id, qid1);
 		return -1;
 	}
 
-	if ( (j = quest_search_db (qid2)) < 0) {
+	if ( (j = quest_search_db (qid2)) < 0)
+	{
 		ShowError ("quest_change: quest %d not found in DB.\n", qid2);
 		return -1;
 	}
 
 	ARR_FIND (0, sd->avail_quests, i, sd->quest_log[i].quest_id == qid1);
 
-	if (i == sd->avail_quests) {
+	if (i == sd->avail_quests)
+	{
 		ShowError ("quest_change: Character %d has completed quests %d.\n", sd->status.char_id, qid1);
 		return -1;
 	}
@@ -149,7 +156,8 @@ int quest_delete (TBL_PC *sd, int quest_id)
 	//Search for quest
 	ARR_FIND (0, sd->num_quests, i, sd->quest_log[i].quest_id == quest_id);
 
-	if (i == sd->num_quests) {
+	if (i == sd->num_quests)
+	{
 		ShowError ("quest_delete: Character %d doesn't have quest %d.\n", sd->status.char_id, quest_id);
 		return -1;
 	}
@@ -157,7 +165,8 @@ int quest_delete (TBL_PC *sd, int quest_id)
 	if (sd->quest_log[i].state != Q_COMPLETE)
 		sd->avail_quests--;
 
-	if (sd->num_quests-- < MAX_QUEST_DB && sd->quest_log[i + 1].quest_id) {
+	if (sd->num_quests-- < MAX_QUEST_DB && sd->quest_log[i + 1].quest_id)
+	{
 		memmove (&sd->quest_log[i], &sd->quest_log[i + 1], sizeof (struct quest) * (sd->num_quests - i));
 		memmove (sd->quest_index + i, sd->quest_index + i + 1, sizeof (int) * (sd->num_quests - i));
 	}
@@ -197,12 +206,14 @@ void quest_update_objective (TBL_PC *sd, int mob)
 {
 	int i, j;
 
-	for (i = 0; i < sd->avail_quests; i++) {
+	for (i = 0; i < sd->avail_quests; i++)
+	{
 		if (sd->quest_log[i].state != Q_ACTIVE)
 			continue;
 
 		for (j = 0; j < MAX_QUEST_OBJECTIVES; j++)
-			if (quest_db[sd->quest_index[i]].mob[j] == mob && sd->quest_log[i].count[j] < quest_db[sd->quest_index[i]].count[j]) {
+			if (quest_db[sd->quest_index[i]].mob[j] == mob && sd->quest_log[i].count[j] < quest_db[sd->quest_index[i]].count[j])
+			{
 				sd->quest_log[i].count[j]++;
 				sd->save_quest = true;
 				clif_quest_update_objective (sd, &sd->quest_log[i], sd->quest_index[i]);
@@ -216,7 +227,8 @@ int quest_update_status (TBL_PC *sd, int quest_id, quest_state status)
 	//Only status of active and inactive quests can be updated. Completed quests can't (for now). [Inkfish]
 	ARR_FIND (0, sd->avail_quests, i, sd->quest_log[i].quest_id == quest_id);
 
-	if (i == sd->avail_quests) {
+	if (i == sd->avail_quests)
+	{
 		ShowError ("quest_update_status: Character %d doesn't have quest %d.\n", sd->status.char_id, quest_id);
 		return -1;
 	}
@@ -224,12 +236,14 @@ int quest_update_status (TBL_PC *sd, int quest_id, quest_state status)
 	sd->quest_log[i].state = status;
 	sd->save_quest = true;
 
-	if (status < Q_COMPLETE) {
+	if (status < Q_COMPLETE)
+	{
 		clif_quest_update_status (sd, quest_id, (bool) status);
 		return 0;
 	}
 
-	if (i != (--sd->avail_quests)) {
+	if (i != (--sd->avail_quests))
+	{
 		struct quest tmp_quest;
 		memcpy (&tmp_quest, &sd->quest_log[i], sizeof (struct quest));
 		memcpy (&sd->quest_log[i], &sd->quest_log[sd->avail_quests], sizeof (struct quest));
@@ -252,14 +266,16 @@ int quest_check (TBL_PC *sd, int quest_id, quest_check_type type)
 	if (i == sd->num_quests)
 		return -1;
 
-	switch (type) {
+	switch (type)
+	{
 		case HAVEQUEST:
 			return sd->quest_log[i].state;
 
 		case PLAYTIME:
 			return (sd->quest_log[i].time < (unsigned int) time (NULL) ? 2 : sd->quest_log[i].state == Q_COMPLETE ? 1 : 0);
 
-		case HUNTING: {
+		case HUNTING:
+		{
 			int j;
 			ARR_FIND (0, MAX_QUEST_OBJECTIVES, j, sd->quest_log[i].count[j] < quest_db[sd->quest_index[i]].count[j]);
 
@@ -288,13 +304,16 @@ int quest_read_db (void)
 	char *str[20], *p, *np;
 	sprintf (line, "%s/quest_db.txt", db_path);
 
-	if ( (fp = fopen (line, "r")) == NULL) {
+	if ( (fp = fopen (line, "r")) == NULL)
+	{
 		ShowError ("can't read %s\n", line);
 		return -1;
 	}
 
-	while (fgets (line, sizeof (line), fp)) {
-		if (k == MAX_QUEST_DB) {
+	while (fgets (line, sizeof (line), fp))
+	{
+		if (k == MAX_QUEST_DB)
+		{
 			ShowError ("quest_read_db: Too many entries specified in %s/quest_db.txt!\n", db_path);
 			break;
 		}
@@ -304,14 +323,18 @@ int quest_read_db (void)
 
 		memset (str, 0, sizeof (str));
 
-		for (j = 0, p = line; j < 8; j++) {
-			if ( (np = strchr (p, ',')) != NULL) {
+		for (j = 0, p = line; j < 8; j++)
+		{
+			if ( (np = strchr (p, ',')) != NULL)
+			{
 				str[j] = p;
 				*np = 0;
 				p = np + 1;
-			} else if (str[0] == NULL)
+			}
+			else if (str[0] == NULL)
 				continue;
-			else {
+			else
+			{
 				ShowError ("quest_read_db: insufficient columns in line %s\n", line);
 				continue;
 			}
@@ -324,7 +347,8 @@ int quest_read_db (void)
 		quest_db[k].id = atoi (str[0]);
 		quest_db[k].time = atoi (str[1]);
 
-		for (i = 0; i < MAX_QUEST_OBJECTIVES; i++) {
+		for (i = 0; i < MAX_QUEST_OBJECTIVES; i++)
+		{
 			quest_db[k].mob[i] = atoi (str[2 * i + 2]);
 			quest_db[k].count[i] = atoi (str[2 * i + 3]);
 

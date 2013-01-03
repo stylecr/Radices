@@ -40,10 +40,12 @@ bool mapreg_setreg (int uid, int val)
 	int i   = (uid & 0xff000000) >> 24;
 	const char *name = get_str (num);
 
-	if (val != 0) {
+	if (val != 0)
+	{
 		if (idb_put (mapreg_db, uid, (void *) val))
 			mapreg_dirty = true; // already exists, delay write
-		else if (name[1] != '@') {
+		else if (name[1] != '@')
+		{
 			// write new wariable to database
 			char tmp_str[32 * 2 + 1];
 			Sql_EscapeStringLen (mmysql_handle, tmp_str, name, strnlen (name, 32));
@@ -51,10 +53,13 @@ bool mapreg_setreg (int uid, int val)
 			if (SQL_ERROR == Sql_Query (mmysql_handle, "INSERT INTO `%s`(`varname`,`index`,`value`) VALUES ('%s','%d','%d')", mapreg_table, tmp_str, i, val))
 				Sql_ShowDebug (mmysql_handle);
 		}
-	} else { // val == 0
+	}
+	else     // val == 0
+	{
 		idb_remove (mapreg_db, uid);
 
-		if (name[1] != '@') {
+		if (name[1] != '@')
+		{
 			// Remove from database because it is unused.
 			if (SQL_ERROR == Sql_Query (mmysql_handle, "DELETE FROM `%s` WHERE `varname`='%s' AND `index`='%d'", mapreg_table, name, i))
 				Sql_ShowDebug (mmysql_handle);
@@ -71,17 +76,22 @@ bool mapreg_setregstr (int uid, const char *str)
 	int i   = (uid & 0xff000000) >> 24;
 	const char *name = get_str (num);
 
-	if (str == NULL || *str == 0) {
-		if (name[1] != '@') {
+	if (str == NULL || *str == 0)
+	{
+		if (name[1] != '@')
+		{
 			if (SQL_ERROR == Sql_Query (mmysql_handle, "DELETE FROM `%s` WHERE `varname`='%s' AND `index`='%d'", mapreg_table, name, i))
 				Sql_ShowDebug (mmysql_handle);
 		}
 
 		idb_remove (mapregstr_db, uid);
-	} else {
+	}
+	else
+	{
 		if (idb_put (mapregstr_db, uid, aStrdup (str)))
 			mapreg_dirty = true;
-		else if (name[1] != '@') { //put returned null, so we must insert.
+		else if (name[1] != '@')   //put returned null, so we must insert.
+		{
 			// Someone is causing a database size infinite increase here without name[1] != '@' [Lance]
 			char tmp_str[32 * 2 + 1];
 			char tmp_str2[255 * 2 + 1];
@@ -113,7 +123,8 @@ static void script_load_mapreg (void)
 
 	if (SQL_ERROR == SqlStmt_Prepare (stmt, "SELECT `varname`, `index`, `value` FROM `%s`", mapreg_table)
 			|| SQL_ERROR == SqlStmt_Execute (stmt)
-	   ) {
+	   )
+	{
 		SqlStmt_ShowDebug (stmt);
 		SqlStmt_Free (stmt);
 		return;
@@ -123,7 +134,8 @@ static void script_load_mapreg (void)
 	SqlStmt_BindColumn (stmt, 1, SQLDT_INT, &index, 0, NULL, NULL);
 	SqlStmt_BindColumn (stmt, 2, SQLDT_STRING, &value[0], sizeof (value), NULL, NULL);
 
-	while (SQL_SUCCESS == SqlStmt_NextRow (stmt)) {
+	while (SQL_SUCCESS == SqlStmt_NextRow (stmt))
+	{
 		int s = add_str (varname);
 		int i = index;
 
@@ -145,7 +157,8 @@ static void script_save_mapreg (void)
 	DBKey key;
 	iter = mapreg_db->iterator (mapreg_db);
 
-	for (data = iter->first (iter, &key); iter->exists (iter); data = iter->next (iter, &key)) {
+	for (data = iter->first (iter, &key); iter->exists (iter); data = iter->next (iter, &key))
+	{
 		int num = (key.i & 0x00ffffff);
 		int i   = (key.i & 0xff000000) >> 24;
 		const char *name = get_str (num);
@@ -160,7 +173,8 @@ static void script_save_mapreg (void)
 	iter->destroy (iter);
 	iter = mapregstr_db->iterator (mapregstr_db);
 
-	for (data = iter->first (iter, &key); iter->exists (iter); data = iter->next (iter, &key)) {
+	for (data = iter->first (iter, &key); iter->exists (iter); data = iter->next (iter, &key))
+	{
 		int num = (key.i & 0x00ffffff);
 		int i   = (key.i & 0xff000000) >> 24;
 		const char *name = get_str (num);

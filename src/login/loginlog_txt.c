@@ -38,7 +38,8 @@ void login_log (uint32 ip, const char *username, int rcode, const char *message)
 
 	log_fp = fopen (login_log_filename, "a");
 
-	if (log_fp != NULL) {
+	if (log_fp != NULL)
+	{
 		char esc_username[NAME_LENGTH * 4 + 1];
 		char esc_message[255 * 4 + 1];
 		time_t raw_time;

@@ -28,12 +28,15 @@ int mail_removeitem (struct map_session_data *sd, short flag)
 {
 	nullpo_ret (sd);
 
-	if (sd->mail.amount) {
-		if (flag) {
+	if (sd->mail.amount)
+	{
+		if (flag)
+		{
 			// Item send
 			log_pick_pc (sd, LOG_TYPE_MAIL, sd->mail.nameid, -sd->mail.amount, &sd->status.inventory[sd->mail.index]);
 			pc_delitem (sd, sd->mail.index, sd->mail.amount, 1, 0);
-		} else
+		}
+		else
 			clif_additem (sd, sd->mail.index, sd->mail.amount, 0);
 	}
 
@@ -47,7 +50,8 @@ int mail_removezeny (struct map_session_data *sd, short flag)
 {
 	nullpo_ret (sd);
 
-	if (flag && sd->mail.zeny > 0) {
+	if (flag && sd->mail.zeny > 0)
+	{
 		//Zeny send
 		log_zeny (sd, LOG_TYPE_MAIL, sd, -sd->mail.zeny);
 		sd->status.zeny -= sd->mail.zeny;
@@ -60,7 +64,8 @@ int mail_removezeny (struct map_session_data *sd, short flag)
 
 unsigned char mail_setitem (struct map_session_data *sd, int idx, int amount)
 {
-	if (idx == 0) {
+	if (idx == 0)
+	{
 		// Zeny Transfer
 		if (amount < 0 || !pc_can_give_items (pc_isGM (sd)))
 			return 1;
@@ -71,7 +76,9 @@ unsigned char mail_setitem (struct map_session_data *sd, int idx, int amount)
 		sd->mail.zeny = amount;
 		// clif_updatestatus(sd, SP_ZENY);
 		return 0;
-	} else {
+	}
+	else
+	{
 		// Item Transfer
 		idx -= 2;
 		mail_removeitem (sd, 0);
@@ -103,7 +110,8 @@ bool mail_setattachment (struct map_session_data *sd, struct mail_message *msg)
 
 	n = sd->mail.index;
 
-	if (sd->mail.amount) {
+	if (sd->mail.amount)
+	{
 		if (sd->status.inventory[n].nameid != sd->mail.nameid)
 			return false;
 
@@ -115,7 +123,8 @@ bool mail_setattachment (struct map_session_data *sd, struct mail_message *msg)
 
 		memcpy (&msg->item, &sd->status.inventory[n], sizeof (struct item));
 		msg->item.amount = sd->mail.amount;
-	} else
+	}
+	else
 		memset (&msg->item, 0x00, sizeof (struct item));
 
 	msg->zeny = sd->mail.zeny;
@@ -127,13 +136,15 @@ bool mail_setattachment (struct map_session_data *sd, struct mail_message *msg)
 
 void mail_getattachment (struct map_session_data *sd, int zeny, struct item *item)
 {
-	if (item->nameid > 0 && item->amount > 0) {
+	if (item->nameid > 0 && item->amount > 0)
+	{
 		pc_additem (sd, item, item->amount);
 		log_pick_pc (sd, LOG_TYPE_MAIL, item->nameid, item->amount, item);
 		clif_Mail_getattachment (sd->fd, 0);
 	}
 
-	if (zeny > 0) {
+	if (zeny > 0)
+	{
 		//Zeny recieve
 		log_zeny (sd, LOG_TYPE_MAIL, sd, zeny);
 		pc_getzeny (sd, zeny);
@@ -156,13 +167,15 @@ void mail_deliveryfail (struct map_session_data *sd, struct mail_message *msg)
 	nullpo_retv (sd);
 	nullpo_retv (msg);
 
-	if (msg->item.amount > 0) {
+	if (msg->item.amount > 0)
+	{
 		// Item recieve (due to failure)
 		log_pick_pc (sd, LOG_TYPE_MAIL, msg->item.nameid, msg->item.amount, &msg->item);
 		pc_additem (sd, &msg->item, msg->item.amount);
 	}
 
-	if (msg->zeny > 0) {
+	if (msg->zeny > 0)
+	{
 		//Zeny recieve (due to failure)
 		log_zeny (sd, LOG_TYPE_MAIL, sd, msg->zeny);
 		sd->status.zeny += msg->zeny;
@@ -175,7 +188,8 @@ void mail_deliveryfail (struct map_session_data *sd, struct mail_message *msg)
 // This function only check if the mail operations are valid
 bool mail_invalid_operation (struct map_session_data *sd)
 {
-	if (!map[sd->bl.m].flag.town && pc_isGM (sd) < get_atcommand_level (atcommand_mail)) {
+	if (!map[sd->bl.m].flag.town && pc_isGM (sd) < get_atcommand_level (atcommand_mail))
+	{
 		ShowWarning ("clif_parse_Mail: char '%s' trying to do invalid mail operations.\n", sd->status.name);
 		return true;
 	}

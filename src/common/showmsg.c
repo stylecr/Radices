@@ -207,7 +207,8 @@ int	VFPRINTF (HANDLE handle, const char *fmt, va_list argptr)
 	// Print everything to the buffer
 	BUFVPRINTF (tempbuf, fmt, argptr);
 
-	if (!is_console (handle) && stdout_with_ansisequence) {
+	if (!is_console (handle) && stdout_with_ansisequence)
+	{
 		WriteFile (handle, BUFVAL (tempbuf), BUFLEN (tempbuf), &written, 0);
 		return 0;
 	}
@@ -215,18 +216,22 @@ int	VFPRINTF (HANDLE handle, const char *fmt, va_list argptr)
 	// start with processing
 	p = BUFVAL (tempbuf);
 
-	while ( (q = strchr (p, 0x1b)) != NULL) {
+	while ( (q = strchr (p, 0x1b)) != NULL)
+	{
 		// find the escape character
 		if (0 == WriteConsole (handle, p, (DWORD) (q - p), &written, 0)) // write up to the escape
 			WriteFile (handle, p, (DWORD) (q - p), &written, 0);
 
-		if (q[1] != '[') {
+		if (q[1] != '[')
+		{
 			// write the escape char (whatever purpose it has)
 			if (0 == WriteConsole (handle, q, 1, &written, 0))
 				WriteFile (handle, q, 1, &written, 0);
 
 			p = q + 1;	//and start searching again
-		} else {
+		}
+		else
+		{
 			// from here, we will skip the '\033['
 			// we break at the first unprocessible position
 			// assuming regular text is starting there
@@ -238,20 +243,27 @@ int	VFPRINTF (HANDLE handle, const char *fmt, va_list argptr)
 			// skip escape and bracket
 			q = q + 2;
 
-			for (;;) {
-				if (ISDIGIT (*q)) {
+			for (;;)
+			{
+				if (ISDIGIT (*q))
+				{
 					// add number to number array, only accept 2digits, shift out the rest
 					// so // \033[123456789m will become \033[89m
 					numbers[numpoint] = (numbers[numpoint] << 4) | (*q - '0');
 					++q;
 					// and next character
 					continue;
-				} else if (*q == ';') {
+				}
+				else if (*q == ';')
+				{
 					// delimiter
-					if (numpoint < sizeof (numbers) / sizeof (*numbers)) {
+					if (numpoint < sizeof (numbers) / sizeof (*numbers))
+					{
 						// go to next array position
 						numpoint++;
-					} else {
+					}
+					else
+					{
 						// array is full, so we 'forget' the first value
 						memmove (numbers, numbers + 1, sizeof (numbers) / sizeof (*numbers) - 1);
 						numbers[sizeof (numbers) / sizeof (*numbers) - 1] = 0;
@@ -260,23 +272,34 @@ int	VFPRINTF (HANDLE handle, const char *fmt, va_list argptr)
 					++q;
 					// and next number
 					continue;
-				} else if (*q == 'm') {
+				}
+				else if (*q == 'm')
+				{
 					// \033[#;...;#m - Set Graphics Rendition (SGR)
 					uint8 i;
 
-					for (i = 0; i <= numpoint; ++i) {
-						if (0x00 == (0xF0 & numbers[i])) {
+					for (i = 0; i <= numpoint; ++i)
+					{
+						if (0x00 == (0xF0 & numbers[i]))
+						{
 							// upper nibble 0
-							if (0 == numbers[i]) {
+							if (0 == numbers[i])
+							{
 								// reset
 								info.wAttributes = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
-							} else if (1 == numbers[i]) {
+							}
+							else if (1 == numbers[i])
+							{
 								// set foreground intensity
 								info.wAttributes |= FOREGROUND_INTENSITY;
-							} else if (5 == numbers[i]) {
+							}
+							else if (5 == numbers[i])
+							{
 								// set background intensity
 								info.wAttributes |= BACKGROUND_INTENSITY;
-							} else if (7 == numbers[i]) {
+							}
+							else if (7 == numbers[i])
+							{
 								// reverse colors (just xor them)
 								info.wAttributes ^= FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE |
 													BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE;
@@ -288,20 +311,29 @@ int	VFPRINTF (HANDLE handle, const char *fmt, va_list argptr)
 							//case '6': // not existing
 							//case '8': // concealed (not implemented)
 							//case '9': // not existing
-						} else if (0x20 == (0xF0 & numbers[i])) {
+						}
+						else if (0x20 == (0xF0 & numbers[i]))
+						{
 							// off
-							if (1 == numbers[i]) {
+							if (1 == numbers[i])
+							{
 								// set foreground intensity off
 								info.wAttributes &= ~FOREGROUND_INTENSITY;
-							} else if (5 == numbers[i]) {
+							}
+							else if (5 == numbers[i])
+							{
 								// set background intensity off
 								info.wAttributes &= ~BACKGROUND_INTENSITY;
-							} else if (7 == numbers[i]) {
+							}
+							else if (7 == numbers[i])
+							{
 								// reverse colors (just xor them)
 								info.wAttributes ^= FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE |
 													BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE;
 							}
-						} else if (0x30 == (0xF0 & numbers[i])) {
+						}
+						else if (0x30 == (0xF0 & numbers[i]))
+						{
 							// foreground
 							uint8 num = numbers[i] & 0x0F;
 
@@ -319,7 +351,9 @@ int	VFPRINTF (HANDLE handle, const char *fmt, va_list argptr)
 
 							if ( (num & 0x04) > 0) // third bit set = blue
 								info.wAttributes |= FOREGROUND_BLUE;
-						} else if (0x40 == (0xF0 & numbers[i])) {
+						}
+						else if (0x40 == (0xF0 & numbers[i]))
+						{
 							// background
 							uint8 num = numbers[i] & 0x0F;
 
@@ -342,7 +376,9 @@ int	VFPRINTF (HANDLE handle, const char *fmt, va_list argptr)
 
 					// set the attributes
 					SetConsoleTextAttribute (handle, info.wAttributes);
-				} else if (*q == 'J') {
+				}
+				else if (*q == 'J')
+				{
 					// \033[#J - Erase Display (ED)
 					//    \033[0J - Clears the screen from cursor to end of display. The cursor position is unchanged.
 					//    \033[1J - Clears the screen from start to cursor. The cursor position is unchanged.
@@ -352,14 +388,19 @@ int	VFPRINTF (HANDLE handle, const char *fmt, va_list argptr)
 					DWORD tmp;
 					COORD origin = {0, 0};
 
-					if (num == 1) {
+					if (num == 1)
+					{
 						// chars from start up to and including cursor
 						cnt = info.dwSize.X * info.dwCursorPosition.Y + info.dwCursorPosition.X + 1;
-					} else if (num == 2) {
+					}
+					else if (num == 2)
+					{
 						// Number of chars on screen.
 						cnt = info.dwSize.X * info.dwSize.Y;
 						SetConsoleCursorPosition (handle, origin);
-					} else { // 0 and default
+					}
+					else     // 0 and default
+					{
 						// number of chars from cursor to end
 						origin = info.dwCursorPosition;
 						cnt = info.dwSize.X * (info.dwSize.Y - info.dwCursorPosition.Y) - info.dwCursorPosition.X;
@@ -367,7 +408,9 @@ int	VFPRINTF (HANDLE handle, const char *fmt, va_list argptr)
 
 					FillConsoleOutputAttribute (handle, info.wAttributes, cnt, origin, &tmp);
 					FillConsoleOutputCharacter (handle, ' ',              cnt, origin, &tmp);
-				} else if (*q == 'K') {
+				}
+				else if (*q == 'K')
+				{
 					// \033[K  : clear line from actual position to end of the line
 					//    \033[0K - Clears all characters from the cursor position to the end of the line.
 					//    \033[1K - Clears all characters from start of line to the cursor position.
@@ -377,18 +420,25 @@ int	VFPRINTF (HANDLE handle, const char *fmt, va_list argptr)
 					SHORT cnt;
 					DWORD tmp;
 
-					if (num == 1) {
+					if (num == 1)
+					{
 						cnt = info.dwCursorPosition.X + 1;
-					} else if (num == 2) {
+					}
+					else if (num == 2)
+					{
 						cnt = info.dwSize.X;
-					} else { // 0 and default
+					}
+					else     // 0 and default
+					{
 						origin = info.dwCursorPosition;
 						cnt = info.dwSize.X - info.dwCursorPosition.X; // how many spaces until line is full
 					}
 
 					FillConsoleOutputAttribute (handle, info.wAttributes, cnt, origin, &tmp);
 					FillConsoleOutputCharacter (handle, ' ',              cnt, origin, &tmp);
-				} else if (*q == 'H' || *q == 'f') {
+				}
+				else if (*q == 'H' || *q == 'f')
+				{
 					// \033[#;#H - Cursor Position (CUP)
 					// \033[#;#f - Horizontal & Vertical Position
 					// The first # specifies the line number, the second # specifies the column.
@@ -401,19 +451,25 @@ int	VFPRINTF (HANDLE handle, const char *fmt, va_list argptr)
 					if (info.dwCursorPosition.Y >= info.dwSize.Y) info.dwCursorPosition.Y = info.dwSize.Y - 1;
 
 					SetConsoleCursorPosition (handle, info.dwCursorPosition);
-				} else if (*q == 's') {
+				}
+				else if (*q == 's')
+				{
 					// \033[s - Save Cursor Position (SCP)
 					/* XXX Two streams are being used. Disabled to avoid inconsistency [flaviojs]
 					CONSOLE_SCREEN_BUFFER_INFO info;
 					GetConsoleScreenBufferInfo(handle, &info);
 					saveposition = info.dwCursorPosition;
 					*/
-				} else if (*q == 'u') {
+				}
+				else if (*q == 'u')
+				{
 					// \033[u - Restore cursor position (RCP)
 					/* XXX Two streams are being used. Disabled to avoid inconsistency [flaviojs]
 					SetConsoleCursorPosition(handle, saveposition);
 					*/
-				} else if (*q == 'A') {
+				}
+				else if (*q == 'A')
+				{
 					// \033[#A - Cursor Up (CUU)
 					// Moves the cursor UP # number of lines
 					info.dwCursorPosition.Y -= (numbers[numpoint]) ? (numbers[numpoint] >> 4) * 10 + (numbers[numpoint] & 0x0F) : 1;
@@ -422,7 +478,9 @@ int	VFPRINTF (HANDLE handle, const char *fmt, va_list argptr)
 						info.dwCursorPosition.Y = 0;
 
 					SetConsoleCursorPosition (handle, info.dwCursorPosition);
-				} else if (*q == 'B') {
+				}
+				else if (*q == 'B')
+				{
 					// \033[#B - Cursor Down (CUD)
 					// Moves the cursor DOWN # number of lines
 					info.dwCursorPosition.Y += (numbers[numpoint]) ? (numbers[numpoint] >> 4) * 10 + (numbers[numpoint] & 0x0F) : 1;
@@ -431,7 +489,9 @@ int	VFPRINTF (HANDLE handle, const char *fmt, va_list argptr)
 						info.dwCursorPosition.Y = info.dwSize.Y - 1;
 
 					SetConsoleCursorPosition (handle, info.dwCursorPosition);
-				} else if (*q == 'C') {
+				}
+				else if (*q == 'C')
+				{
 					// \033[#C - Cursor Forward (CUF)
 					// Moves the cursor RIGHT # number of columns
 					info.dwCursorPosition.X += (numbers[numpoint]) ? (numbers[numpoint] >> 4) * 10 + (numbers[numpoint] & 0x0F) : 1;
@@ -440,7 +500,9 @@ int	VFPRINTF (HANDLE handle, const char *fmt, va_list argptr)
 						info.dwCursorPosition.X = info.dwSize.X - 1;
 
 					SetConsoleCursorPosition (handle, info.dwCursorPosition);
-				} else if (*q == 'D') {
+				}
+				else if (*q == 'D')
+				{
 					// \033[#D - Cursor Backward (CUB)
 					// Moves the cursor LEFT # number of columns
 					info.dwCursorPosition.X -= (numbers[numpoint]) ? (numbers[numpoint] >> 4) * 10 + (numbers[numpoint] & 0x0F) : 1;
@@ -449,7 +511,9 @@ int	VFPRINTF (HANDLE handle, const char *fmt, va_list argptr)
 						info.dwCursorPosition.X = 0;
 
 					SetConsoleCursorPosition (handle, info.dwCursorPosition);
-				} else if (*q == 'E') {
+				}
+				else if (*q == 'E')
+				{
 					// \033[#E - Cursor Next Line (CNL)
 					// Moves the cursor down the indicated # of rows, to column 1
 					info.dwCursorPosition.Y += (numbers[numpoint]) ? (numbers[numpoint] >> 4) * 10 + (numbers[numpoint] & 0x0F) : 1;
@@ -459,7 +523,9 @@ int	VFPRINTF (HANDLE handle, const char *fmt, va_list argptr)
 						info.dwCursorPosition.Y = info.dwSize.Y - 1;
 
 					SetConsoleCursorPosition (handle, info.dwCursorPosition);
-				} else if (*q == 'F') {
+				}
+				else if (*q == 'F')
+				{
 					// \033[#F - Cursor Preceding Line (CPL)
 					// Moves the cursor up the indicated # of rows, to column 1.
 					info.dwCursorPosition.Y -= (numbers[numpoint]) ? (numbers[numpoint] >> 4) * 10 + (numbers[numpoint] & 0x0F) : 1;
@@ -469,7 +535,9 @@ int	VFPRINTF (HANDLE handle, const char *fmt, va_list argptr)
 						info.dwCursorPosition.Y = 0;
 
 					SetConsoleCursorPosition (handle, info.dwCursorPosition);
-				} else if (*q == 'G') {
+				}
+				else if (*q == 'G')
+				{
 					// \033[#G - Cursor Horizontal Absolute (CHA)
 					// Moves the cursor to indicated column in current row.
 					info.dwCursorPosition.X = (numbers[numpoint]) ? (numbers[numpoint] >> 4) * 10 + ( (numbers[numpoint] & 0x0F) - 1) : 0;
@@ -478,9 +546,13 @@ int	VFPRINTF (HANDLE handle, const char *fmt, va_list argptr)
 						info.dwCursorPosition.X = info.dwSize.X - 1;
 
 					SetConsoleCursorPosition (handle, info.dwCursorPosition);
-				} else if (*q == 'L' || *q == 'M' || *q == '@' || *q == 'P') {
+				}
+				else if (*q == 'L' || *q == 'M' || *q == '@' || *q == 'P')
+				{
 					// not implemented, just skip
-				} else {
+				}
+				else
+				{
 					// no number nor valid sequencer
 					// something is fishy, we break and give the current char free
 					--q;
@@ -530,7 +602,8 @@ int	VFPRINTF (FILE *file, const char *fmt, va_list argptr)
 	if (!fmt || !*fmt)
 		return 0;
 
-	if (is_console (file) || stdout_with_ansisequence) {
+	if (is_console (file) || stdout_with_ansisequence)
+	{
 		vfprintf (file, fmt, argptr);
 		return 0;
 	}
@@ -540,69 +613,107 @@ int	VFPRINTF (FILE *file, const char *fmt, va_list argptr)
 	// start with processing
 	p = BUFVAL (tempbuf);
 
-	while ( (q = strchr (p, 0x1b)) != NULL) {
+	while ( (q = strchr (p, 0x1b)) != NULL)
+	{
 		// find the escape character
 		fprintf (file, "%.*s", (int) (q - p), p); // write up to the escape
 
-		if (q[1] != '[') {
+		if (q[1] != '[')
+		{
 			// write the escape char (whatever purpose it has)
 			fprintf (file, "%.*s", 1, q);
 			p = q + 1;	//and start searching again
-		} else {
+		}
+		else
+		{
 			// from here, we will skip the '\033['
 			// we break at the first unprocessible position
 			// assuming regular text is starting there
 			// skip escape and bracket
 			q = q + 2;
 
-			while (1) {
-				if (ISDIGIT (*q)) {
+			while (1)
+			{
+				if (ISDIGIT (*q))
+				{
 					++q;
 					// and next character
 					continue;
-				} else if (*q == ';') {
+				}
+				else if (*q == ';')
+				{
 					// delimiter
 					++q;
 					// and next number
 					continue;
-				} else if (*q == 'm') {
+				}
+				else if (*q == 'm')
+				{
 					// \033[#;...;#m - Set Graphics Rendition (SGR)
 					// set the attributes
-				} else if (*q == 'J') {
+				}
+				else if (*q == 'J')
+				{
 					// \033[#J - Erase Display (ED)
-				} else if (*q == 'K') {
+				}
+				else if (*q == 'K')
+				{
 					// \033[K  : clear line from actual position to end of the line
-				} else if (*q == 'H' || *q == 'f') {
+				}
+				else if (*q == 'H' || *q == 'f')
+				{
 					// \033[#;#H - Cursor Position (CUP)
 					// \033[#;#f - Horizontal & Vertical Position
-				} else if (*q == 's') {
+				}
+				else if (*q == 's')
+				{
 					// \033[s - Save Cursor Position (SCP)
-				} else if (*q == 'u') {
+				}
+				else if (*q == 'u')
+				{
 					// \033[u - Restore cursor position (RCP)
-				} else if (*q == 'A') {
+				}
+				else if (*q == 'A')
+				{
 					// \033[#A - Cursor Up (CUU)
 					// Moves the cursor UP # number of lines
-				} else if (*q == 'B') {
+				}
+				else if (*q == 'B')
+				{
 					// \033[#B - Cursor Down (CUD)
 					// Moves the cursor DOWN # number of lines
-				} else if (*q == 'C') {
+				}
+				else if (*q == 'C')
+				{
 					// \033[#C - Cursor Forward (CUF)
 					// Moves the cursor RIGHT # number of columns
-				} else if (*q == 'D') {
+				}
+				else if (*q == 'D')
+				{
 					// \033[#D - Cursor Backward (CUB)
 					// Moves the cursor LEFT # number of columns
-				} else if (*q == 'E') {
+				}
+				else if (*q == 'E')
+				{
 					// \033[#E - Cursor Next Line (CNL)
 					// Moves the cursor down the indicated # of rows, to column 1
-				} else if (*q == 'F') {
+				}
+				else if (*q == 'F')
+				{
 					// \033[#F - Cursor Preceding Line (CPL)
 					// Moves the cursor up the indicated # of rows, to column 1.
-				} else if (*q == 'G') {
+				}
+				else if (*q == 'G')
+				{
 					// \033[#G - Cursor Horizontal Absolute (CHA)
 					// Moves the cursor to indicated column in current row.
-				} else if (*q == 'L' || *q == 'M' || *q == '@' || *q == 'P') {
+				}
+				else if (*q == 'L' || *q == 'M' || *q == '@' || *q == 'P')
+				{
 					// not implemented, just skip
-				} else {
+				}
+				else
+				{
 					// no number nor valid sequencer
 					// something is fishy, we break and give the current char free
 					--q;
@@ -657,7 +768,8 @@ int _vShowMessage (enum msg_type flag, const char *string, va_list ap)
 	FILE *fp;
 #endif
 
-	if (!string || *string == '\0') {
+	if (!string || *string == '\0')
+	{
 		ShowError ("Empty string passed to _vShowMessage().\n");
 		return 1;
 	}
@@ -673,13 +785,16 @@ int _vShowMessage (enum msg_type flag, const char *string, va_list ap)
 	)
 		return 0; //Do not print it.
 
-	if (timestamp_format[0] && flag != MSG_NONE) {
+	if (timestamp_format[0] && flag != MSG_NONE)
+	{
 		//Display time format. [Skotlex]
 		time_t t = time (NULL);
 		strftime (prefix, 80, timestamp_format, localtime (&t));
-	} else prefix[0] = '\0';
+	}
+	else prefix[0] = '\0';
 
-	switch (flag) {
+	switch (flag)
+	{
 		case MSG_NONE: // direct printf replacement
 			break;
 
@@ -720,14 +835,17 @@ int _vShowMessage (enum msg_type flag, const char *string, va_list ap)
 			return 1;
 	}
 
-	if (flag == MSG_ERROR || flag == MSG_FATALERROR || flag == MSG_SQL) {
+	if (flag == MSG_ERROR || flag == MSG_FATALERROR || flag == MSG_SQL)
+	{
 		//Send Errors to StdErr [Skotlex]
 		FPRINTF (STDERR, "%s ", prefix);
 		va_copy (apcopy, ap);
 		VFPRINTF (STDERR, string, apcopy);
 		va_end (apcopy);
 		FFLUSH (STDERR);
-	} else {
+	}
+	else
+	{
 		if (flag != MSG_NONE)
 			FPRINTF (STDOUT, "%s ", prefix);
 
@@ -739,20 +857,26 @@ int _vShowMessage (enum msg_type flag, const char *string, va_list ap)
 
 #if defined(DEBUGLOGMAP) || defined(DEBUGLOGCHAR) || defined(DEBUGLOGLOGIN)
 
-	if (strlen (DEBUGLOGPATH) > 0) {
+	if (strlen (DEBUGLOGPATH) > 0)
+	{
 		fp = fopen (DEBUGLOGPATH, "a");
 
-		if (fp == NULL)	{
+		if (fp == NULL)
+		{
 			FPRINTF (STDERR, CL_RED"[ERROR]"CL_RESET": Could not open '"CL_WHITE"%s"CL_RESET"', access denied.\n", DEBUGLOGPATH);
 			FFLUSH (STDERR);
-		} else {
+		}
+		else
+		{
 			fprintf (fp, "%s ", prefix);
 			va_copy (apcopy, ap);
 			vfprintf (fp, string, apcopy);
 			va_end (apcopy);
 			fclose (fp);
 		}
-	} else {
+	}
+	else
+	{
 		FPRINTF (STDERR, CL_RED"[ERROR]"CL_RESET": DEBUGLOGPATH not defined!\n");
 		FFLUSH (STDERR);
 	}

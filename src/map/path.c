@@ -16,12 +16,14 @@
 
 #define MAX_HEAP 150
 
-struct tmp_path {
+struct tmp_path
+{
 	short x, y, dist, before, cost, flag;
 };
 #define calc_index(x,y) (((x)+(y)*MAX_WALKPATH) & (MAX_WALKPATH*MAX_WALKPATH-1))
 
-const char walk_choices [3][3] = {
+const char walk_choices [3][3] =
+{
 	{1, 0, 7},
 	{2, -1, 6},
 	{3, 4, 5},
@@ -51,7 +53,8 @@ static void update_heap_path (int *heap, struct tmp_path *tp, int index)
 	int i, h;
 	ARR_FIND (0, heap[0], h, heap[h + 1] == index);
 
-	if (h == heap[0]) {
+	if (h == heap[0])
+	{
 		ShowError ("update_heap_path bug\n");
 		exit (EXIT_FAILURE);
 	}
@@ -77,7 +80,8 @@ static int pop_heap_path (int *heap, struct tmp_path *tp)
 	last = heap[heap[0]];
 	heap[0]--;
 
-	for (h = 0, k = 2; k < heap[0]; k = k * 2 + 2) {
+	for (h = 0, k = 2; k < heap[0]; k = k * 2 + 2)
+	{
 		if (tp[heap[k + 1]].cost > tp[heap[k]].cost)
 			k--;
 
@@ -112,8 +116,10 @@ static int add_path (int *heap, struct tmp_path *tp, int x, int y, int dist, int
 	int i;
 	i = calc_index (x, y);
 
-	if (tp[i].x == x && tp[i].y == y) {
-		if (tp[i].dist > dist) {
+	if (tp[i].x == x && tp[i].y == y)
+	{
+		if (tp[i].dist > dist)
+		{
 			tp[i].dist = dist;
 			tp[i].before = before;
 			tp[i].cost = cost;
@@ -156,24 +162,29 @@ int path_blownpos (int m, int x0, int y0, int dx, int dy, int count)
 
 	md = &map[m];
 
-	if (count > 25) { //Cap to prevent too much processing...?
+	if (count > 25)   //Cap to prevent too much processing...?
+	{
 		ShowWarning ("path_blownpos: count too many %d !\n", count);
 		count = 25;
 	}
 
-	if (dx > 1 || dx < -1 || dy > 1 || dy < -1) {
+	if (dx > 1 || dx < -1 || dy > 1 || dy < -1)
+	{
 		ShowError ("path_blownpos: illegal dx=%d or dy=%d !\n", dx, dy);
 		dx = (dx > 0) ? 1 : ( (dx < 0) ? -1 : 0);
 		dy = (dy > 0) ? 1 : ( (dy < 0) ? -1 : 0);
 	}
 
-	while (count > 0 && (dx != 0 || dy != 0)) {
-		if (!map_getcellp (md, x0 + dx, y0 + dy, CELL_CHKPASS)) {
+	while (count > 0 && (dx != 0 || dy != 0))
+	{
+		if (!map_getcellp (md, x0 + dx, y0 + dy, CELL_CHKPASS))
+		{
 			// attempt partial movement
 			int fx = (dx != 0 && map_getcellp (md, x0 + dx, y0, CELL_CHKPASS));
 			int fy = (dy != 0 && map_getcellp (md, x0, y0 + dy, CELL_CHKPASS));
 
-			if (fx && fy) {
+			if (fx && fy)
+			{
 				if (rand() & 1)
 					dx = 0;
 				else
@@ -215,7 +226,8 @@ bool path_search_long (struct shootpath_data *spd, int m, int x0, int y0, int x1
 	md = &map[m];
 	dx = (x1 - x0);
 
-	if (dx < 0) {
+	if (dx < 0)
+	{
 		swap (x0, x1);
 		swap (y0, y1);
 		dx = -dx;
@@ -230,35 +242,44 @@ bool path_search_long (struct shootpath_data *spd, int m, int x0, int y0, int x1
 	if (map_getcellp (md, x1, y1, cell))
 		return false;
 
-	if (dx > abs (dy)) {
+	if (dx > abs (dy))
+	{
 		weight = dx;
 		spd->ry = 1;
-	} else {
+	}
+	else
+	{
 		weight = abs (y1 - y0);
 		spd->rx = 1;
 	}
 
-	while (x0 != x1 || y0 != y1) {
+	while (x0 != x1 || y0 != y1)
+	{
 		if (map_getcellp (md, x0, y0, cell))
 			return false;
 
 		wx += dx;
 		wy += dy;
 
-		if (wx >= weight) {
+		if (wx >= weight)
+		{
 			wx -= weight;
 			x0++;
 		}
 
-		if (wy >= weight) {
+		if (wy >= weight)
+		{
 			wy -= weight;
 			y0++;
-		} else if (wy < 0) {
+		}
+		else if (wy < 0)
+		{
 			wy += weight;
 			y0--;
 		}
 
-		if (spd->len < MAX_WALKPATH) {
+		if (spd->len < MAX_WALKPATH)
+		{
 			spd->x[spd->len] = x0;
 			spd->y[spd->len] = y0;
 			spd->len++;
@@ -310,7 +331,8 @@ bool path_search (struct walkpath_data *wpd, int m, int x0, int y0, int x1, int 
 	y = y0;
 	i = 0;
 
-	while (i < ARRAYLENGTH (wpd->path)) {
+	while (i < ARRAYLENGTH (wpd->path))
+	{
 		wpd->path[i] = walk_choices[-dy + 1][dx + 1];
 		i++;
 		x += dx;
@@ -327,7 +349,8 @@ bool path_search (struct walkpath_data *wpd, int m, int x0, int y0, int x1, int 
 			break; // obstacle = failure
 	}
 
-	if (x == x1 && y == y1) {
+	if (x == x1 && y == y1)
+	{
 		//easy path successful.
 		wpd->path_len = i;
 		wpd->path_pos = 0;
@@ -350,7 +373,8 @@ bool path_search (struct walkpath_data *wpd, int m, int x0, int y0, int x1, int 
 	xs = md->xs - 1; // あらかじめ１減算しておく
 	ys = md->ys - 1;
 
-	for (;;) {
+	for (;;)
+	{
 		int e = 0, f = 0, dist, cost, dc[4] = {0, 0, 0, 0};
 
 		if (heap[0] == 0)
@@ -370,22 +394,26 @@ bool path_search (struct walkpath_data *wpd, int m, int x0, int y0, int x1, int 
 		// dc[2] : y-- の時のコスト増分
 		// dc[3] : x++ の時のコスト増分
 
-		if (y < ys && !map_getcellp (md, x  , y + 1, cell)) {
+		if (y < ys && !map_getcellp (md, x  , y + 1, cell))
+		{
 			f |= 1; dc[0] = (y >= y1 ? 20 : 0);
 			e += add_path (heap, tp, x  , y + 1, dist, rp, cost + dc[0]); // (x,   y+1)
 		}
 
-		if (x > 0  && !map_getcellp (md, x - 1, y  , cell)) {
+		if (x > 0  && !map_getcellp (md, x - 1, y  , cell))
+		{
 			f |= 2; dc[1] = (x <= x1 ? 20 : 0);
 			e += add_path (heap, tp, x - 1, y  , dist, rp, cost + dc[1]); // (x-1, y  )
 		}
 
-		if (y > 0  && !map_getcellp (md, x  , y - 1, cell)) {
+		if (y > 0  && !map_getcellp (md, x  , y - 1, cell))
+		{
 			f |= 4; dc[2] = (y <= y1 ? 20 : 0);
 			e += add_path (heap, tp, x  , y - 1, dist, rp, cost + dc[2]); // (x  , y-1)
 		}
 
-		if (x < xs && !map_getcellp (md, x + 1, y  , cell)) {
+		if (x < xs && !map_getcellp (md, x + 1, y  , cell))
+		{
 			f |= 8; dc[3] = (x >= x1 ? 20 : 0);
 			e += add_path (heap, tp, x + 1, y  , dist, rp, cost + dc[3]); // (x+1, y  )
 		}
@@ -419,16 +447,22 @@ bool path_search (struct walkpath_data *wpd, int m, int x0, int y0, int x1, int 
 	wpd->path_len = len;
 	wpd->path_pos = 0;
 
-	for (i = rp, j = len - 1; j >= 0; i = tp[i].before, j--) {
+	for (i = rp, j = len - 1; j >= 0; i = tp[i].before, j--)
+	{
 		int dx  = tp[i].x - tp[tp[i].before].x;
 		int dy  = tp[i].y - tp[tp[i].before].y;
 		int dir;
 
-		if (dx == 0) {
+		if (dx == 0)
+		{
 			dir = (dy > 0 ? 0 : 4);
-		} else if (dx > 0) {
+		}
+		else if (dx > 0)
+		{
 			dir = (dy == 0 ? 6 : (dy < 0 ? 5 : 7));
-		} else {
+		}
+		else
+		{
 			dir = (dy == 0 ? 2 : (dy > 0 ? 1 : 3));
 		}
 
@@ -469,10 +503,13 @@ unsigned int distance (int dx, int dy)
 
 	if (dy == 0) return dx;
 
-	if (dx < dy) {
+	if (dx < dy)
+	{
 		min = dx;
 		max = dy;
-	} else {
+	}
+	else
+	{
 		min = dy;
 		max = dx;
 	}

@@ -41,7 +41,8 @@ unsigned long loginlog_failedattempts (uint32 ip, unsigned int minutes)
 								loginlog_table, ip2str (ip, NULL), minutes)) // how many times failed account? in one ip.
 		Sql_ShowDebug (sql_handle);
 
-	if (SQL_SUCCESS == Sql_NextRow (sql_handle)) {
+	if (SQL_SUCCESS == Sql_NextRow (sql_handle))
+	{
 		char *data;
 		Sql_GetData (sql_handle, 0, &data, NULL);
 		failures = strtoul (data, NULL, 10);
@@ -83,7 +84,8 @@ bool loginlog_init (void)
 	const char *database;
 	const char *codepage;
 
-	if (log_db_hostname[0] != '\0') {
+	if (log_db_hostname[0] != '\0')
+	{
 		// local settings
 		username = log_db_username;
 		password = log_db_password;
@@ -91,7 +93,9 @@ bool loginlog_init (void)
 		port     = log_db_port;
 		database = log_db_database;
 		codepage = log_codepage;
-	} else {
+	}
+	else
+	{
 		// global settings
 		username = global_db_username;
 		password = global_db_password;
@@ -103,7 +107,8 @@ bool loginlog_init (void)
 
 	sql_handle = Sql_Malloc();
 
-	if (SQL_ERROR == Sql_Connect (sql_handle, username, password, hostname, port, database)) {
+	if (SQL_ERROR == Sql_Connect (sql_handle, username, password, hostname, port, database))
+	{
 		Sql_ShowDebug (sql_handle);
 		Sql_Free (sql_handle);
 		exit (EXIT_FAILURE);
@@ -128,7 +133,8 @@ bool loginlog_config_read (const char *key, const char *value)
 	const char *signature;
 	signature = "sql.";
 
-	if (strncmpi (key, signature, strlen (signature)) == 0) {
+	if (strncmpi (key, signature, strlen (signature)) == 0)
+	{
 		key += strlen (signature);
 
 		if (strcmpi (key, "db_hostname") == 0)

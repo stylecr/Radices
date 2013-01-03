@@ -67,7 +67,8 @@ static void script_load_mapreg (void)
 	if (fp == NULL)
 		return;
 
-	while (fgets (line, sizeof (line), fp)) {
+	while (fgets (line, sizeof (line), fp))
+	{
 		char varname[32 + 1];
 		char value[255 + 1];
 		int n, s, i;
@@ -78,7 +79,8 @@ static void script_load_mapreg (void)
 			continue;
 
 		// read value
-		if (sscanf (line + n, "%[^\n\r]", value) != 1) {
+		if (sscanf (line + n, "%[^\n\r]", value) != 1)
+		{
 			ShowError ("%s: %s broken data !\n", mapreg_txt, varname);
 			continue;
 		}
@@ -105,14 +107,16 @@ static void script_save_mapreg (void)
 	DBKey key;
 	fp = lock_fopen (mapreg_txt, &lock);
 
-	if (fp == NULL) {
+	if (fp == NULL)
+	{
 		ShowError ("script_save_mapreg: Unable to lock-open file [%s]!\n", mapreg_txt);
 		return;
 	}
 
 	iter = mapreg_db->iterator (mapreg_db);
 
-	for (data = iter->first (iter, &key); iter->exists (iter); data = iter->next (iter, &key)) {
+	for (data = iter->first (iter, &key); iter->exists (iter); data = iter->next (iter, &key))
+	{
 		int num = (key.i & 0x00ffffff);
 		int i   = (key.i & 0xff000000) >> 24;
 		const char *name = get_str (num);
@@ -129,7 +133,8 @@ static void script_save_mapreg (void)
 	iter->destroy (iter);
 	iter = mapregstr_db->iterator (mapregstr_db);
 
-	for (data = iter->first (iter, &key); iter->exists (iter); data = iter->next (iter, &key)) {
+	for (data = iter->first (iter, &key); iter->exists (iter); data = iter->next (iter, &key))
+	{
 		int num = (key.i & 0x00ffffff);
 		int i   = (key.i & 0xff000000) >> 24;
 		const char *name = get_str (num);

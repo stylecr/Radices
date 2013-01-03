@@ -49,7 +49,8 @@ int storage_fromsql (int account_id, struct storage_data *p)
 
 	StringBuf_Destroy (&buf);
 
-	for (i = 0; i < MAX_STORAGE && SQL_SUCCESS == Sql_NextRow (sql_handle); ++i) {
+	for (i = 0; i < MAX_STORAGE && SQL_SUCCESS == Sql_NextRow (sql_handle); ++i)
+	{
 		item = &p->items[i];
 		Sql_GetData (sql_handle, 0, &data, NULL); item->id = atoi (data);
 		Sql_GetData (sql_handle, 1, &data, NULL); item->nameid = atoi (data);
@@ -60,7 +61,8 @@ int storage_fromsql (int account_id, struct storage_data *p)
 		Sql_GetData (sql_handle, 6, &data, NULL); item->attribute = atoi (data);
 		Sql_GetData (sql_handle, 7, &data, NULL); item->expire_time = (unsigned int) atoi (data);
 
-		for (j = 0; j < MAX_SLOTS; ++j) {
+		for (j = 0; j < MAX_SLOTS; ++j)
+		{
 			Sql_GetData (sql_handle, 8 + j, &data, NULL); item->card[j] = atoi (data);
 		}
 	}
@@ -106,7 +108,8 @@ int guild_storage_fromsql (int guild_id, struct guild_storage *p)
 
 	StringBuf_Destroy (&buf);
 
-	for (i = 0; i < MAX_GUILD_STORAGE && SQL_SUCCESS == Sql_NextRow (sql_handle); ++i) {
+	for (i = 0; i < MAX_GUILD_STORAGE && SQL_SUCCESS == Sql_NextRow (sql_handle); ++i)
+	{
 		item = &p->items[i];
 		Sql_GetData (sql_handle, 0, &data, NULL); item->id = atoi (data);
 		Sql_GetData (sql_handle, 1, &data, NULL); item->nameid = atoi (data);
@@ -117,7 +120,8 @@ int guild_storage_fromsql (int guild_id, struct guild_storage *p)
 		Sql_GetData (sql_handle, 6, &data, NULL); item->attribute = atoi (data);
 		item->expire_time = 0;
 
-		for (j = 0; j < MAX_SLOTS; ++j) {
+		for (j = 0; j < MAX_SLOTS; ++j)
+		{
 			Sql_GetData (sql_handle, 7 + j, &data, NULL); item->card[j] = atoi (data);
 		}
 	}
@@ -163,7 +167,8 @@ int mapif_load_guild_storage (int fd, int account_id, int guild_id)
 {
 	if (SQL_ERROR == Sql_Query (sql_handle, "SELECT `guild_id` FROM `%s` WHERE `guild_id`='%d'", guild_db, guild_id))
 		Sql_ShowDebug (sql_handle);
-	else if (Sql_NumRows (sql_handle) > 0) {
+	else if (Sql_NumRows (sql_handle) > 0)
+	{
 		// guild exists
 		WFIFOHEAD (fd, sizeof (struct guild_storage) + 12);
 		WFIFOW (fd, 0) = 0x3818;
@@ -214,12 +219,16 @@ int mapif_parse_SaveGuildStorage (int fd)
 	guild_id = RFIFOL (fd, 8);
 	len = RFIFOW (fd, 2);
 
-	if (sizeof (struct guild_storage) != len - 12) {
+	if (sizeof (struct guild_storage) != len - 12)
+	{
 		ShowError ("inter storage: data size error %d != %d\n", sizeof (struct guild_storage), len - 12);
-	} else {
+	}
+	else
+	{
 		if (SQL_ERROR == Sql_Query (sql_handle, "SELECT `guild_id` FROM `%s` WHERE `guild_id`='%d'", guild_db, guild_id))
 			Sql_ShowDebug (sql_handle);
-		else if (Sql_NumRows (sql_handle) > 0) {
+		else if (Sql_NumRows (sql_handle) > 0)
+		{
 			// guild exists
 			Sql_FreeResult (sql_handle);
 			guild_storage_tosql (guild_id, (struct guild_storage *) RFIFOP (fd, 12));
@@ -239,7 +248,8 @@ int inter_storage_parse_frommap (int fd)
 {
 	RFIFOHEAD (fd);
 
-	switch (RFIFOW (fd, 0)) {
+	switch (RFIFOW (fd, 0))
+	{
 		case 0x3018: mapif_parse_LoadGuildStorage (fd); break;
 
 		case 0x3019: mapif_parse_SaveGuildStorage (fd); break;

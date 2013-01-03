@@ -31,7 +31,8 @@ static int auction_count (int char_id, bool buy)
 	DBKey key;
 	iter = auction_db_->iterator (auction_db_);
 
-	for (auction = (struct auction_data *) iter->first (iter, &key); iter->exists (iter); auction = (struct auction_data *) iter->next (iter, &key)) {
+	for (auction = (struct auction_data *) iter->first (iter, &key); iter->exists (iter); auction = (struct auction_data *) iter->next (iter, &key))
+	{
 		if ( (buy && auction->buyer_id == char_id) || (!buy && auction->seller_id == char_id))
 			i++;
 	}
@@ -63,7 +64,8 @@ void auction_save (struct auction_data *auction)
 			||  SQL_SUCCESS != SqlStmt_BindParam (stmt, 0, SQLDT_STRING, auction->seller_name, strnlen (auction->seller_name, NAME_LENGTH))
 			||  SQL_SUCCESS != SqlStmt_BindParam (stmt, 1, SQLDT_STRING, auction->buyer_name, strnlen (auction->buyer_name, NAME_LENGTH))
 			||  SQL_SUCCESS != SqlStmt_BindParam (stmt, 2, SQLDT_STRING, auction->item_name, strnlen (auction->item_name, ITEM_NAME_LENGTH))
-			||  SQL_SUCCESS != SqlStmt_Execute (stmt)) {
+			||  SQL_SUCCESS != SqlStmt_Execute (stmt))
+	{
 		SqlStmt_ShowDebug (stmt);
 	}
 
@@ -100,10 +102,13 @@ unsigned int auction_create (struct auction_data *auction)
 			||  SQL_SUCCESS != SqlStmt_BindParam (stmt, 0, SQLDT_STRING, auction->seller_name, strnlen (auction->seller_name, NAME_LENGTH))
 			||  SQL_SUCCESS != SqlStmt_BindParam (stmt, 1, SQLDT_STRING, auction->buyer_name, strnlen (auction->buyer_name, NAME_LENGTH))
 			||  SQL_SUCCESS != SqlStmt_BindParam (stmt, 2, SQLDT_STRING, auction->item_name, strnlen (auction->item_name, ITEM_NAME_LENGTH))
-			||  SQL_SUCCESS != SqlStmt_Execute (stmt)) {
+			||  SQL_SUCCESS != SqlStmt_Execute (stmt))
+	{
 		SqlStmt_ShowDebug (stmt);
 		auction->auction_id = 0;
-	} else {
+	}
+	else
+	{
 		struct auction_data *auction_;
 		unsigned int tick = auction->hours * 3600000;
 		auction->item.amount = 1;
@@ -135,12 +140,15 @@ static int auction_end_timer (int tid, unsigned int tick, int id, intptr_t data)
 {
 	struct auction_data *auction;
 
-	if ( (auction = (struct auction_data *) idb_get (auction_db_, id)) != NULL) {
-		if (auction->buyer_id) {
+	if ( (auction = (struct auction_data *) idb_get (auction_db_, id)) != NULL)
+	{
+		if (auction->buyer_id)
+		{
 			mail_sendmail (0, "Auction Manager", auction->buyer_id, auction->buyer_name, "Auction", "Thanks, you won the auction!.", 0, &auction->item);
 			mapif_Auction_message (auction->buyer_id, 6); // You have won the auction
 			mail_sendmail (0, "Auction Manager", auction->seller_id, auction->seller_name, "Auction", "Payment for your auction!.", auction->price, NULL);
-		} else
+		}
+		else
 			mail_sendmail (0, "Auction Manager", auction->seller_id, auction->seller_name, "Auction", "No buyers have been found for your auction.", 0, &auction->item);
 
 		ShowInfo ("Auction End: id %u.\n", auction->auction_id);
@@ -187,7 +195,8 @@ void inter_auctions_fromsql (void)
 
 	StringBuf_Destroy (&buf);
 
-	while (SQL_SUCCESS == Sql_NextRow (sql_handle)) {
+	while (SQL_SUCCESS == Sql_NextRow (sql_handle))
+	{
 		CREATE (auction, struct auction_data, 1);
 		Sql_GetData (sql_handle, 0, &data, NULL); auction->auction_id = atoi (data);
 		Sql_GetData (sql_handle, 1, &data, NULL); auction->seller_id = atoi (data);
@@ -208,7 +217,8 @@ void inter_auctions_fromsql (void)
 		item->amount = 1;
 		item->expire_time = 0;
 
-		for (i = 0; i < MAX_SLOTS; i++) {
+		for (i = 0; i < MAX_SLOTS; i++)
+		{
 			Sql_GetData (sql_handle, 14 + i, &data, NULL);
 			item->card[i] = atoi (data);
 		}
@@ -252,7 +262,8 @@ static void mapif_parse_Auction_requestlist (int fd)
 	memcpy (searchtext, RFIFOP (fd, 16), NAME_LENGTH);
 	iter = auction_db_->iterator (auction_db_);
 
-	for (auction = (struct auction_data *) iter->first (iter, &key); iter->exists (iter); auction = (struct auction_data *) iter->next (iter, &key)) {
+	for (auction = (struct auction_data *) iter->first (iter, &key); iter->exists (iter); auction = (struct auction_data *) iter->next (iter, &key))
+	{
 		if ( (type == 0 && auction->type != IT_ARMOR && auction->type != IT_PETARMOR) ||
 				(type == 1 && auction->type != IT_WEAPON) ||
 				(type == 2 && auction->type != IT_CARD) ||
@@ -265,7 +276,8 @@ static void mapif_parse_Auction_requestlist (int fd)
 
 		i++;
 
-		if (i > 5) {
+		if (i > 5)
+		{
 			// Counting Pages of Total Results (5 Results per Page)
 			pages++;
 			i = 1; // First Result of This Page
@@ -321,17 +333,20 @@ static void mapif_parse_Auction_cancel (int fd)
 	int char_id = RFIFOL (fd, 2), auction_id = RFIFOL (fd, 6);
 	struct auction_data *auction;
 
-	if ( (auction = (struct auction_data *) idb_get (auction_db_, auction_id)) == NULL) {
+	if ( (auction = (struct auction_data *) idb_get (auction_db_, auction_id)) == NULL)
+	{
 		mapif_Auction_cancel (fd, char_id, 1); // Bid Number is Incorrect
 		return;
 	}
 
-	if (auction->seller_id != char_id) {
+	if (auction->seller_id != char_id)
+	{
 		mapif_Auction_cancel (fd, char_id, 2); // You cannot end the auction
 		return;
 	}
 
-	if (auction->buyer_id > 0) {
+	if (auction->buyer_id > 0)
+	{
 		mapif_Auction_cancel (fd, char_id, 3); // An auction with at least one bidder cannot be canceled
 		return;
 	}
@@ -355,17 +370,20 @@ static void mapif_parse_Auction_close (int fd)
 	int char_id = RFIFOL (fd, 2), auction_id = RFIFOL (fd, 6);
 	struct auction_data *auction;
 
-	if ( (auction = (struct auction_data *) idb_get (auction_db_, auction_id)) == NULL) {
+	if ( (auction = (struct auction_data *) idb_get (auction_db_, auction_id)) == NULL)
+	{
 		mapif_Auction_close (fd, char_id, 2); // Bid Number is Incorrect
 		return;
 	}
 
-	if (auction->seller_id != char_id) {
+	if (auction->seller_id != char_id)
+	{
 		mapif_Auction_close (fd, char_id, 1); // You cannot end the auction
 		return;
 	}
 
-	if (auction->buyer_id == 0) {
+	if (auction->buyer_id == 0)
+	{
 		mapif_Auction_close (fd, char_id, 1); // You cannot end the auction
 		return;
 	}
@@ -395,22 +413,27 @@ static void mapif_parse_Auction_bid (int fd)
 	unsigned int auction_id = RFIFOL (fd, 8);
 	struct auction_data *auction;
 
-	if ( (auction = (struct auction_data *) idb_get (auction_db_, auction_id)) == NULL || auction->price >= bid || auction->seller_id == char_id) {
+	if ( (auction = (struct auction_data *) idb_get (auction_db_, auction_id)) == NULL || auction->price >= bid || auction->seller_id == char_id)
+	{
 		mapif_Auction_bid (fd, char_id, bid, 0); // You have failed to bid in the auction
 		return;
 	}
 
-	if (auction_count (char_id, true) > 4 && bid < auction->buynow && auction->buyer_id != char_id) {
+	if (auction_count (char_id, true) > 4 && bid < auction->buynow && auction->buyer_id != char_id)
+	{
 		mapif_Auction_bid (fd, char_id, bid, 9); // You cannot place more than 5 bids at a time
 		return;
 	}
 
-	if (auction->buyer_id > 0) {
+	if (auction->buyer_id > 0)
+	{
 		// Send Money back to the previous Buyer
-		if (auction->buyer_id != char_id) {
+		if (auction->buyer_id != char_id)
+		{
 			mail_sendmail (0, "Auction Manager", auction->buyer_id, auction->buyer_name, "Auction", "Someone has placed a higher bid.", auction->price, NULL);
 			mapif_Auction_message (auction->buyer_id, 7); // You have failed to win the auction
-		} else
+		}
+		else
 			mail_sendmail (0, "Auction Manager", auction->buyer_id, auction->buyer_name, "Auction", "You have placed a higher bid.", auction->price, NULL);
 	}
 
@@ -418,7 +441,8 @@ static void mapif_parse_Auction_bid (int fd)
 	safestrncpy (auction->buyer_name, (char *) RFIFOP (fd, 16), NAME_LENGTH);
 	auction->price = bid;
 
-	if (bid >= auction->buynow) {
+	if (bid >= auction->buynow)
+	{
 		// Automatic won the auction
 		mapif_Auction_bid (fd, char_id, bid - auction->buynow, 1); // You have successfully bid in the auction
 		mail_sendmail (0, "Auction Manager", auction->buyer_id, auction->buyer_name, "Auction", "You have won the auction.", 0, &auction->item);
@@ -437,7 +461,8 @@ static void mapif_parse_Auction_bid (int fd)
  *------------------------------------------*/
 int inter_auction_parse_frommap (int fd)
 {
-	switch (RFIFOW (fd, 0)) {
+	switch (RFIFOW (fd, 0))
+	{
 		case 0x3050: mapif_parse_Auction_requestlist (fd); break;
 
 		case 0x3051: mapif_parse_Auction_register (fd); break;

@@ -25,14 +25,16 @@
 static DBMap *bg_team_db; // int bg_id -> struct battleground_data*
 static unsigned int bg_team_counter = 0; // Next bg_id
 
-struct battleground_data *bg_team_search (int bg_id) {
+struct battleground_data *bg_team_search (int bg_id)
+{
 	// Search a BG Team using bg_id
 	if (!bg_id) return NULL;
 
 	return (struct battleground_data *) idb_get (bg_team_db, bg_id);
 }
 
-struct map_session_data *bg_getavailablesd (struct battleground_data *bg) {
+struct map_session_data *bg_getavailablesd (struct battleground_data *bg)
+{
 	int i;
 	nullpo_retr (NULL, bg);
 	ARR_FIND (0, MAX_BG_MEMBERS, i, bg->members[i].sd != NULL);
@@ -48,7 +50,8 @@ int bg_team_delete (int bg_id)
 
 	if (bg == NULL) return 0;
 
-	for (i = 0; i < MAX_BG_MEMBERS; i++) {
+	for (i = 0; i < MAX_BG_MEMBERS; i++)
+	{
 		if ( (sd = bg->members[i].sd) == NULL)
 			continue;
 
@@ -102,7 +105,8 @@ int bg_team_join (int bg_id, struct map_session_data *sd)
 	bg->count++;
 	guild_send_dot_remove (sd);
 
-	for (i = 0; i < MAX_BG_MEMBERS; i++) {
+	for (i = 0; i < MAX_BG_MEMBERS; i++)
+	{
 		if ( (pl_sd = bg->members[i].sd) != NULL && pl_sd != sd)
 			clif_hpmeter_single (sd->fd, pl_sd->bl.id, pl_sd->battle_status.hp, pl_sd->battle_status.max_hp);
 	}
@@ -186,7 +190,8 @@ int bg_team_get_id (struct block_list *bl)
 {
 	nullpo_ret (bl);
 
-	switch (bl->type) {
+	switch (bl->type)
+	{
 		case BL_PC:
 			return ( (TBL_PC *) bl)->bg_id;
 
@@ -196,7 +201,8 @@ int bg_team_get_id (struct block_list *bl)
 
 			break;
 
-		case BL_MOB: {
+		case BL_MOB:
+		{
 			struct map_session_data *msd;
 			struct mob_data *md = (TBL_MOB *) bl;
 
@@ -244,11 +250,13 @@ int bg_send_xy_timer_sub (DBKey key, void *data, va_list ap)
 	int i;
 	nullpo_ret (bg);
 
-	for (i = 0; i < MAX_BG_MEMBERS; i++) {
+	for (i = 0; i < MAX_BG_MEMBERS; i++)
+	{
 		if ( (sd = bg->members[i].sd) == NULL)
 			continue;
 
-		if (sd->bl.x != bg->members[i].x || sd->bl.y != bg->members[i].y) {
+		if (sd->bl.x != bg->members[i].x || sd->bl.y != bg->members[i].y)
+		{
 			// xy update
 			bg->members[i].x = sd->bl.x;
 			bg->members[i].y = sd->bl.y;

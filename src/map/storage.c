@@ -48,7 +48,8 @@ static void storage_sortitem (struct item *items, unsigned int size)
 {
 	nullpo_retv (items);
 
-	if (battle_config.client_sort_storage) {
+	if (battle_config.client_sort_storage)
+	{
 		qsort (items, size, sizeof (struct item), storage_comp_item);
 	}
 }
@@ -96,7 +97,8 @@ int storage_storageopen (struct map_session_data *sd)
 	if (sd->state.storage_flag)
 		return 1; //Already open?
 
-	if (!pc_can_give_items (pc_isGM (sd))) {
+	if (!pc_can_give_items (pc_isGM (sd)))
+	{
 		//check is this GM level is allowed to put items to storage
 		clif_displaymessage (sd->fd, msg_txt (246));
 		return 1;
@@ -116,7 +118,8 @@ int compare_item (struct item *a, struct item *b)
 			a->identify == b->identify &&
 			a->refine == b->refine &&
 			a->attribute == b->attribute &&
-			a->expire_time == b->expire_time) {
+			a->expire_time == b->expire_time)
+	{
 		int i;
 
 		for (i = 0; i < MAX_SLOTS && (a->card[i] == b->card[i]); i++);
@@ -141,16 +144,20 @@ static int storage_additem (struct map_session_data *sd, struct item *item_data,
 
 	data = itemdb_search (item_data->nameid);
 
-	if (!itemdb_canstore (item_data, pc_isGM (sd))) {
+	if (!itemdb_canstore (item_data, pc_isGM (sd)))
+	{
 		//Check if item is storable. [Skotlex]
 		clif_displaymessage (sd->fd, msg_txt (264));
 		return 1;
 	}
 
-	if (itemdb_isstackable2 (data)) {
+	if (itemdb_isstackable2 (data))
+	{
 		//Stackable
-		for (i = 0; i < MAX_STORAGE; i++) {
-			if (compare_item (&stor->items[i], item_data)) {
+		for (i = 0; i < MAX_STORAGE; i++)
+		{
+			if (compare_item (&stor->items[i], item_data))
+			{
 				// existing items found, stack them
 				if (amount > MAX_AMOUNT - stor->items[i].amount)
 					return 1;
@@ -190,7 +197,8 @@ int storage_delitem (struct map_session_data *sd, int n, int amount)
 	sd->status.storage.items[n].amount -= amount;
 	log_pick_pc (sd, LOG_TYPE_STORAGE, sd->status.storage.items[n].nameid, amount, &sd->status.storage.items[n]);
 
-	if (sd->status.storage.items[n].amount == 0) {
+	if (sd->status.storage.items[n].amount == 0)
+	{
 		memset (&sd->status.storage.items[n], 0, sizeof (sd->status.storage.items[0]));
 		sd->status.storage.storage_amount--;
 
@@ -334,7 +342,8 @@ static void *create_guildstorage (DBKey key, va_list args)
 	gs->guild_id = key.i;
 	return gs;
 }
-struct guild_storage *guild2storage (int guild_id) {
+struct guild_storage *guild2storage (int guild_id)
+{
 	struct guild_storage *gs = NULL;
 
 	if (guild_search (guild_id) != NULL)
@@ -343,7 +352,8 @@ struct guild_storage *guild2storage (int guild_id) {
 	return gs;
 }
 
-struct guild_storage *guild2storage2 (int guild_id) {
+struct guild_storage *guild2storage2 (int guild_id)
+{
 	//For just locating a storage without creating one. [Skotlex]
 	return (struct guild_storage *) idb_get (guild_storage_db, guild_id);
 }
@@ -365,12 +375,14 @@ int storage_guild_storageopen (struct map_session_data *sd)
 	if (sd->state.storage_flag)
 		return 1; //Can't open both storages at a time.
 
-	if (!pc_can_give_items (pc_isGM (sd))) { //check is this GM level can open guild storage and store items [Lupus]
+	if (!pc_can_give_items (pc_isGM (sd)))   //check is this GM level can open guild storage and store items [Lupus]
+	{
 		clif_displaymessage (sd->fd, msg_txt (246));
 		return 1;
 	}
 
-	if ( (gstor = guild2storage2 (sd->status.guild_id)) == NULL) {
+	if ( (gstor = guild2storage2 (sd->status.guild_id)) == NULL)
+	{
 		intif_request_guild_storage (sd->status.account_id, sd->status.guild_id);
 		return 0;
 	}
@@ -399,15 +411,19 @@ int guild_storage_additem (struct map_session_data *sd, struct guild_storage *st
 
 	data = itemdb_search (item_data->nameid);
 
-	if (!itemdb_canguildstore (item_data, pc_isGM (sd)) || item_data->expire_time) {
+	if (!itemdb_canguildstore (item_data, pc_isGM (sd)) || item_data->expire_time)
+	{
 		//Check if item is storable. [Skotlex]
 		clif_displaymessage (sd->fd, msg_txt (264));
 		return 1;
 	}
 
-	if (itemdb_isstackable2 (data)) { //Stackable
-		for (i = 0; i < MAX_GUILD_STORAGE; i++) {
-			if (compare_item (&stor->items[i], item_data)) {
+	if (itemdb_isstackable2 (data))   //Stackable
+	{
+		for (i = 0; i < MAX_GUILD_STORAGE; i++)
+		{
+			if (compare_item (&stor->items[i], item_data))
+			{
 				if (stor->items[i].amount + amount > MAX_AMOUNT)
 					return 1;
 
@@ -447,7 +463,8 @@ int guild_storage_delitem (struct map_session_data *sd, struct guild_storage *st
 	stor->items[n].amount -= amount;
 	log_pick_pc (sd, LOG_TYPE_GSTORAGE, stor->items[n].nameid, amount, &stor->items[n]);
 
-	if (stor->items[n].amount == 0) {
+	if (stor->items[n].amount == 0)
+	{
 		memset (&stor->items[n], 0, sizeof (stor->items[0]));
 		stor->storage_amount--;
 		clif_updatestorageamount (sd, stor->storage_amount, MAX_GUILD_STORAGE);
@@ -563,7 +580,8 @@ int storage_guild_storagesave (int account_id, int guild_id, int flag)
 {
 	struct guild_storage *stor = guild2storage2 (guild_id);
 
-	if (stor) {
+	if (stor)
+	{
 		if (flag) //Char quitting, close it.
 			stor->storage_status = 0;
 
@@ -580,8 +598,10 @@ int storage_guild_storagesaved (int guild_id)
 {
 	struct guild_storage *stor;
 
-	if ( (stor = guild2storage2 (guild_id)) != NULL) {
-		if (stor->dirty && stor->storage_status == 0) {
+	if ( (stor = guild2storage2 (guild_id)) != NULL)
+	{
+		if (stor->dirty && stor->storage_status == 0)
+		{
 			//Storage has been correctly saved.
 			stor->dirty = 0;
 		}
@@ -599,7 +619,8 @@ int storage_guild_storageclose (struct map_session_data *sd)
 	nullpo_ret (stor = guild2storage2 (sd->status.guild_id));
 	clif_storageclose (sd);
 
-	if (stor->storage_status) {
+	if (stor->storage_status)
+	{
 		if (save_settings & 4)
 			chrif_save (sd, 0); //This one also saves the storage. [Skotlex]
 		else
@@ -618,7 +639,8 @@ int storage_guild_storage_quit (struct map_session_data *sd, int flag)
 	nullpo_ret (sd);
 	nullpo_ret (stor = guild2storage2 (sd->status.guild_id));
 
-	if (flag) {
+	if (flag)
+	{
 		//Only during a guild break flag is 1 (don't save storage)
 		sd->state.storage_flag = 0;
 		stor->storage_status = 0;
@@ -630,7 +652,8 @@ int storage_guild_storage_quit (struct map_session_data *sd, int flag)
 		return 0;
 	}
 
-	if (stor->storage_status) {
+	if (stor->storage_status)
+	{
 		if (save_settings & 4)
 			chrif_save (sd, 0);
 		else
