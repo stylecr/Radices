@@ -12,14 +12,14 @@
 // -- Lista de GRFs ---------------------------------------------
 // Caminho para a sua data.grf.
 // Formato:
-// grf: <caminho do arquivo>
+// 	grf: <caminho do arquivo>
 // Ex.: grf: C:\Program Files (x86)\LeveUp! Games\RagnarokOnline\data.grf
 //grf: 
 
 // -- Pasta data ------------------------------------------------
 // Caminho para pasta data.
 // Formato:
-// data_dir: <caminho para a pasta>
+// 	data_dir: <caminho para a pasta>
 // Ex.: data_dir: C:\Program Files (x86)\LeveUp! Games\RagnarokOnline\
 // OBS.: A pasta data tem que estar em \RagnarokOnline\
 //data_dir: 
