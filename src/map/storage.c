@@ -404,8 +404,8 @@ int storage_guild_storageopen(struct map_session_data *sd)
     gstor->storage_status = 1;
     sd->state.storage_flag = 2;
 	storage_sortitem (gstor->items, ARRAYLENGTH (gstor->items));
-    clif_storagelist (sd, gstor->items, ARRAYLENGTH (gstor->items));
-    cclif_updatestorageamount (sd, gstor->storage_amount, MAX_GUILD_STORAGE);
+	clif_storagelist (sd, gstor->items, ARRAYLENGTH (gstor->items));
+	clif_updatestorageamount (sd, gstor->storage_amount, MAX_GUILD_STORAGE);
     return 0;
 }
 
