@@ -179,6 +179,8 @@ void cache_map (char *name, struct map_data *m)
 	// Compress the cells and get the compressed length
 	encode_zip (write_buf, &len, m->cells, m->xs * m->ys);
 	// Fill the map header
+	if (strlen(name) > MAP_NAME_LENGTH) // It does not hurt to warn that there are maps with name longer than allowed.
+		ShowWarning ("Map name '%s' size '%d' is too long. Truncating to '%d'.\n", name, strlen(name), MAP_NAME_LENGTH);
 	strncpy (info.name, name, MAP_NAME_LENGTH);
 	info.xs = MakeShortLE (m->xs);
 	info.ys = MakeShortLE (m->ys);
@@ -203,7 +205,7 @@ int find_map (char *name)
 
 	for (i = 0; i < header.map_count; i++)
 	{
-		fread (&info, sizeof (info), 1, map_cache_fp);
+		if(fread(&info, sizeof(info), 1, map_cache_fp) != 1) ShowInfo("An error as occured in fread while reading map_cache\n");
 
 		if (strcmp (name, info.name) == 0) // Map found
 			return 1;
