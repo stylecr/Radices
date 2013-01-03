@@ -363,6 +363,8 @@ enum
 	MF_NOCHAT,
 	MF_NOEXPPENALTY,
 	MF_GUILDLOCK,
+	MF_NOSTORAGE,
+	MF_NOGUILDSTORAGE,
 	MF_TOWN,
 	MF_AUTOTRADE,
 	MF_ALLOWKS,
@@ -10697,6 +10699,10 @@ BUILDIN_FUNC (getmapflag)
 
 			case MF_GUILDLOCK:			script_pushint (st, map[m].flag.guildlock); break;
 
+			case MF_NOSTORAGE:			script_pushint(st,map[m].flag.nostorage); break;
+
+			case MF_NOGUILDSTORAGE:		script_pushint(st,map[m].flag.noguildstorage); break;
+
 			case MF_TOWN:				script_pushint (st, map[m].flag.town); break;
 
 			case MF_AUTOTRADE:			script_pushint (st, map[m].flag.autotrade); break;
@@ -10821,6 +10827,10 @@ BUILDIN_FUNC (setmapflag)
 
 			case MF_GUILDLOCK:			map[m].flag.guildlock = 1; break;
 
+			case MF_NOSTORAGE:			map[m].flag.nostorage=1; break;
+
+			case MF_NOGUILDSTORAGE:		map[m].flag.noguildstorage=1; break;
+
 			case MF_TOWN:				map[m].flag.town = 1; break;
 
 			case MF_AUTOTRADE:			map[m].flag.autotrade = 1; break;
@@ -10939,6 +10949,10 @@ BUILDIN_FUNC (removemapflag)
 			case MF_PARTYLOCK:			map[m].flag.partylock = 0; break;
 
 			case MF_GUILDLOCK:			map[m].flag.guildlock = 0; break;
+
+			case MF_NOSTORAGE:			map[m].flag.nostorage=0; break;
+			
+			case MF_NOGUILDSTORAGE:		map[m].flag.noguildstorage=0; break;
 
 			case MF_TOWN:				map[m].flag.town = 0; break;
 

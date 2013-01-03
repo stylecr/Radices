@@ -90,25 +90,30 @@ void do_reconnect_storage (void)
  * 0 - success
  * 1 - fail
  *------------------------------------------*/
-int storage_storageopen (struct map_session_data *sd)
+int storage_storageopen(struct map_session_data *sd)
 {
-	nullpo_ret (sd);
+    int m;
+    nullpo_retr(0, sd);
 
-	if (sd->state.storage_flag)
-		return 1; //Already open?
+    if(sd->state.storage_flag)
+        return 1; //Already open?
 
-	if (!pc_can_give_items (pc_isGM (sd)))
-	{
-		//check is this GM level is allowed to put items to storage
-		clif_displaymessage (sd->fd, msg_txt (246));
-		return 1;
-	}
+    m = sd->bl.m;
+    if (map[m].flag.nostorage) {
+        clif_displaymessage(sd->fd, msg_txt(527));
+        return 1;
+    }
 
-	sd->state.storage_flag = 1;
-	storage_sortitem (sd->status.storage.items, ARRAYLENGTH (sd->status.storage.items));
-	clif_storagelist (sd, sd->status.storage.items, ARRAYLENGTH (sd->status.storage.items));
-	clif_updatestorageamount (sd, sd->status.storage.storage_amount, MAX_STORAGE);
-	return 0;
+    if( !pc_can_give_items(pc_isGM(sd)) )
+      { //check is this GM level is allowed to put items to storage
+        clif_displaymessage(sd->fd, msg_txt(246));
+        return 1;
+    }
+    
+    sd->state.storage_flag = 1;
+    clif_storagelist(sd,&sd->status.storage);
+    clif_updatestorageamount(sd,sd->status.storage.storage_amount);
+    return 0;
 }
 
 // helper function
@@ -364,38 +369,42 @@ int guild_storage_delete (int guild_id)
 	return 0;
 }
 
-int storage_guild_storageopen (struct map_session_data *sd)
+int storage_guild_storageopen(struct map_session_data* sd)
 {
-	struct guild_storage *gstor;
-	nullpo_ret (sd);
+    struct guild_storage *gstor;
+    int m;
 
-	if (sd->status.guild_id <= 0)
-		return 2;
+    nullpo_retr(0, sd);
 
-	if (sd->state.storage_flag)
-		return 1; //Can't open both storages at a time.
+    m = sd->bl.m;
+    if (map[m].flag.noguildstorage) {
+        clif_displaymessage(sd->fd, msg_txt(528));
+        return 1;
+    }
 
-	if (!pc_can_give_items (pc_isGM (sd)))   //check is this GM level can open guild storage and store items [Lupus]
-	{
-		clif_displaymessage (sd->fd, msg_txt (246));
-		return 1;
-	}
+    if(sd->status.guild_id <= 0)
+        return 2;
 
-	if ( (gstor = guild2storage2 (sd->status.guild_id)) == NULL)
-	{
-		intif_request_guild_storage (sd->status.account_id, sd->status.guild_id);
-		return 0;
-	}
+    if(sd->state.storage_flag)
+        return 1; //Can't open both storages at a time.
+    
+    if( !pc_can_give_items(pc_isGM(sd)) ) { //check is this GM level can open guild storage and store items [Lupus]
+        clif_displaymessage(sd->fd, msg_txt(246));
+        return 1;
+    }
 
-	if (gstor->storage_status)
-		return 1;
-
-	gstor->storage_status = 1;
-	sd->state.storage_flag = 2;
-	storage_sortitem (gstor->items, ARRAYLENGTH (gstor->items));
-	clif_storagelist (sd, gstor->items, ARRAYLENGTH (gstor->items));
-	clif_updatestorageamount (sd, gstor->storage_amount, MAX_GUILD_STORAGE);
-	return 0;
+    if((gstor = guild2storage2(sd->status.guild_id)) == NULL) {
+        intif_request_guild_storage(sd->status.account_id,sd->status.guild_id);
+        return 0;
+    }
+    if(gstor->storage_status)
+        return 1;
+    
+    gstor->storage_status = 1;
+    sd->state.storage_flag = 2;
+    clif_guildstoragelist(sd,gstor);
+    clif_updateguildstorageamount(sd,gstor->storage_amount);
+    return 0;
 }
 
 int guild_storage_additem (struct map_session_data *sd, struct guild_storage *stor, struct item *item_data, int amount)

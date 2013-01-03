@@ -11,6 +11,7 @@ Vide LICENCE para informações da licença desse projeto (GNU/GPL)
 03/01/2012
 	* Adicionado arquivo para checagem de versão
 	* Removidos arquivos inutilizados
+	* Correção dos mapflags nostorage e noguildstorage
 
 31/12/2012
 	* Remoção do cMake
