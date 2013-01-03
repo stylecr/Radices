@@ -111,8 +111,9 @@ int storage_storageopen(struct map_session_data *sd)
     }
     
     sd->state.storage_flag = 1;
-    clif_storagelist(sd,&sd->status.storage);
-    clif_updatestorageamount(sd,sd->status.storage.storage_amount);
+	storage_sortitem (sd->status.storage.items, ARRAYLENGTH (sd->status.storage.items));
+    clif_storagelist (sd, sd->status.storage.items, ARRAYLENGTH (sd->status.storage.items));
+    clif_updatestorageamount (sd, sd->status.storage.storage_amount, MAX_STORAGE);
     return 0;
 }
 
@@ -369,7 +370,7 @@ int guild_storage_delete (int guild_id)
 	return 0;
 }
 
-int storage_guild_storageopen(struct map_session_data* sd)
+int storage_guild_storageopen(struct map_session_data *sd)
 {
     struct guild_storage *gstor;
     int m;
@@ -402,8 +403,9 @@ int storage_guild_storageopen(struct map_session_data* sd)
     
     gstor->storage_status = 1;
     sd->state.storage_flag = 2;
-    clif_guildstoragelist(sd,gstor);
-    clif_updateguildstorageamount(sd,gstor->storage_amount);
+	storage_sortitem (gstor->items, ARRAYLENGTH (gstor->items));
+    clif_storagelist (sd, gstor->items, ARRAYLENGTH (gstor->items));
+    cclif_updatestorageamount (sd, gstor->storage_amount, MAX_GUILD_STORAGE);
     return 0;
 }
 
