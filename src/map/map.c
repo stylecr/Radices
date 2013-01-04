@@ -1525,11 +1525,14 @@ int map_addflooritem (struct item *item_data, int amount, int m, int x, int y, i
 	return fitem->bl.id;
 }
 
-static void *create_charid2nick (DBKey key, va_list args)
+/**
+ * @see DBCreateData
+ */
+static DBData create_charid2nick(DBKey key, va_list args)
 {
 	struct charid2nick *p;
-	CREATE (p, struct charid2nick, 1);
-	return p;
+	CREATE(p, struct charid2nick, 1);
+	return db_ptr2data(p);
 }
 
 /// Adds(or replaces) the nick of charid to nick_db and fullfils pending requests.
@@ -1543,7 +1546,7 @@ void map_addnickdb (int charid, const char *nick)
 	if (map_charid2sd (charid))
 		return;// already online
 
-	p = (struct charid2nick *) idb_ensure (nick_db, charid, create_charid2nick);
+	p = idb_ensure (nick_db, charid, create_charid2nick);
 	safestrncpy (p->nick, nick, sizeof (p->nick));
 
 	while (p->requests)
@@ -1603,7 +1606,7 @@ void map_reqnickdb (struct map_session_data *sd, int charid)
 		return;
 	}
 
-	p = (struct charid2nick *) idb_ensure (nick_db, charid, create_charid2nick);
+	p = idb_ensure (nick_db, charid, create_charid2nick);
 
 	if (*p->nick)
 	{
@@ -1838,7 +1841,7 @@ const char *map_charid2nick (int charid)
 	if (sd)
 		return sd->status.name;// character is online, return it's name
 
-	p = (struct charid2nick *) idb_ensure (nick_db, charid, create_charid2nick);
+	p = idb_ensure (nick_db, charid, create_charid2nick);
 
 	if (*p->nick)
 		return p->nick;// name in nick_db
@@ -2827,34 +2830,35 @@ void map_iwall_remove (const char *wall_name)
 	strdb_remove (iwall_db, iwall->wall_name);
 }
 
-static void *create_map_data_other_server (DBKey key, va_list args)
+/**
+ * @see DBCreateData
+ */
+static DBData create_map_data_other_server(DBKey key, va_list args)
 {
 	struct map_data_other_server *mdos;
-	unsigned short mapindex = (unsigned short) key.ui;
-	mdos = (struct map_data_other_server *) aCalloc (1, sizeof (struct map_data_other_server));
+	unsigned short mapindex = (unsigned short)key.ui;
+	mdos=(struct map_data_other_server *)aCalloc(1,sizeof(struct map_data_other_server));
 	mdos->index = mapindex;
-	memcpy (mdos->name, mapindex_id2name (mapindex), MAP_NAME_LENGTH);
-	return mdos;
+	memcpy(mdos->name, mapindex_id2name(mapindex), MAP_NAME_LENGTH);
+	return db_ptr2data(mdos);
 }
 
 /*==========================================
- * ‘¼ŽIŠÇ—‚Ìƒ}ƒbƒv‚ðdb‚É’Ç‰Á
+ * Add mapindex to db of another map server
  *------------------------------------------*/
-int map_setipport (unsigned short mapindex, uint32 ip, uint16 port)
+int map_setipport(unsigned short mapindex, uint32 ip, uint16 port)
 {
-	struct map_data_other_server *mdos = NULL;
-	mdos = (struct map_data_other_server *) uidb_ensure (map_db, (unsigned int) mapindex, create_map_data_other_server);
+	struct map_data_other_server *mdos=NULL;
 
-	if (mdos->cell) //Local map,Do nothing. Give priority to our own local maps over ones from another server. [Skotlex]
+	mdos= uidb_ensure(map_db,(unsigned int)mapindex, create_map_data_other_server);
+
+	if(mdos->cell) //Local map,Do nothing. Give priority to our own local maps over ones from another server. [Skotlex]
 		return 0;
-
-	if (ip == clif_getip() && port == clif_getport())
-	{
+	if(ip == clif_getip() && port == clif_getport()) {
 		//That's odd, we received info that we are the ones with this map, but... we don't have it.
-		ShowFatalError ("map_setipport : received info that this map-server SHOULD have map '%s', but it is not loaded.\n", mapindex_id2name (mapindex));
-		exit (EXIT_FAILURE);
+		ShowFatalError("map_setipport : received info that this map-server SHOULD have map '%s', but it is not loaded.\n",mapindex_id2name(mapindex));
+		exit(EXIT_FAILURE);
 	}
-
 	mdos->ip   = ip;
 	mdos->port = port;
 	return 1;

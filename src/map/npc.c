@@ -258,42 +258,23 @@ int npc_event_dequeue (struct map_session_data *sd)
 
 /*==========================================
  * exports a npc event label
- * npc_parse_script->strdb_foreach??????
+ * called from npc_parse_script
  *------------------------------------------*/
-int npc_event_export (char *lname, void *data, va_list ap)
+static int npc_event_export(struct npc_data *nd, int i)
 {
-	int pos = (int) data;
-	struct npc_data *nd = va_arg (ap, struct npc_data *);
-
-	if ( (lname[0] == 'O' || lname[0] == 'o') && (lname[1] == 'N' || lname[1] == 'n'))
-	{
+	char* lname = nd->u.scr.label_list[i].name;
+	int pos = nd->u.scr.label_list[i].pos;
+	if ((lname[0] == 'O' || lname[0] == 'o') && (lname[1] == 'N' || lname[1] == 'n')) {
 		struct event_data *ev;
 		char buf[EVENT_NAME_LENGTH];
-		char *p = strchr (lname, ':');
-		// ?????????
-		ev = (struct event_data *) aMalloc (sizeof (struct event_data));
-
-		if (ev == NULL)
-		{
-			ShowFatalError ("npc_event_export: out of memory !\n");
-			exit (EXIT_FAILURE);
-		}
-		else if (p == NULL || (p - lname) > NAME_LENGTH)
-		{
-			ShowFatalError ("npc_event_export: label name error !\n");
-			exit (EXIT_FAILURE);
-		}
-		else
-		{
-			ev->nd = nd;
-			ev->pos = pos;
-			*p = '\0';
-			snprintf (buf, ARRAYLENGTH (buf), "%s::%s", nd->exname, lname);
-			*p = ':';
-			strdb_put (ev_db, buf, ev);
-		}
+		snprintf(buf, ARRAYLENGTH(buf), "%s::%s", nd->exname, lname);
+		// generate the data and insert it
+		CREATE(ev, struct event_data, 1);
+		ev->nd = nd;
+		ev->pos = pos;
+		if (strdb_put(ev_db, buf, ev)) // There was already another event of the same name?
+			return 1;
 	}
-
 	return 0;
 }
 
@@ -442,53 +423,46 @@ int npc_event_do_clock (int tid, unsigned int tick, int id, intptr_t data)
 }
 
 /*==========================================
- * OnInit??????(&????????)
+ * OnInit Event execution (the start of the event and watch)
  *------------------------------------------*/
-void npc_event_do_oninit (void)
+void npc_event_do_oninit(void)
 {
-	ShowStatus ("Event '"CL_WHITE"OnInit"CL_RESET"' executed with '"CL_WHITE"%d"CL_RESET"' NPCs."CL_CLL"\n", npc_event_doall ("OnInit"));
-	add_timer_interval (gettick() + 100, npc_event_do_clock, 0, 0, 1000);
+	ShowStatus("Event '"CL_WHITE"OnInit"CL_RESET"' executed with '"CL_WHITE"%d"CL_RESET"' NPCs."CL_CLL"\n", npc_event_doall("OnInit"));
+
+	add_timer_interval(gettick()+100,npc_event_do_clock,0,0,1000);
 }
 
 /*==========================================
- * ?????????????????
- * npc_parse_script->strdb_foreach??????
+ * Incorporation of the label for the timer event
+ * called from npc_parse_script
  *------------------------------------------*/
-int npc_timerevent_import (char *lname, void *data, va_list ap)
+int npc_timerevent_export(struct npc_data *nd, int i)
 {
-	int pos = (int) data;
-	struct npc_data *nd = va_arg (ap, struct npc_data *);
-	int t = 0, i = 0;
-
-	if (sscanf (lname, "OnTimer%d%n", &t, &i) == 1 && lname[i] == ':')
-	{
+	int t = 0, k = 0;
+	char *lname = nd->u.scr.label_list[i].name;
+	int pos = nd->u.scr.label_list[i].pos;
+	if (sscanf(lname, "OnTimer%d%n", &t, &k) == 1 && lname[k] == '\0') {
+		// Timer event
 		struct npc_timerevent_list *te = nd->u.scr.timer_event;
-		int j, i = nd->u.scr.timeramount;
-
+		int j, k = nd->u.scr.timeramount;
 		if (te == NULL)
-			te = (struct npc_timerevent_list *) aMallocA (sizeof (struct npc_timerevent_list));
+			te = (struct npc_timerevent_list *)aMalloc(sizeof(struct npc_timerevent_list));
 		else
-			te = (struct npc_timerevent_list *) aRealloc (te, sizeof (struct npc_timerevent_list) * (i + 1));
-
-		if (te == NULL)
-		{
-			ShowFatalError ("npc_timerevent_import: out of memory !\n");
-			exit (EXIT_FAILURE);
+			te = (struct npc_timerevent_list *)aRealloc( te, sizeof(struct npc_timerevent_list) * (k+1) );
+		for (j = 0; j < k; j++) {
+			if (te[j].timer > t) {
+				memmove(te+j+1, te+j, sizeof(struct npc_timerevent_list)*(k-j));
+				break;
+			}
 		}
-
-		ARR_FIND (0, i, j, te[j].timer > t);
-
-		if (j < i)
-			memmove (te + j + 1, te + j, sizeof (struct npc_timerevent_list) * (i - j));
-
 		te[j].timer = t;
 		te[j].pos = pos;
 		nd->u.scr.timer_event = te;
 		nd->u.scr.timeramount++;
 	}
-
 	return 0;
 }
+
 struct timer_event_data
 {
 	int rid; //Attached player for this timer.
@@ -2251,75 +2225,67 @@ static const char *npc_skip_script (const char *start, const char *buffer, const
 /// -%TAB%script%TAB%<NPC Name>%TAB%-1,{<code>}
 /// <map name>,<x>,<y>,<facing>%TAB%script%TAB%<NPC Name>%TAB%<sprite id>,{<code>}
 /// <map name>,<x>,<y>,<facing>%TAB%script%TAB%<NPC Name>%TAB%<sprite id>,<triggerX>,<triggerY>,{<code>}
-static const char *npc_parse_script (char *w1, char *w2, char *w3, char *w4, const char *start, const char *buffer, const char *filepath)
-{
+static const char* npc_parse_script(char* w1, char* w2, char* w3, char* w4, const char* start, const char* buffer, const char* filepath, bool runOnInit) {
 	int x, y, dir = 0, m, xs = 0, ys = 0, class_ = 0;	// [Valaris] thanks to fov
 	char mapname[32];
 	struct script_code *script;
 	int i;
-	const char *end;
-	const char *script_start;
-	struct npc_label_list *label_list;
-	int label_list_num;
-	struct npc_data *nd;
+	const char* end;
+	const char* script_start;
 
-	if (strcmp (w1, "-") == 0)
-	{
-		// floating npc
+	struct npc_label_list* label_list;
+	int label_list_num;
+	struct npc_data* nd;
+
+	if( strcmp(w1, "-") == 0 )
+	{// floating npc
 		x = 0;
 		y = 0;
 		m = -1;
 	}
 	else
-	{
-		// npc in a map
-		if (sscanf (w1, "%31[^,],%d,%d,%d", mapname, &x, &y, &dir) != 4)
+	{// npc in a map
+		if( sscanf(w1, "%31[^,],%d,%d,%d", mapname, &x, &y, &dir) != 4 )
 		{
-			ShowError ("npc_parse_script: Invalid placement format for a script in file '%s', line '%d'. Skipping the rest of file...\n * w1=%s\n * w2=%s\n * w3=%s\n * w4=%s\n", filepath, strline (buffer, start - buffer), w1, w2, w3, w4);
+			ShowError("npc_parse_script: Invalid placement format for a script in file '%s', line '%d'. Skipping the rest of file...\n * w1=%s\n * w2=%s\n * w3=%s\n * w4=%s\n", filepath, strline(buffer,start-buffer), w1, w2, w3, w4);
 			return NULL;// unknown format, don't continue
 		}
-
-		m = map_mapname2mapid (mapname);
+		m = map_mapname2mapid(mapname);
 	}
 
-	script_start = strstr (start, ",{");
-	end = strchr (start, '\n');
-
-	if (strstr (w4, ",{") == NULL || script_start == NULL || (end != NULL && script_start > end))
+	script_start = strstr(start,",{");
+	end = strchr(start,'\n');
+	if( strstr(w4,",{") == NULL || script_start == NULL || (end != NULL && script_start > end) )
 	{
-		ShowError ("npc_parse_script: Missing left curly ',{' in file '%s', line '%d'. Skipping the rest of the file.\n * w1=%s\n * w2=%s\n * w3=%s\n * w4=%s\n", filepath, strline (buffer, start - buffer), w1, w2, w3, w4);
+		ShowError("npc_parse_script: Missing left curly ',{' in file '%s', line '%d'. Skipping the rest of the file.\n * w1=%s\n * w2=%s\n * w3=%s\n * w4=%s\n", filepath, strline(buffer,start-buffer), w1, w2, w3, w4);
 		return NULL;// can't continue
 	}
-
 	++script_start;
-	end = npc_skip_script (script_start, buffer, filepath);
 
-	if (end == NULL)
+	end = npc_skip_script(script_start, buffer, filepath);
+	if( end == NULL )
 		return NULL;// (simple) parse error, don't continue
 
-	script = parse_script (script_start, filepath, strline (buffer, script_start - buffer), SCRIPT_USE_LABEL_DB);
+	script = parse_script(script_start, filepath, strline(buffer,script_start-buffer), SCRIPT_USE_LABEL_DB);
 	label_list = NULL;
 	label_list_num = 0;
-
-	if (script)
+	if( script )
 	{
-		DBMap *label_db = script_get_label_db();
-		label_db->foreach (label_db, npc_convertlabel_db, &label_list, &label_list_num, filepath);
-		label_db->clear (label_db, NULL); // not needed anymore, so clear the db
+		DBMap* label_db = script_get_label_db();
+		label_db->foreach(label_db, npc_convertlabel_db, &label_list, &label_list_num, filepath);
+		db_clear(label_db); // not needed anymore, so clear the db
 	}
 
-	CREATE (nd, struct npc_data, 1);
+	CREATE(nd, struct npc_data, 1);
 
-	if (sscanf (w4, "%d,%d,%d", &class_, &xs, &ys) == 3)
-	{
-		// OnTouch area defined
+	if( sscanf(w4, "%d,%d,%d", &class_, &xs, &ys) == 3 )
+	{// OnTouch area defined
 		nd->u.scr.xs = xs;
 		nd->u.scr.ys = ys;
 	}
 	else
-	{
-		// no OnTouch area
-		class_ = atoi (w4);
+	{// no OnTouch area
+		class_ = atoi(w4);
 		nd->u.scr.xs = -1;
 		nd->u.scr.ys = -1;
 	}
@@ -2328,98 +2294,66 @@ static const char *npc_parse_script (char *w1, char *w2, char *w3, char *w4, con
 	nd->bl.m = m;
 	nd->bl.x = x;
 	nd->bl.y = y;
-	npc_parsename (nd, w3, start, buffer, filepath);
+	npc_parsename(nd, w3, start, buffer, filepath);
 	nd->bl.id = npc_get_new_npc_id();
 	nd->class_ = class_;
 	nd->speed = 200;
 	nd->u.scr.script = script;
 	nd->u.scr.label_list = label_list;
 	nd->u.scr.label_list_num = label_list_num;
+
 	++npc_script;
 	nd->bl.type = BL_NPC;
 	nd->subtype = SCRIPT;
 
-	if (m >= 0)
+	if( m >= 0 )
 	{
-		map_addnpc (m, nd);
-		status_change_init (&nd->bl);
-		unit_dataset (&nd->bl);
+		map_addnpc(m, nd);
+		status_change_init(&nd->bl);
+		unit_dataset(&nd->bl);
 		nd->ud.dir = dir;
-		npc_setcells (nd);
-		map_addblock (&nd->bl);
-
-		if (class_ >= 0)
+		npc_setcells(nd);
+		map_addblock(&nd->bl);
+		if( class_ >= 0 )
 		{
-			status_set_viewdata (&nd->bl, nd->class_);
-			clif_spawn (&nd->bl);
+			status_set_viewdata(&nd->bl, nd->class_);
+			if( map[nd->bl.m].users )
+				clif_spawn(&nd->bl);
 		}
 	}
 	else
 	{
 		// we skip map_addnpc, but still add it to the list of ID's
-		map_addiddb (&nd->bl);
+		map_addiddb(&nd->bl);
 	}
-
-	strdb_put (npcname_db, nd->exname, nd);
+	strdb_put(npcname_db, nd->exname, nd);
 
 	//-----------------------------------------
-	// ??????????????????
-	for (i = 0; i < nd->u.scr.label_list_num; i++)
-	{
-		char *lname = nd->u.scr.label_list[i].name;
-		int pos = nd->u.scr.label_list[i].pos;
-
-		if ( (lname[0] == 'O' || lname[0] == 'o') && (lname[1] == 'N' || lname[1] == 'n'))
-		{
-			struct event_data *ev;
-			char buf[EVENT_NAME_LENGTH];
-			snprintf (buf, ARRAYLENGTH (buf), "%s::%s", nd->exname, lname);
-			// generate the data and insert it
-			CREATE (ev, struct event_data, 1);
-			ev->nd = nd;
-			ev->pos = pos;
-
-			if (strdb_put (ev_db, buf, ev) != NULL) // There was already another event of the same name?
-				ShowWarning ("npc_parse_script : duplicate event %s (%s)\n", buf, filepath);
+	// Loop through labels to export them as necessary
+	for (i = 0; i < nd->u.scr.label_list_num; i++) {
+		if (npc_event_export(nd, i)) {
+			ShowWarning("npc_parse_script : duplicate event %s::%s (%s)\n",
+			             nd->exname, nd->u.scr.label_list[i].name, filepath);
 		}
-	}
-
-	//-----------------------------------------
-	// ????????????????????
-	for (i = 0; i < nd->u.scr.label_list_num; i++)
-	{
-		int t = 0, k = 0;
-		char *lname = nd->u.scr.label_list[i].name;
-		int pos = nd->u.scr.label_list[i].pos;
-
-		if (sscanf (lname, "OnTimer%d%n", &t, &k) == 1 && lname[k] == '\0')
-		{
-			// ????????
-			struct npc_timerevent_list *te = nd->u.scr.timer_event;
-			int j, k = nd->u.scr.timeramount;
-
-			if (te == NULL)
-				te = (struct npc_timerevent_list *) aMallocA (sizeof (struct npc_timerevent_list));
-			else
-				te = (struct npc_timerevent_list *) aRealloc (te, sizeof (struct npc_timerevent_list) * (k + 1));
-
-			for (j = 0; j < k; j++)
-			{
-				if (te[j].timer > t)
-				{
-					memmove (te + j + 1, te + j, sizeof (struct npc_timerevent_list) * (k - j));
-					break;
-				}
-			}
-
-			te[j].timer = t;
-			te[j].pos = pos;
-			nd->u.scr.timer_event = te;
-			nd->u.scr.timeramount++;
-		}
+		npc_timerevent_export(nd, i);
 	}
 
 	nd->u.scr.timerid = INVALID_TIMER;
+
+	if( runOnInit ) {
+		char evname[EVENT_NAME_LENGTH];
+		struct event_data *ev;
+
+		snprintf(evname, ARRAYLENGTH(evname), "%s::OnInit", nd->exname);
+
+		if( ( ev = (struct event_data*)strdb_get(ev_db, evname) ) ) {
+
+			//Execute OnInit
+			run_script(nd->u.scr.script,ev->pos,0,nd->bl.id);
+
+		}
+	}
+
 	return end;
 }
 
@@ -2429,201 +2363,147 @@ static const char *npc_parse_script (char *w1, char *w2, char *w3, char *w4, con
 /// shop/cashshop/npc: <map name>,<x>,<y>,<facing>%TAB%duplicate(<name of target>)%TAB%<NPC Name>%TAB%<sprite id>
 /// npc: -%TAB%duplicate(<name of target>)%TAB%<NPC Name>%TAB%<sprite id>,<triggerX>,<triggerY>
 /// npc: <map name>,<x>,<y>,<facing>%TAB%duplicate(<name of target>)%TAB%<NPC Name>%TAB%<sprite id>,<triggerX>,<triggerY>
-const char *npc_parse_duplicate (char *w1, char *w2, char *w3, char *w4, const char *start, const char *buffer, const char *filepath)
+const char* npc_parse_duplicate(char* w1, char* w2, char* w3, char* w4, const char* start, const char* buffer, const char* filepath)
 {
 	int x, y, dir, m, xs = -1, ys = -1, class_ = 0;
 	char mapname[32];
 	char srcname[128];
 	int i;
-	const char *end;
+	const char* end;
 	size_t length;
+
 	int src_id;
 	int type;
-	struct npc_data *nd;
-	struct npc_data *dnd;
-	end = strchr (start, '\n');
-	length = strlen (w2);
+	struct npc_data* nd;
+	struct npc_data* dnd;
+
+	end = strchr(start,'\n');
+	length = strlen(w2);
 
 	// get the npc being duplicated
-	if (w2[length - 1] != ')' || length <= 11 || length - 11 >= sizeof (srcname))
-	{
-		// does not match 'duplicate(%127s)', name is empty or too long
-		ShowError ("npc_parse_script: bad duplicate name in file '%s', line '%d' : %s\n", filepath, strline (buffer, start - buffer), w2);
+	if( w2[length-1] != ')' || length <= 11 || length-11 >= sizeof(srcname) )
+	{// does not match 'duplicate(%127s)', name is empty or too long
+		ShowError("npc_parse_script: bad duplicate name in file '%s', line '%d' : %s\n", filepath, strline(buffer,start-buffer), w2);
 		return end;// next line, try to continue
 	}
+	safestrncpy(srcname, w2+10, length-10);
 
-	safestrncpy (srcname, w2 + 10, length - 10);
-	dnd = npc_name2id (srcname);
-
-	if (dnd == NULL)
-	{
-		ShowError ("npc_parse_script: original npc not found for duplicate in file '%s', line '%d' : %s\n", filepath, strline (buffer, start - buffer), srcname);
+	dnd = npc_name2id(srcname);
+	if( dnd == NULL) {
+		ShowError("npc_parse_script: original npc not found for duplicate in file '%s', line '%d' : %s\n", filepath, strline(buffer,start-buffer), srcname);
 		return end;// next line, try to continue
 	}
-
 	src_id = dnd->bl.id;
 	type = dnd->subtype;
 
 	// get placement
-	if ( (type == SHOP || type == CASHSHOP || type == SCRIPT) && strcmp (w1, "-") == 0)
-	{
-		// floating shop/chashshop/script
+	if( (type==SHOP || type==CASHSHOP || type==SCRIPT) && strcmp(w1, "-") == 0 )
+	{// floating shop/chashshop/script
 		x = y = dir = 0;
 		m = -1;
 	}
 	else
 	{
-		if (sscanf (w1, "%31[^,],%d,%d,%d", mapname, &x, &y, &dir) != 4)   // <map name>,<x>,<y>,<facing>
+		if( sscanf(w1, "%31[^,],%d,%d,%d", mapname, &x, &y, &dir) != 4 )// <map name>,<x>,<y>,<facing>
 		{
-			ShowError ("npc_parse_duplicate: Invalid placement format for duplicate in file '%s', line '%d'. Skipping line...\n * w1=%s\n * w2=%s\n * w3=%s\n * w4=%s\n", filepath, strline (buffer, start - buffer), w1, w2, w3, w4);
+			ShowError("npc_parse_duplicate: Invalid placement format for duplicate in file '%s', line '%d'. Skipping line...\n * w1=%s\n * w2=%s\n * w3=%s\n * w4=%s\n", filepath, strline(buffer,start-buffer), w1, w2, w3, w4);
 			return end;// next line, try to continue
 		}
-
-		m = map_mapname2mapid (mapname);
+		m = map_mapname2mapid(mapname);
 	}
 
-	if (type == WARP && sscanf (w4, "%d,%d", &xs, &ys) == 2);// <spanx>,<spany>
-	else if (type == SCRIPT && sscanf (w4, "%d,%d,%d", &class_, &xs, &ys) == 3); // <sprite id>,<triggerX>,<triggerY>
-	else if (type != WARP) class_ = atoi (w4);// <sprite id>
+	if( type == WARP && sscanf(w4, "%d,%d", &xs, &ys) == 2 );// <spanx>,<spany>
+	else if( type == SCRIPT && sscanf(w4, "%d,%d,%d", &class_, &xs, &ys) == 3);// <sprite id>,<triggerX>,<triggerY>
+	else if( type != WARP ) class_ = atoi(w4);// <sprite id>
 	else
 	{
-		ShowError ("npc_parse_duplicate: Invalid span format for duplicate warp in file '%s', line '%d'. Skipping line...\n * w1=%s\n * w2=%s\n * w3=%s\n * w4=%s\n", filepath, strline (buffer, start - buffer), w1, w2, w3, w4);
+		ShowError("npc_parse_duplicate: Invalid span format for duplicate warp in file '%s', line '%d'. Skipping line...\n * w1=%s\n * w2=%s\n * w3=%s\n * w4=%s\n", filepath, strline(buffer,start-buffer), w1, w2, w3, w4);
 		return end;// next line, try to continue
 	}
 
-	CREATE (nd, struct npc_data, 1);
+	CREATE(nd, struct npc_data, 1);
+
 	nd->bl.prev = nd->bl.next = NULL;
 	nd->bl.m = m;
 	nd->bl.x = x;
 	nd->bl.y = y;
-	npc_parsename (nd, w3, start, buffer, filepath);
+	npc_parsename(nd, w3, start, buffer, filepath);
 	nd->bl.id = npc_get_new_npc_id();
 	nd->class_ = class_;
 	nd->speed = 200;
 	nd->src_id = src_id;
 	nd->bl.type = BL_NPC;
-	nd->subtype = (enum npc_subtype) type;
-
-	switch (type)
+	nd->subtype = (enum npc_subtype)type;
+	switch( type )
 	{
-		case SCRIPT:
-			++npc_script;
-			nd->u.scr.xs = xs;
-			nd->u.scr.ys = ys;
-			nd->u.scr.script = dnd->u.scr.script;
-			nd->u.scr.label_list = dnd->u.scr.label_list;
-			nd->u.scr.label_list_num = dnd->u.scr.label_list_num;
-			break;
+	case SCRIPT:
+		++npc_script;
+		nd->u.scr.xs = xs;
+		nd->u.scr.ys = ys;
+		nd->u.scr.script = dnd->u.scr.script;
+		nd->u.scr.label_list = dnd->u.scr.label_list;
+		nd->u.scr.label_list_num = dnd->u.scr.label_list_num;
+		break;
 
-		case SHOP:
-		case CASHSHOP:
-			++npc_shop;
-			nd->u.shop.shop_item = dnd->u.shop.shop_item;
-			nd->u.shop.count = dnd->u.shop.count;
-			break;
+	case SHOP:
+	case CASHSHOP:
+		++npc_shop;
+		nd->u.shop.shop_item = dnd->u.shop.shop_item;
+		nd->u.shop.count = dnd->u.shop.count;
+		break;
 
-		case WARP:
-			++npc_warp;
-
-			if (!battle_config.warp_point_debug)
-				nd->class_ = WARP_CLASS;
-			else
-				nd->class_ = WARP_DEBUG_CLASS;
-
-			nd->u.warp.xs = xs;
-			nd->u.warp.ys = ys;
-			nd->u.warp.mapindex = dnd->u.warp.mapindex;
-			nd->u.warp.x = dnd->u.warp.x;
-			nd->u.warp.y = dnd->u.warp.y;
-			break;
+	case WARP:
+		++npc_warp;
+		if( !battle_config.warp_point_debug )
+			nd->class_ = WARP_CLASS;
+		else
+			nd->class_ = WARP_DEBUG_CLASS;
+		nd->u.warp.xs = xs;
+		nd->u.warp.ys = ys;
+		nd->u.warp.mapindex = dnd->u.warp.mapindex;
+		nd->u.warp.x = dnd->u.warp.x;
+		nd->u.warp.y = dnd->u.warp.y;
+		break;
 	}
 
 	//Add the npc to its location
-	if (m >= 0)
+	if( m >= 0 )
 	{
-		map_addnpc (m, nd);
-		status_change_init (&nd->bl);
-		unit_dataset (&nd->bl);
+		map_addnpc(m, nd);
+		status_change_init(&nd->bl);
+		unit_dataset(&nd->bl);
 		nd->ud.dir = dir;
-		npc_setcells (nd);
-		map_addblock (&nd->bl);
-
-		if (class_ >= 0)
+		npc_setcells(nd);
+		map_addblock(&nd->bl);
+		if( class_ >= 0 )
 		{
-			status_set_viewdata (&nd->bl, nd->class_);
-			clif_spawn (&nd->bl);
+			status_set_viewdata(&nd->bl, nd->class_);
+			if( map[nd->bl.m].users )
+				clif_spawn(&nd->bl);
 		}
 	}
 	else
 	{
 		// we skip map_addnpc, but still add it to the list of ID's
-		map_addiddb (&nd->bl);
+		map_addiddb(&nd->bl);
 	}
+	strdb_put(npcname_db, nd->exname, nd);
 
-	strdb_put (npcname_db, nd->exname, nd);
-
-	if (type != SCRIPT)
+	if( type != SCRIPT )
 		return end;
 
-	//Handle labels
 	//-----------------------------------------
-	// ??????????????????
-	for (i = 0; i < nd->u.scr.label_list_num; i++)
-	{
-		char *lname = nd->u.scr.label_list[i].name;
-		int pos = nd->u.scr.label_list[i].pos;
-
-		if ( (lname[0] == 'O' || lname[0] == 'o') && (lname[1] == 'N' || lname[1] == 'n'))
-		{
-			struct event_data *ev;
-			char buf[EVENT_NAME_LENGTH];
-			snprintf (buf, ARRAYLENGTH (buf), "%s::%s", nd->exname, lname);
-			// generate the data and insert it
-			CREATE (ev, struct event_data, 1);
-			ev->nd = nd;
-			ev->pos = pos;
-
-			if (strdb_put (ev_db, buf, ev) != NULL) // There was already another event of the same name?
-				ShowWarning ("npc_parse_duplicate : duplicate event %s (%s)\n", buf, filepath);
+	// Loop through labels to export them as necessary
+	for (i = 0; i < nd->u.scr.label_list_num; i++) {
+		if (npc_event_export(nd, i)) {
+			ShowWarning("npc_parse_duplicate : duplicate event %s::%s (%s)\n",
+			             nd->exname, nd->u.scr.label_list[i].name, filepath);
 		}
-	}
-
-	//-----------------------------------------
-	// ????????????????????
-	for (i = 0; i < nd->u.scr.label_list_num; i++)
-	{
-		int t = 0, k = 0;
-		char *lname = nd->u.scr.label_list[i].name;
-		int pos = nd->u.scr.label_list[i].pos;
-
-		if (sscanf (lname, "OnTimer%d%n", &t, &k) == 1 && lname[k] == '\0')
-		{
-			// ????????
-			struct npc_timerevent_list *te = nd->u.scr.timer_event;
-			int j, k = nd->u.scr.timeramount;
-
-			if (te == NULL)
-				te = (struct npc_timerevent_list *) aMallocA (sizeof (struct npc_timerevent_list));
-			else
-				te = (struct npc_timerevent_list *) aRealloc (te, sizeof (struct npc_timerevent_list) * (k + 1));
-
-			for (j = 0; j < k; j++)
-			{
-				if (te[j].timer > t)
-				{
-					memmove (te + j + 1, te + j, sizeof (struct npc_timerevent_list) * (k - j));
-					break;
-				}
-			}
-
-			te[j].timer = t;
-			te[j].pos = pos;
-			nd->u.scr.timer_event = te;
-			nd->u.scr.timeramount++;
-		}
+		npc_timerevent_export(nd, i);
 	}
 
 	nd->u.scr.timerid = INVALID_TIMER;
+
 	return end;
 }
 
@@ -3388,7 +3268,7 @@ static const char *npc_parse_mapflag (char *w1, char *w2, char *w3, char *w4, co
 	return strchr (start, '\n'); // continue
 }
 
-void npc_parsesrcfile (const char *filepath)
+void npc_parsesrcfile (const char *filepath, bool runOnInit)
 {
 	int m, lines = 0;
 	FILE *fp;
@@ -3535,7 +3415,7 @@ void npc_parsesrcfile (const char *filepath)
 			if (strcasecmp (w1, "function") == 0)
 				p = npc_parse_function (w1, w2, w3, w4, p, buffer, filepath);
 			else
-				p = npc_parse_script (w1, w2, w3, w4, p, buffer, filepath);
+				p = npc_parse_script(w1,w2,w3,w4, p, buffer, filepath,runOnInit);
 		}
 		else if ( (i = 0, sscanf (w2, "duplicate%n", &i), (i > 0 && w2[i] == '(')) && count > 3)
 		{
@@ -3708,7 +3588,7 @@ int npc_reload (void)
 	for (nsl = npc_src_files; nsl; nsl = nsl->next)
 	{
 		ShowStatus ("Loading NPC file: %s"CL_CLL"\r", nsl->name);
-		npc_parsesrcfile (nsl->name);
+		npc_parsesrcfile (nsl->name,false);
 	}
 
 	ShowInfo ("Done loading '"CL_WHITE"%d"CL_RESET"' NPCs:"CL_CLL"\n"
@@ -3823,14 +3703,14 @@ int do_init_npc (void)
 
 	ev_db = strdb_alloc ( (DBOptions) (DB_OPT_DUP_KEY | DB_OPT_RELEASE_DATA), 2 * NAME_LENGTH + 2 + 1);
 	npcname_db = strdb_alloc (DB_OPT_BASE, NAME_LENGTH);
-	timer_event_ers = ers_new (sizeof (struct timer_event_data));
+	timer_event_ers = ers_new(sizeof(struct timer_event_data),"clif.c::timer_event_ers",ERS_OPT_NONE);
 	// process all npc files
 	ShowStatus ("Loading NPCs...\r");
 
 	for (file = npc_src_files; file != NULL; file = file->next)
 	{
 		ShowStatus ("Loading NPC file: %s"CL_CLL"\r", file->name);
-		npc_parsesrcfile (file->name);
+		npc_parsesrcfile (file->name,false);
 	}
 
 	ShowInfo ("Done loading '"CL_WHITE"%d"CL_RESET"' NPCs:"CL_CLL"\n"

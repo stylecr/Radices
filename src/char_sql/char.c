@@ -201,7 +201,10 @@ struct online_char_data
 static DBMap *online_char_db; // int account_id -> struct online_char_data*
 static int chardb_waiting_disconnect (int tid, unsigned int tick, int id, intptr_t data);
 
-static void *create_online_char_data (DBKey key, va_list args)
+/**
+ * @see DBCreateData
+ */
+static DBData create_online_char_data(DBKey key, va_list args)
 {
 	struct online_char_data *character;
 	CREATE (character, struct online_char_data, 1);
@@ -210,13 +213,13 @@ static void *create_online_char_data (DBKey key, va_list args)
 	character->server = -1;
 	character->fd = -1;
 	character->waiting_disconnect = INVALID_TIMER;
-	return character;
+	return db_ptr2data(character);
 }
 
 void set_char_charselect (int account_id)
 {
 	struct online_char_data *character;
-	character = (struct online_char_data *) idb_ensure (online_char_db, account_id, create_online_char_data);
+	character = (struct online_char_data*)idb_ensure (online_char_db, account_id, create_online_char_data);
 
 	if (character->server > -1)
 		if (server[character->server].users > 0)  // Prevent this value from going negative.
@@ -250,7 +253,7 @@ void set_char_online (int map_id, int char_id, int account_id)
 		Sql_ShowDebug (sql_handle);
 
 	//Check to see for online conflicts
-	character = (struct online_char_data *) idb_ensure (online_char_db, account_id, create_online_char_data);
+	character = (struct online_char_data*)idb_ensure (online_char_db, account_id, create_online_char_data);
 
 	if (character->char_id != -1 && character->server > -1 && character->server != map_id)
 	{
@@ -412,12 +415,15 @@ void set_all_offline_sql (void)
 		Sql_ShowDebug (sql_handle);
 }
 
-static void *create_charstatus (DBKey key, va_list args)
+/**
+ * @see DBCreateData
+ */
+static DBData create_charstatus(DBKey key, va_list args)
 {
 	struct mmo_charstatus *cp;
 	cp = (struct mmo_charstatus *) aCalloc (1, sizeof (struct mmo_charstatus));
 	cp->char_id = key.i;
-	return cp;
+	return db_ptr2data(cp);
 }
 #endif //TXT_SQL_CONVERT
 
@@ -432,12 +438,7 @@ int mmo_char_tosql (int char_id, struct mmo_charstatus *p)
 	StringBuf buf;
 
 	if (char_id != p->char_id) return 0;
-
-#ifndef TXT_SQL_CONVERT
-	cp = (struct mmo_charstatus *) idb_ensure (char_db_, char_id, create_charstatus);
-#else
-	cp = (struct mmo_charstatus *) aCalloc (1, sizeof (struct mmo_charstatus));
-#endif
+	cp = idb_ensure (char_db_, char_id, create_charstatus);
 	StringBuf_Init (&buf);
 	memset (save_status, 0, sizeof (save_status));
 
@@ -1274,7 +1275,7 @@ int mmo_char_fromsql (int char_id, struct mmo_charstatus *p, bool load_everythin
 
 	SqlStmt_Free (stmt);
 	StringBuf_Destroy (&buf);
-	cp = (struct mmo_charstatus *) idb_ensure (char_db_, char_id, create_charstatus);
+	cp = idb_ensure (char_db_, char_id, create_charstatus);
 	memcpy (cp, p, sizeof (struct mmo_charstatus));
 	return 1;
 }
@@ -2757,7 +2758,7 @@ int parse_frommap (int fd)
 					{
 						aid = RFIFOL (fd, 6 + i * 8);
 						cid = RFIFOL (fd, 6 + i * 8 + 4);
-						character = (struct online_char_data *) idb_ensure (online_char_db, aid, create_online_char_data);
+						character = idb_ensure (online_char_db, aid, create_online_char_data);
 
 						if (character->server > -1 && character->server != id)
 						{
@@ -2910,7 +2911,7 @@ int parse_frommap (int fd)
 						node->ip = ntohl (RFIFOL (fd, 31));
 						node->gmlevel = RFIFOL (fd, 35);
 						idb_put (auth_db, RFIFOL (fd, 2), node);
-						data = (struct online_char_data *) idb_ensure (online_char_db, RFIFOL (fd, 2), create_online_char_data);
+						data = idb_ensure (online_char_db, RFIFOL (fd, 2), create_online_char_data);
 						data->char_id = char_data->char_id;
 						data->server = map_id; //Update server where char is.
 						//Reply with an ack.

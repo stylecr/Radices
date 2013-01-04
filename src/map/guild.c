@@ -1211,64 +1211,74 @@ int guild_emblem_changed (int len, int guild_id, int emblem_id, const char *data
 	return 0;
 }
 
-static void *create_expcache (DBKey key, va_list args)
+/**
+ * @see DBCreateData
+ */
+static DBData create_expcache(DBKey key, va_list args)
 {
 	struct guild_expcache *c;
-	struct map_session_data *sd = va_arg (args, struct map_session_data *);
-	c = ers_alloc (expcache_ers, struct guild_expcache);
+	struct map_session_data *sd = va_arg(args, struct map_session_data*);
+
+	c = ers_alloc(expcache_ers, struct guild_expcache);
 	c->guild_id = sd->status.guild_id;
 	c->account_id = sd->status.account_id;
 	c->char_id = sd->status.char_id;
 	c->exp = 0;
-	return c;
+	return db_ptr2data(c);
 }
 
-// ????EXP??
-unsigned int guild_payexp (struct map_session_data *sd, unsigned int exp)
+/*====================================================
+ * Return taxed experience from player sd to guild
+ *---------------------------------------------------*/
+unsigned int guild_payexp(struct map_session_data *sd,unsigned int exp)
 {
 	struct guild *g;
 	struct guild_expcache *c;
 	int per;
-	nullpo_ret (sd);
+	
+	nullpo_ret(sd);
 
 	if (!exp) return 0;
-
+	
 	if (sd->status.guild_id == 0 ||
-			(g = guild_search (sd->status.guild_id)) == NULL ||
-			(per = guild_getposition (g, sd)) < 0 ||
-			(per = g->position[per].exp_mode) < 1)
+		(g = guild_search(sd->status.guild_id)) == NULL ||
+		(per = guild_getposition(g,sd)) < 0 ||
+		(per = g->position[per].exp_mode) < 1)
 		return 0;
+	
 
 	if (per < 100)
 		exp = exp * per / 100;
-
 	//Otherwise tax everything.
-	c = (struct guild_expcache *) guild_expcache_db->ensure (guild_expcache_db, i2key (sd->status.char_id), create_expcache, sd);
+	
+	c = db_data2ptr(guild_expcache_db->ensure(guild_expcache_db, db_i2key(sd->status.char_id), create_expcache, sd));
 
 	if (c->exp > UINT64_MAX - exp)
 		c->exp = UINT64_MAX;
 	else
 		c->exp += exp;
-
+	
 	return exp;
 }
 
-// Celest
-int guild_getexp (struct map_session_data *sd, int exp)
+/*====================================================
+ * Player sd pay a tribute experience to his guild
+ * Add this experience to guild exp
+ * [Celest]
+ *---------------------------------------------------*/
+int guild_getexp(struct map_session_data *sd,int exp)
 {
 	struct guild_expcache *c;
-	nullpo_ret (sd);
+	nullpo_ret(sd);
 
-	if (sd->status.guild_id == 0 || guild_search (sd->status.guild_id) == NULL)
+	if (sd->status.guild_id == 0 || guild_search(sd->status.guild_id) == NULL)
 		return 0;
 
-	c = (struct guild_expcache *) guild_expcache_db->ensure (guild_expcache_db, i2key (sd->status.char_id), create_expcache, sd);
-
+	c = db_data2ptr(guild_expcache_db->ensure(guild_expcache_db, db_i2key(sd->status.char_id), create_expcache, sd));
 	if (c->exp > UINT64_MAX - exp)
 		c->exp = UINT64_MAX;
 	else
 		c->exp += exp;
-
 	return exp;
 }
 
@@ -2131,7 +2141,7 @@ void do_init_guild (void)
 	castle_db = idb_alloc (DB_OPT_BASE);
 	guild_expcache_db = idb_alloc (DB_OPT_BASE);
 	guild_infoevent_db = idb_alloc (DB_OPT_BASE);
-	expcache_ers = ers_new (sizeof (struct guild_expcache));
+	expcache_ers = ers_new(sizeof(struct guild_expcache),"guild.c::expcache_ers",ERS_OPT_NONE);
 	guild_castleinfoevent_db = idb_alloc (DB_OPT_BASE);
 	sv_readdb (db_path, "castle_db.txt", ',', 4, 5, -1, &guild_read_castledb);
 	memset (guild_skill_tree, 0, sizeof (guild_skill_tree));

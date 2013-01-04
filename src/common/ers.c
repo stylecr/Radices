@@ -32,9 +32,10 @@
  *                                                                           *
  *  HISTORY:                                                                 *
  *    0.1 - Initial version                                                  *
+ *    1.0 - ERS Rework                                                       *
  *                                                                           *
- * @version 0.1 - Initial version                                            *
- * @author Flavio @ Amazon Project                                           *
+ * @version 1.0 - ERS Rework                                                 *
+ * @author GreenBox @ rAthena Project                                        *
  * @encoding US-ASCII                                                        *
  * @see common#ers.h                                                         *
 \*****************************************************************************/
@@ -46,539 +47,246 @@
 #include "ers.h"
 
 #ifndef DISABLE_ERS
-/*****************************************************************************\
- *  (1) Private defines, structures and global variables.                    *
- *  ERS_BLOCK_ENTRIES - Number of entries in each block.                     *
- *  ERS_ROOT_SIZE     - Maximum number of root entry managers.               *
- *  ERLinkedList      - Structure of a linked list of reusable entries.      *
- *  ERS_impl          - Class of an entry manager.                           *
- *  ers_root          - Array of root entry managers.                        *
- *  ers_num           - Number of root entry managers in the array.          *
-\*****************************************************************************/
 
-/**
- * Number of entries in each block.
- * @see #ers_obj_alloc_entry(ERS eri)
- */
+#define ERS_ROOT_SIZE 256
 #define ERS_BLOCK_ENTRIES 4096
 
-/**
- * Maximum number of root entry managers.
- * @private
- * @see #ers_root
- * @see #ers_num
- */
-#define ERS_ROOT_SIZE 256
-
-/**
- * Linked list of reusable entries.
- * The minimum size of the entries is the size of this structure.
- * @private
- * @see ERS_impl#reuse
- */
-typedef struct ers_ll
+struct ers_list
 {
-	struct ers_ll *next;
-} *ERLinkedList;
+	struct ers_list *Next;
+};
 
-/**
- * Class of the object that manages entries of a certain size.
- * @param eri Public interface of the object
- * @param reuse Linked list of reusable data entries
- * @param blocks Array with blocks of entries
- * @param free Number of unused entries in the last block
- * @param num Number of blocks in the array
- * @param max Current maximum capacity of the array
- * @param destroy Destroy lock
- * @param size Size of the entries of the manager
- * @private
- */
-typedef struct ers_impl
+typedef struct ers_cache
 {
+	// Allocated object size, including ers_list size
+	unsigned int ObjectSize;
 
-	/**
-	 * Public interface of the entry manager.
-	 * @param alloc Allocate an entry from this manager
-	 * @param free Free an entry allocated from this manager
-	 * @param entry_size Return the size of the entries of this manager
-	 * @param destroy Destroy this instance of the manager
-	 * @public
-	 */
-	struct eri vtable;
+	// Number of ers_instances referencing this
+	int ReferenceCount;
 
-	/**
-	 * Linked list of reusable entries.
-	 */
-	ERLinkedList reuse;
+	// Reuse linked list
+	struct ers_list *ReuseList;
 
-	/**
-	 * Array with blocks of entries.
-	 */
-	uint8 **blocks;
+	// Memory blocks array
+	unsigned char **Blocks;
 
-	/**
-	 * Number of unused entries in the last block.
-	 */
-	uint32 free;
+	// Max number of blocks 
+	unsigned int Max;
 
-	/**
-	 * Number of blocks in the array.
-	 */
-	uint32 num;
+	// Free objects count
+	unsigned int Free;
+	
+	// Used objects count
+	unsigned int Used;
 
-	/**
-	 * Current maximum capacity of the array.
-	 */
-	uint32 max;
+	// Linked list
+	struct ers_cache *Next, *Prev;
+} ers_cache_t;
 
-	/**
-	 * Destroy lock.
-	 */
-	uint32 destroy;
-
-	/**
-	 * Size of the entries of the manager.
-	 */
-	size_t size;
-
-} *ERS_impl;
-
-/**
- * Root array with entry managers.
- * @private
- * @static
- * @see #ERS_ROOT_SIZE
- * @see #ers_num
- */
-static ERS_impl ers_root[ERS_ROOT_SIZE];
-
-/**
- * Number of entry managers in the root array.
- * @private
- * @static
- * @see #ERS_ROOT_SIZE
- * @see #ers_root
- */
-static uint32 ers_num = 0;
-
-/*****************************************************************************\
- *  (2) Object functions.                                                 *
- *  ers_obj_alloc_entry - Allocate an entry from the manager.                *
- *  ers_obj_free_entry  - Free an entry allocated from the manager.          *
- *  ers_obj_entry_size  - Return the size of the entries of the manager.     *
- *  ers_obj_destroy     - Destroy the instance of the manager.               *
-\*****************************************************************************/
-
-/**
- * Allocate an entry from this entry manager.
- * If there are reusable entries available, it reuses one instead.
- * @param self Interface of the entry manager
- * @return An entry
- * @see #ERS_BLOCK_ENTRIES
- * @see #ERLinkedList
- * @see ERS_impl::vtable#alloc
- */
-static void *ers_obj_alloc_entry (ERS self)
+typedef struct
 {
-	ERS_impl obj = (ERS_impl) self;
+	// Interface to ERS
+	struct eri VTable;
+	
+	// Name, used for debbuging purpouses
+	char *Name;
+
+	// Misc options
+	enum ERSOptions Options;
+
+	// Our cache
+	ers_cache_t *Cache;
+
+	// Count of objects in use, used for detecting memory leaks
+	unsigned int Count;
+} ers_instance_t;
+
+
+// Array containing a pointer for all ers_cache structures
+static ers_cache_t *CacheList;
+
+static ers_cache_t *ers_find_cache(unsigned int size)
+{
+	ers_cache_t *cache;
+
+	for (cache = CacheList; cache; cache = cache->Next)
+		if (cache->ObjectSize == size)
+			return cache;
+
+	CREATE(cache, ers_cache_t, 1);
+	cache->ObjectSize = size;
+	cache->ReferenceCount = 0;
+	cache->ReuseList = NULL;
+	cache->Blocks = NULL;
+	cache->Free = 0;
+	cache->Used = 0;
+	cache->Max = 0;
+	
+	if (CacheList == NULL)
+	{
+		CacheList = cache;
+	}
+	else
+	{
+		cache->Next = CacheList;
+		cache->Next->Prev = cache;
+		CacheList = cache;
+		CacheList->Prev = NULL;
+	}
+
+	return cache;
+}
+
+static void ers_free_cache(ers_cache_t *cache, bool remove)
+{
+	unsigned int i;
+
+	for (i = 0; i < cache->Used; i++)
+		aFree(cache->Blocks[i]);
+
+	if (cache->Next)
+		cache->Next->Prev = cache->Prev;
+
+	if (cache->Prev)
+		cache->Prev->Next = cache->Next;
+	else
+		CacheList = cache->Next;
+
+	aFree(cache->Blocks);
+	aFree(cache);
+}
+
+static void *ers_obj_alloc_entry(ERS self)
+{
+	ers_instance_t *instance = (ers_instance_t *)self;
 	void *ret;
 
-	if (obj == NULL)
+	if (instance == NULL) 
 	{
-		ShowError ("ers::alloc : NULL object, aborting entry allocation.\n");
+		ShowError("ers_obj_alloc_entry: NULL object, aborting entry freeing.\n");
 		return NULL;
 	}
 
-	if (obj->reuse)   // Reusable entry
+	if (instance->Cache->ReuseList != NULL)
 	{
-		ret = obj->reuse;
-		obj->reuse = obj->reuse->next;
-	}
-	else if (obj->free)     // Unused entry
+		ret = (void *)((unsigned char *)instance->Cache->ReuseList + sizeof(struct ers_list));
+		instance->Cache->ReuseList = instance->Cache->ReuseList->Next;
+	} 
+	else if (instance->Cache->Free > 0) 
 	{
-		obj->free--;
-		ret = &obj->blocks[obj->num - 1][obj->free * obj->size];
-	}
-	else     // allocate a new block
+		instance->Cache->Free--;
+		ret = &instance->Cache->Blocks[instance->Cache->Used - 1][instance->Cache->Free * instance->Cache->ObjectSize + sizeof(struct ers_list)];
+	} 
+	else 
 	{
-		if (obj->num == obj->max)   // expand the block array
+		if (instance->Cache->Used == instance->Cache->Max) 
 		{
-			if (obj->max == UINT32_MAX)   // No more space for blocks
-			{
-				ShowFatalError ("ers::alloc : maximum number of blocks reached, increase ERS_BLOCK_ENTRIES.\n"
-								"exiting the program...\n");
-				exit (EXIT_FAILURE);
-			}
-
-			obj->max = (obj->max * 4) + 3; // left shift bits '11' - overflow won't happen
-			RECREATE (obj->blocks, uint8 *, obj->max);
+			instance->Cache->Max = (instance->Cache->Max * 4) + 3;
+			RECREATE(instance->Cache->Blocks, unsigned char *, instance->Cache->Max);
 		}
 
-		CREATE (obj->blocks[obj->num], uint8, obj->size * ERS_BLOCK_ENTRIES);
-		obj->free = ERS_BLOCK_ENTRIES - 1;
-		ret = &obj->blocks[obj->num][obj->free * obj->size];
-		obj->num++;
+		CREATE(instance->Cache->Blocks[instance->Cache->Used], unsigned char, instance->Cache->ObjectSize * ERS_BLOCK_ENTRIES);
+		instance->Cache->Used++;
+
+		instance->Cache->Free = ERS_BLOCK_ENTRIES -1;
+		ret = &instance->Cache->Blocks[instance->Cache->Used - 1][instance->Cache->Free * instance->Cache->ObjectSize + sizeof(struct ers_list)];
 	}
+
+	instance->Count++;
 
 	return ret;
 }
 
-/**
- * Free an entry allocated from this manager.
- * WARNING: Does not check if the entry was allocated by this manager.
- * Freeing such an entry can lead to unexpected behaviour.
- * @param self Interface of the entry manager
- * @param entry Entry to be freed
- * @see #ERLinkedList
- * @see ERS_impl#reuse
- * @see ERS_impl::vtable#free
- */
-static void ers_obj_free_entry (ERS self, void *entry)
+static void ers_obj_free_entry(ERS self, void *entry)
 {
-	ERS_impl obj = (ERS_impl) self;
-	ERLinkedList reuse;
+	ers_instance_t *instance = (ers_instance_t *)self;
+	struct ers_list *reuse = (struct ers_list *)((unsigned char *)entry - sizeof(struct ers_list));
 
-	if (obj == NULL)
+	if (instance == NULL) 
 	{
-		ShowError ("ers::free : NULL object, aborting entry freeing.\n");
+		ShowError("ers_obj_free_entry: NULL object, aborting entry freeing.\n");
+		return;
+	} 
+	else if (entry == NULL) 
+	{
+		ShowError("ers_obj_free_entry: NULL entry, nothing to free.\n");
 		return;
 	}
-	else if (entry == NULL)
-	{
-		ShowError ("ers::free : NULL entry, nothing to free.\n");
-		return;
-	}
 
-	reuse = (ERLinkedList) entry;
-	reuse->next = obj->reuse;
-	obj->reuse = reuse;
+	reuse->Next = instance->Cache->ReuseList;
+	instance->Cache->ReuseList = reuse;
+	instance->Count--;
 }
 
-/**
- * Return the size of the entries allocated from this manager.
- * @param self Interface of the entry manager
- * @return Size of the entries of this manager in bytes
- * @see ERS_impl#size
- * @see ERS_impl::vtable#entry_size
- */
-static size_t ers_obj_entry_size (ERS self)
+static size_t ers_obj_entry_size(ERS self)
 {
-	ERS_impl obj = (ERS_impl) self;
+	ers_instance_t *instance = (ers_instance_t *)self;
 
-	if (obj == NULL)
+	if (instance == NULL) 
 	{
-		ShowError ("ers::entry_size : NULL object, returning 0.\n");
+		ShowError("ers_obj_entry_size: NULL object, aborting entry freeing.\n");
 		return 0;
-	}
+	} 
 
-	return obj->size;
+	return instance->Cache->ObjectSize;
 }
 
-/**
- * Destroy this instance of the manager.
- * The manager is actually only destroyed when all the instances are destroyed.
- * When destroying the manager a warning is shown if the manager has
- * missing/extra entries.
- * @param self Interface of the entry manager
- * @see #ERLinkedList
- * @see ERS_impl::vtable#destroy
- */
-static void ers_obj_destroy (ERS self)
+static void ers_obj_destroy(ERS self)
 {
-	ERS_impl obj = (ERS_impl) self;
-	ERLinkedList reuse, old;
-	uint32 i;
-	uint32 count;
+	ers_instance_t *instance = (ers_instance_t *)self;
 
-	if (obj == NULL)
+	if (instance == NULL) 
 	{
-		ShowError ("ers::destroy: NULL object, aborting instance destruction.\n");
+		ShowError("ers_obj_destroy: NULL object, aborting entry freeing.\n");
 		return;
 	}
 
-	obj->destroy--;
+	if (instance->Count > 0)
+		if (!(instance->Options & ERS_OPT_CLEAR))
+			ShowWarning("Memory leak detected at ERS '%s', %d objects not freed.\n", instance->Name, instance->Count);
 
-	if (obj->destroy)
-		return; // Not last instance
+	if (--instance->Cache->ReferenceCount <= 0)
+		ers_free_cache(instance->Cache, true);
 
-	// Remove manager from root array
-	for (i = 0; i < ers_num; i++)
-	{
-		if (ers_root[i] == obj)
-		{
-			ers_num--;
-
-			if (i < ers_num) // put the last manager in the free slot
-				ers_root[i] = ers_root[ers_num];
-
-			break;
-		}
-	}
-
-	reuse = obj->reuse;
-	count = 0;
-
-	// Check for missing/extra entries
-	for (i = 0; i < obj->num; i++)
-	{
-		if (i == 0)
-		{
-			count = ERS_BLOCK_ENTRIES - obj->free;
-		}
-		else if (count > UINT32_MAX - ERS_BLOCK_ENTRIES)
-		{
-			count = UINT32_MAX;
-			break;
-		}
-		else
-		{
-			count += ERS_BLOCK_ENTRIES;
-		}
-
-		while (reuse && count)
-		{
-			count--;
-			old = reuse;
-			reuse = reuse->next;
-			old->next = NULL; // this makes duplicate frees report as missing entries
-		}
-	}
-
-	if (count)   // missing entries
-	{
-		ShowWarning ("ers::destroy : %u entries missing (possible double free), continuing destruction (entry size=%u).\n",
-					 count, obj->size);
-	}
-	else if (reuse)     // extra entries
-	{
-		while (reuse && count != UINT32_MAX)
-		{
-			count++;
-			reuse = reuse->next;
-		}
-
-		ShowWarning ("ers::destroy : %u extra entries found, continuing destruction (entry size=%u).\n",
-					 count, obj->size);
-	}
-
-	// destroy the entry manager
-	if (obj->max)
-	{
-		for (i = 0; i < obj->num; i++)
-			aFree (obj->blocks[i]); // release block of entries
-
-		aFree (obj->blocks); // release array of blocks
-	}
-
-	aFree (obj); // release manager
+	aFree(instance);
 }
 
-/*****************************************************************************\
- *  (3) Public functions.                                                    *
- *  ers_new               - Get a new instance of an entry manager.          *
- *  ers_report            - Print a report about the current state.          *
- *  ers_force_destroy_all - Force the destruction of all the managers.       *
-\*****************************************************************************/
-
-/**
- * Get a new instance of the manager that handles the specified entry size.
- * Size has to greater than 0.
- * If the specified size is smaller than a pointer, the size of a pointer is
- * used instead.
- * It's also aligned to ERS_ALIGNED bytes, so the smallest multiple of
- * ERS_ALIGNED that is greater or equal to size is what's actually used.
- * @param The requested size of the entry in bytes
- * @return Interface of the object
- * @see #ERS_impl
- * @see #ers_root
- * @see #ers_num
- */
-ERS ers_new (uint32 size)
+ERS ers_new(uint32 size, char *name, enum ERSOptions options)
 {
-	ERS_impl obj;
-	uint32 i;
+	ers_instance_t *instance;
+	CREATE(instance, ers_instance_t, 1);
 
-	if (size == 0)
-	{
-		ShowError ("ers_new: invalid size %u, aborting instance creation.\n",
-				   size);
-		return NULL;
-	}
-
-	if (size < sizeof (struct ers_ll)) // Minimum size
-		size = sizeof (struct ers_ll);
-
-	if (size % ERS_ALIGNED) // Align size
+	size += sizeof(struct ers_list);
+	if (size % ERS_ALIGNED)
 		size += ERS_ALIGNED - size % ERS_ALIGNED;
 
-	for (i = 0; i < ers_num; i++)
-	{
-		obj = ers_root[i];
+	instance->VTable.alloc = ers_obj_alloc_entry;
+	instance->VTable.free = ers_obj_free_entry;
+	instance->VTable.entry_size = ers_obj_entry_size;
+	instance->VTable.destroy = ers_obj_destroy;
 
-		if (obj->size == size)
-		{
-			// found a manager that handles the entry size
-			obj->destroy++;
-			return &obj->vtable;
-		}
-	}
+	instance->Name = name;
+	instance->Options = options;
 
-	// create a new manager to handle the entry size
-	if (ers_num == ERS_ROOT_SIZE)
-	{
-		ShowFatalError ("ers_alloc: too many root objects, increase ERS_ROOT_SIZE.\n"
-						"exiting the program...\n");
-		exit (EXIT_FAILURE);
-	}
+	instance->Cache = ers_find_cache(size);
+	instance->Cache->ReferenceCount++;
 
-	obj = (ERS_impl) aMalloc (sizeof (struct ers_impl));
-	// Public interface
-	obj->vtable.alloc      = ers_obj_alloc_entry;
-	obj->vtable.free       = ers_obj_free_entry;
-	obj->vtable.entry_size = ers_obj_entry_size;
-	obj->vtable.destroy    = ers_obj_destroy;
-	// Block reusage system
-	obj->reuse   = NULL;
-	obj->blocks  = NULL;
-	obj->free    = 0;
-	obj->num     = 0;
-	obj->max     = 0;
-	obj->destroy = 1;
-	// Properties
-	obj->size = size;
-	ers_root[ers_num++] = obj;
-	return &obj->vtable;
+	instance->Count = 0;
+
+	return &instance->VTable;
 }
 
-/**
- * Print a report about the current state of the Entry Reusage System.
- * Shows information about the global system and each entry manager.
- * The number of entries are checked and a warning is shown if extra reusable
- * entries are found.
- * The extra entries are included in the count of reusable entries.
- * @see #ERLinkedList
- * @see #ERS_impl
- * @see #ers_root
- * @see #ers_num
- */
-void ers_report (void)
+void ers_report(void)
 {
-	uint32 i;
-	uint32 j;
-	uint32 used;
-	uint32 reusable;
-	uint32 extra;
-	ERLinkedList reuse;
-	ERS_impl obj;
-	// Root system report
-	ShowMessage (CL_BOLD"Entry Reusage System report:\n"CL_NORMAL);
-	ShowMessage ("root array size     : %u\n", ERS_ROOT_SIZE);
-	ShowMessage ("root entry managers : %u\n", ers_num);
-	ShowMessage ("entries per block   : %u\n", ERS_BLOCK_ENTRIES);
-
-	for (i = 0; i < ers_num; i++)
-	{
-		obj = ers_root[i];
-		reuse = obj->reuse;
-		used = 0;
-		reusable = 0;
-
-		// Count used and reusable entries
-		for (j = 0; j < obj->num; j++)
-		{
-			if (j == 0)   // take into acount the free entries
-			{
-				used = ERS_BLOCK_ENTRIES - obj->free;
-			}
-			else if (reuse)     // counting reusable entries
-			{
-				used = ERS_BLOCK_ENTRIES;
-			}
-			else     // no more reusable entries, count remaining used entries
-			{
-				for (; j < obj->num; j++)
-				{
-					if (used > UINT32_MAX - ERS_BLOCK_ENTRIES)   // overflow
-					{
-						used = UINT32_MAX;
-						break;
-					}
-
-					used += ERS_BLOCK_ENTRIES;
-				}
-
-				break;
-			}
-
-			while (used && reuse)   // count reusable entries
-			{
-				used--;
-
-				if (reusable != UINT32_MAX)
-					reusable++;
-
-				reuse = reuse->next;
-			}
-		}
-
-		// Count extra reusable entries
-		extra = 0;
-
-		while (reuse && extra != UINT32_MAX)
-		{
-			extra++;
-			reuse = reuse->next;
-		}
-
-		// Entry manager report
-		ShowMessage (CL_BOLD"[Entry manager #%u report]\n"CL_NORMAL, i);
-		ShowMessage ("\tinstances          : %u\n", obj->destroy);
-		ShowMessage ("\tentry size         : %u\n", obj->size);
-		ShowMessage ("\tblock array size   : %u\n", obj->max);
-		ShowMessage ("\tallocated blocks   : %u\n", obj->num);
-		ShowMessage ("\tentries being used : %u\n", used);
-		ShowMessage ("\tunused entries     : %u\n", obj->free);
-		ShowMessage ("\treusable entries   : %u\n", reusable);
-
-		if (extra)
-			ShowMessage ("\tWARNING - %u extra reusable entries were found.\n", extra);
-	}
-
-	ShowMessage ("End of report\n");
+	// FIXME: Someone use this? Is it really needed?
 }
 
-/**
- * Forcibly destroy all the entry managers, checking for nothing.
- * The system is left as if no instances or entries had ever been allocated.
- * All previous entries and instances of the managers become invalid.
- * The use of this is NOT recommended.
- * It should only be used in extreme situations to make shure all the memory
- * allocated by this system is released.
- * @see #ERS_impl
- * @see #ers_root
- * @see #ers_num
- */
-void ers_force_destroy_all (void)
+void ers_force_destroy_all(void)
 {
-	uint32 i;
-	uint32 j;
-	ERS_impl obj;
-
-	for (i = 0; i < ers_num; i++)
-	{
-		obj = ers_root[i];
-
-		if (obj->max)
-		{
-			for (j = 0; j < obj->num; j++)
-				aFree (obj->blocks[j]); // block of entries
-
-			aFree (obj->blocks); // array of blocks
-		}
-
-		aFree (obj); // entry manager object
-	}
-
-	ers_num = 0;
+	ers_cache_t *cache;
+	
+	for (cache = CacheList; cache; cache = cache->Next)
+			ers_free_cache(cache, false);
 }
-#endif /* not DISABLE_ERS */
+
+#endif

@@ -109,6 +109,9 @@
     <ClCompile Include="..\src\common\core.c">
       <Filter>common</Filter>
     </ClCompile>
+	<ClCompile Include="..\src\common\des.c">
+      <Filter>common</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\common\db.c">
       <Filter>common</Filter>
     </ClCompile>
@@ -153,6 +156,21 @@
     </ClCompile>
     <ClCompile Include="..\3rdparty\mt19937ar\mt19937ar.c">
       <Filter>3rdparty\mt19937ar</Filter>
+    </ClCompile>
+	<ClCompile Include="..\3rdparty\libconfig\grammar.c">
+      <Filter>3rdparty\libconfig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\libconfig\libconfig.c">
+      <Filter>3rdparty\libconfig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\libconfig\scanctx.c">
+      <Filter>3rdparty\libconfig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\libconfig\scanner.c">
+      <Filter>3rdparty\libconfig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\libconfig\strbuf.c">
+      <Filter>3rdparty\libconfig</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -267,6 +285,9 @@
     <ClInclude Include="..\src\common\db.h">
       <Filter>common</Filter>
     </ClInclude>
+	<ClInclude Include="..\src\common\des.h">
+      <Filter>common</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\common\ers.h">
       <Filter>common</Filter>
     </ClInclude>
@@ -306,11 +327,36 @@
     <ClInclude Include="..\src\common\utils.h">
       <Filter>common</Filter>
     </ClInclude>
+	<ClInclude Include="..\src\config\versao.h" />
     <ClInclude Include="..\src\common\showmsg.h">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\3rdparty\mt19937ar\mt19937ar.h">
       <Filter>3rdparty\mt19937ar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdparty\libconfig\grammar.h">
+      <Filter>3rdparty\libconfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdparty\libconfig\libconfig.h">
+      <Filter>3rdparty\libconfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdparty\libconfig\parsectx.h">
+      <Filter>3rdparty\libconfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdparty\libconfig\scanctx.h">
+      <Filter>3rdparty\libconfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdparty\libconfig\scanner.h">
+      <Filter>3rdparty\libconfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdparty\libconfig\strbuf.h">
+      <Filter>3rdparty\libconfig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdparty\libconfig\wincompat.h">
+      <Filter>3rdparty\libconfig</Filter>
+    </ClInclude>
+	<ClInclude Include="..\src\common\winapi.h">
+      <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -325,6 +371,9 @@
     </Filter>
     <Filter Include="3rdparty\mt19937ar">
       <UniqueIdentifier>{fcf23386-ddba-4a72-9b41-62f8e2d0e6c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdparty\libconfig">
+      <UniqueIdentifier>{9caf40b7-c4d1-43b4-bd1f-0376b4f920e7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

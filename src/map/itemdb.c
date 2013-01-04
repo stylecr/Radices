@@ -86,9 +86,9 @@ struct item_data *itemdb_searchname (const char *str)
 	return item ? item : item2;
 }
 
-static int itemdb_searchname_array_sub (DBKey key, void *data, va_list ap)
+static int itemdb_searchname_array_sub(DBKey key, DBData data, va_list ap)
 {
-	struct item_data *item = (struct item_data *) data;
+	struct item_data *item = db_data2ptr(&data);
 	char *str;
 	str = va_arg (ap, char *);
 
@@ -107,47 +107,44 @@ static int itemdb_searchname_array_sub (DBKey key, void *data, va_list ap)
 /*==========================================
  * Founds up to N matches. Returns number of matches [Skotlex]
  *------------------------------------------*/
-int itemdb_searchname_array (struct item_data **data, int size, const char *str)
+int itemdb_searchname_array(struct item_data** data, int size, const char *str)
 {
-	struct item_data *item;
+	struct item_data* item;
 	int i;
-	int count = 0;
+	int count=0;
 
 	// Search in the array
-	for (i = 0; i < ARRAYLENGTH (itemdb_array); ++i)
+	for( i = 0; i < ARRAYLENGTH(itemdb_array); ++i )
 	{
 		item = itemdb_array[i];
-
-		if (item == NULL)
+		if( item == NULL )
 			continue;
 
-		if (stristr (item->jname, str) || stristr (item->name, str))
+		if( stristr(item->jname,str) || stristr(item->name,str) )
 		{
-			if (count < size)
+			if( count < size )
 				data[count] = item;
-
 			++count;
 		}
 	}
 
 	// search in the db
-	if (count >= size)
+	if( count < size )
 	{
-		data = NULL;
-		size = 0;
-	}
-	else
-	{
-		data -= count;
+		DBData *db_data[MAX_SEARCH];
+		int db_count = 0;
 		size -= count;
+		db_count = itemdb_other->getall(itemdb_other, (DBData**)&db_data, size, itemdb_searchname_array_sub, str);
+		for (i = 0; i < db_count; i++)
+			data[count++] = db_data2ptr(db_data[i]);
+		count += db_count;
 	}
-
-	return count + itemdb_other->getall (itemdb_other, (void **) data, size, itemdb_searchname_array_sub, str);
+	return count;
 }
 
 
 /*==========================================
- * 箱系アイテム検索
+ * Return a random item id from group. (takes into account % chance giving/tot group) 
  *------------------------------------------*/
 int itemdb_searchrandomid (int group)
 {

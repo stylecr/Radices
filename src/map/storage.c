@@ -340,20 +340,23 @@ void storage_storage_quit (struct map_session_data *sd, int flag)
 	sd->state.storage_flag = 0;
 }
 
-
-static void *create_guildstorage (DBKey key, va_list args)
+/**
+ * @see DBCreateData
+ */
+static DBData create_guildstorage(DBKey key, va_list args)
 {
 	struct guild_storage *gs = NULL;
-	gs = (struct guild_storage *) aCallocA (sizeof (struct guild_storage), 1);
-	gs->guild_id = key.i;
-	return gs;
+	gs = (struct guild_storage *) aCalloc(sizeof(struct guild_storage), 1);
+	gs->guild_id=key.i;
+	return db_ptr2data(gs);
 }
+
 struct guild_storage *guild2storage (int guild_id)
 {
 	struct guild_storage *gs = NULL;
 
 	if (guild_search (guild_id) != NULL)
-		gs = (struct guild_storage *) idb_ensure (guild_storage_db, guild_id, create_guildstorage);
+		gs = idb_ensure (guild_storage_db, guild_id, create_guildstorage);
 
 	return gs;
 }

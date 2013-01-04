@@ -14165,8 +14165,8 @@ int do_init_skill (void)
 	skill_readdb();
 	group_db = idb_alloc (DB_OPT_BASE);
 	skillunit_db = idb_alloc (DB_OPT_BASE);
-	skill_unit_ers = ers_new (sizeof (struct skill_unit_group));
-	skill_timer_ers  = ers_new (sizeof (struct skill_timerskill));
+	skill_unit_ers = ers_new(sizeof(struct skill_unit_group),"skill.c::skill_unit_ers",ERS_OPT_NONE);
+	skill_timer_ers  = ers_new(sizeof(struct skill_timerskill),"skill.c::skill_timer_ers",ERS_OPT_NONE);
 	add_timer_func_list (skill_unit_timer, "skill_unit_timer");
 	add_timer_func_list (skill_castend_id, "skill_castend_id");
 	add_timer_func_list (skill_castend_pos, "skill_castend_pos");
