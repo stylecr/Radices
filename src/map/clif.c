@@ -228,7 +228,8 @@ void clif_setbindip (const char *ip)
 }
 
 /*==========================================
- * mapŽI‚ÌportÝ’è
+ * Sets map port to 'port'
+ * is run from map.c upon loading map server configuration
  *------------------------------------------*/
 void clif_setport (uint16 port)
 {
@@ -236,7 +237,7 @@ void clif_setport (uint16 port)
 }
 
 /*==========================================
- * mapŽI‚Ìip“Ç‚Ýo‚µ
+ * Returns map server IP
  *------------------------------------------*/
 uint32 clif_getip (void)
 {
@@ -260,7 +261,7 @@ uint32 clif_refresh_ip (void)
 }
 
 /*==========================================
- * mapŽI‚Ìport“Ç‚Ýo‚µ
+ * Returns map port which is set by clif_setport()
  *------------------------------------------*/
 uint16 clif_getport (void)
 {
@@ -268,30 +269,19 @@ uint16 clif_getport (void)
 }
 
 #if PACKETVER >= 20071106
-static inline unsigned char clif_bl_type (struct block_list *bl)
-{
-	switch (bl->type)
-	{
-		case BL_PC:    return disguised (bl) ? 0x1 : 0x0; //PC_TYPE
-
-		case BL_ITEM:  return 0x2; //ITEM_TYPE
-
-		case BL_SKILL: return 0x3; //SKILL_TYPE
-
-		case BL_CHAT:  return 0x4; //UNKNOWN_TYPE
-
-		case BL_MOB:   return pcdb_checkid (status_get_viewdata (bl)->class_) ? 0x0 : 0x5; //NPC_MOB_TYPE
-
-		case BL_NPC:   return 0x6; //NPC_EVT_TYPE
-
-		case BL_PET:   return pcdb_checkid (status_get_viewdata (bl)->class_) ? 0x0 : 0x7; //NPC_PET_TYPE
-
-		case BL_HOM:   return 0x8; //NPC_HOM_TYPE
-
-		case BL_MER:   return 0x9; //NPC_MERSOL_TYPE
-
-			// case BL_ELEM:  return 0xA; //NPC_ELEMENTAL_TYPE
-		default:       return 0x1; //NPC_TYPE
+static inline unsigned char clif_bl_type(struct block_list *bl) {
+	switch (bl->type) {
+	case BL_PC:    return disguised(bl)?0x1:0x0; //PC_TYPE
+	case BL_ITEM:  return 0x2; //ITEM_TYPE
+	case BL_SKILL: return 0x3; //SKILL_TYPE
+	case BL_CHAT:  return 0x4; //UNKNOWN_TYPE
+	case BL_MOB:   return pcdb_checkid(status_get_viewdata(bl)->class_)?0x0:0x5; //NPC_MOB_TYPE
+	case BL_NPC:   return 0x6; //NPC_EVT_TYPE
+	case BL_PET:   return pcdb_checkid(status_get_viewdata(bl)->class_)?0x0:0x7; //NPC_PET_TYPE
+	case BL_HOM:   return 0x8; //NPC_HOM_TYPE
+	case BL_MER:   return 0x9; //NPC_MERSOL_TYPE
+	//case BL_ELEM:  return 0xa; //NPC_ELEMENTAL_TYPE
+	default:       return 0x1; //NPC_TYPE
 	}
 }
 #endif

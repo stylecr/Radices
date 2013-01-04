@@ -55,7 +55,7 @@
 				WarningLevel="3"
 				DebugInformationFormat="4"
 				CompileAs="1"
-				DisableSpecificWarnings="4800"
+				DisableSpecificWarnings="4800;4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -301,14 +301,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\common\lock.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\common\lock.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\common\malloc.c"
 				>
 			</File>
@@ -334,18 +326,6 @@
 			</File>
 			<File
 				RelativePath="..\src\common\nullpo.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\common\plugin.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\common\plugins.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\common\plugins.h"
 				>
 			</File>
 			<File
@@ -405,7 +385,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\common\version.h"
+				RelativePath="..\src\common\winapi.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\common\versao.h"
 				>
 			</File>
 		</Filter>
