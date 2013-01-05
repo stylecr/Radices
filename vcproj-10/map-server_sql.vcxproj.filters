@@ -28,9 +28,6 @@
     <ClCompile Include="..\src\map\duel.c">
       <Filter>map_sql</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\map\elemental.c">
-      <Filter>map_sql</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\map\guild.c">
       <Filter>map_sql</Filter>
     </ClCompile>
@@ -154,12 +151,6 @@
     <ClCompile Include="..\src\common\utils.c">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\common\conf.c">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\map\pc_groups.c">
-      <Filter>map_sql</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\common\showmsg.c">
       <Filter>common</Filter>
     </ClCompile>
@@ -180,18 +171,6 @@
     </ClCompile>
     <ClCompile Include="..\3rdparty\libconfig\strbuf.c">
       <Filter>3rdparty\libconfig</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\common\thread.c">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\common\mutex.c">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\common\mempool.c">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\common\raconf.c">
-      <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -220,9 +199,6 @@
       <Filter>map_sql</Filter>
     </ClInclude>
     <ClInclude Include="..\src\map\duel.h">
-      <Filter>map_sql</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\map\elemental.h">
       <Filter>map_sql</Filter>
     </ClInclude>
     <ClInclude Include="..\src\map\guild.h">
@@ -351,16 +327,8 @@
     <ClInclude Include="..\src\common\utils.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\config\const.h" />
-    <ClInclude Include="..\src\config\core.h" />
-    <ClInclude Include="..\src\config\renewal.h" />
-    <ClInclude Include="..\src\config\secure.h" />
-    <ClInclude Include="..\src\config\classes\general.h" />
-    <ClInclude Include="..\src\common\conf.h">
+    <ClInclude Include="..\src\config\versao.h" />
       <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\map\pc_groups.h">
-      <Filter>map_sql</Filter>
     </ClInclude>
     <ClInclude Include="..\src\common\showmsg.h">
       <Filter>common</Filter>
@@ -390,18 +358,6 @@
       <Filter>3rdparty\libconfig</Filter>
     </ClInclude>
     <ClInclude Include="..\src\common\winapi.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\common\thread.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\common\mutex.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\common\mempool.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\common\raconf.h">
       <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
