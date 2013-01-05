@@ -4,7 +4,9 @@
 * Portal: (http://portal.cronus-emulator.com/)
 * Forum: (http://forum.cronus-emulator.com/)
 
-Caso tenha dúvidas procure ajuda no forum, qualquer bug favor reportar [aqui](http://forum.cronus-emulator.com/index.php?/tracker/).
+Caso tenha dúvidas procure ajuda no forum, qualquer bug favor reportar [aqui](http://forum.cronus-emulator.com/trackdown).
+
+E caso queira candidatar-se a uma vaga na equipe de desenvolvimento, preencha [este formulário](http://forum.cronus-emulator.com/index.php?app=contato).
 
 --------------
 Estado da compilação atual:
@@ -14,28 +16,28 @@ Estado da compilação atual:
 
 Agradecimentos
 --------------
-Nossos agradecimentos especiais a equipe do eAthena por desenvolver a base deste emulador e a todos que são ou que um dia fizeram parte da equipe Cronus-Emulator.
+Nossos agradecimentos especiais a equipe do eAthena por desenvolver a base deste emulador e a todos que contribuem ou um dia contribuiram ao Cronus-Emulator.
 
-Special thanks to all rAthena and eAthena team for the development of the emulator base.
+Special thanks to eAthena team for the development of the emulator base and to everyone that contribute or that contributed in the past to Cronus-Emulator.
 
 
-Equipe
+Equipe de Desenvolvimento
 ------
-### Administradores
-- Roberto		- Roberto Lima
+### Administrador
+- Roberto
 
 ### Coordenadores
-- Raizen		- Carlos Lain
-- Devliz		- Fernando Cezarro
-- GreenBox		- Jonathan Lima
+- Schrwaizer
+- GreenBox
 
 ### Desenvolvedores
-- Axl			- José Góis
-- Holdur		- José Westin
-- I am Cold		- Marcio Montenegro
-- Leonardo Brito		- Leonardo Brito
-- MaminhA		- Marcelo Liberato
-- Merakk		- Renan Mesquita
-- Matheus		- Matheus Silva
-- Rafael		- Rafael
-- Schrwaizer	- Thiago Schrwaizer
+- Axl
+- Holdur
+- I am Cold
+- Leonardo Brito
+- MaminhA
+- Merakk
+- Matheus
+- Rafael
+- Raizen
+- Sayros
