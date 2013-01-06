@@ -76,6 +76,9 @@
     <ClCompile Include="..\src\map\pc.c">
       <Filter>map_sql</Filter>
     </ClCompile>
+	<ClCompile Include="..\src\map\pc_groups.c">
+	  <Filter>map_sql</Filter>
+	</ClCompile>
     <ClCompile Include="..\src\map\pet.c">
       <Filter>map_sql</Filter>
     </ClCompile>
@@ -106,6 +109,9 @@
     <ClCompile Include="..\src\map\vending.c">
       <Filter>map_sql</Filter>
     </ClCompile>
+	<ClCompile Include="..\src\common\conf.c">
+	  <Filter>common</Filter>
+	</ClCompile>
     <ClCompile Include="..\src\common\core.c">
       <Filter>common</Filter>
     </ClCompile>
@@ -246,6 +252,9 @@
     <ClInclude Include="..\src\map\pc.h">
       <Filter>map_sql</Filter>
     </ClInclude>
+	<ClInclude Include="..\src\map\pc_groups.h">
+	  <Filter>map_sql</Filter>
+	</ClInclude>
     <ClInclude Include="..\src\map\pet.h">
       <Filter>map_sql</Filter>
     </ClInclude>
@@ -279,6 +288,9 @@
     <ClInclude Include="..\src\common\cbasetypes.h">
       <Filter>common</Filter>
     </ClInclude>
+	<ClInclude Include="..\src\common\conf.h">
+	  <Filter>common</Filter>
+	</ClInclude>
     <ClInclude Include="..\src\common\core.h">
       <Filter>common</Filter>
     </ClInclude>

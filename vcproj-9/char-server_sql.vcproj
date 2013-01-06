@@ -276,6 +276,14 @@
 				RelativePath="..\src\common\cbasetypes.h"
 				>
 			</File>
+            <File 
+				RelativePath="..\src\common\conf.c" 
+				> 
+            </File> 
+			<File 
+				RelativePath="..\src\common\conf.h"
+				>
+			</File>
 			<File
 				RelativePath="..\src\common\core.c"
 				>

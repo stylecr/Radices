@@ -96,8 +96,7 @@ static void __config_locale_override(void)
 
 #else
 
-/* locale overriding is pretty pointless (rathena doesn't make use of the area that uses locale functionality), but I'm actually removing it because it floods the buildbot with warnings  */
-//#warning "No way to modify calling thread's locale!"
+#warning "No way to modify calling thread's locale!"
 
 #endif
 }
@@ -118,8 +117,7 @@ static void __config_locale_restore(void)
 
 #else
 
-/* locale overriding is pretty pointless (rathena doesn't make use of the area that uses locale functionality), but I'm actually removing it because it floods the buildbot with warnings  */
-//#warning "No way to modify calling thread's locale!"
+#warning "No way to modify calling thread's locale!"
 
 #endif
 }
@@ -535,12 +533,12 @@ static int __config_validate_name(const char *name)
   if(*p == '\0')
     return(CONFIG_FALSE);
 
-  if(! isalpha((unsigned char)*p) && (*p != '*'))
+  if(! isalpha(*p) && (*p != '*'))
     return(CONFIG_FALSE);
 
   for(++p; *p; ++p)
   {
-    if(! (isalpha((unsigned char)*p) || isdigit((unsigned char)*p) || strchr("*_-", (int)*p)))
+    if(! (isalpha(*p) || isdigit(*p) || strchr("*_-", (int)*p)))
       return(CONFIG_FALSE);
   }
 

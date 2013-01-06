@@ -36,6 +36,7 @@
 #include "skill.h"
 #include "status.h" // struct status_data
 #include "pc.h"
+#include "pc_groups.h"
 #include "quest.h"
 
 #include <stdio.h>
@@ -83,9 +84,14 @@ int pc_class2idx (int class_)
 	return class_;
 }
 
-int pc_isGM (struct map_session_data *sd)
-{
-	return sd->gmlevel;
+int inline pc_get_group_id(struct map_session_data *sd) 
+{ 
+	return sd->group_id; 
+} 
+ 
+int inline pc_get_group_level(struct map_session_data *sd) 
+{ 
+	return pc_group_id2level(pc_get_group_id(sd));
 }
 
 static int pc_invincible_timer (int tid, unsigned int tick, int id, intptr_t data)
@@ -415,13 +421,12 @@ void pc_inventory_rental_add (struct map_session_data *sd, int seconds)
 		sd->rental_timer = add_timer (gettick() + min (tick, 3600000), pc_inventory_rental_end, sd->bl.id, 0);
 }
 
-/*==========================================
-	Determines if the GM can give / drop / trade / vend items
-    Args: GM Level (current player GM level)
- *------------------------------------------*/
-bool pc_can_give_items (int level)
-{
-	return (level < battle_config.gm_cant_drop_min_lv || level > battle_config.gm_cant_drop_max_lv);
+/** 
+ * Determines if player can give / drop / trade / vend items 
+ */ 
+bool pc_can_give_items(struct map_session_data *sd) 
+{ 
+	return pc_has_permission(sd, PC_PERM_TRADE);
 }
 
 /*==========================================
@@ -788,7 +793,7 @@ int pc_isequip (struct map_session_data *sd, int n)
 	nullpo_ret (sd);
 	item = sd->inventory_data[n];
 
-	if (battle_config.gm_allequip > 0 && pc_isGM (sd) >= battle_config.gm_allequip)
+	if(pc_has_permission(sd, PC_PERM_USE_ALL_EQUIPMENT))
 		return 1;
 
 	if (item == NULL)
@@ -868,13 +873,13 @@ int pc_isequip (struct map_session_data *sd, int n)
  * session idに問題無し
  * char鯖から送られてきたステ?タスを設定
  *------------------------------------------*/
-bool pc_authok (struct map_session_data *sd, int login_id2, time_t expiration_time, int gmlevel, struct mmo_charstatus *st)
+bool pc_authok (struct map_session_data *sd, int login_id2, time_t expiration_time, int group_id, struct mmo_charstatus *st)
 {
 	int i;
 	unsigned long tick = gettick();
 	uint32 ip = session[sd->fd]->client_addr;
 	sd->login_id2 = login_id2;
-	sd->gmlevel = gmlevel;
+	sd->group_id = group_id;
 	memcpy (&sd->status, st, sizeof (*st));
 
 	if (st->sex != sd->status.sex)
@@ -955,7 +960,7 @@ bool pc_authok (struct map_session_data *sd, int login_id2, time_t expiration_ti
 	pc_setequipindex (sd);
 	status_change_init (&sd->bl);
 
-	if ( (battle_config.atc_gmonly == 0 || pc_isGM (sd)) && (pc_isGM (sd) >= get_atcommand_level (atcommand_hide)))
+	if (pc_can_use_command(sd, "hide", COMMAND_ATCOMMAND))
 		sd->status.option &= (OPTION_MASK | OPTION_INVISIBLE);
 	else
 		sd->status.option &= OPTION_MASK;
@@ -996,20 +1001,12 @@ bool pc_authok (struct map_session_data *sd, int login_id2, time_t expiration_ti
 	sd->die_counter = -1;
 
 	//display login notice
-	if (sd->gmlevel >= battle_config.lowest_gm_level)
-		ShowInfo ("GM '"CL_WHITE"%s"CL_RESET"' logged in."
-				  " (AID/CID: '"CL_WHITE"%d/%d"CL_RESET"',"
-				  " Packet Ver: '"CL_WHITE"%d"CL_RESET"', IP: '"CL_WHITE"%d.%d.%d.%d"CL_RESET"',"
-				  " GM Level '"CL_WHITE"%d"CL_RESET"').\n",
-				  sd->status.name, sd->status.account_id, sd->status.char_id,
-				  sd->packet_ver, CONVIP (ip), sd->gmlevel);
-	else
-		ShowInfo ("'"CL_WHITE"%s"CL_RESET"' logged in."
-				  " (AID/CID: '"CL_WHITE"%d/%d"CL_RESET"',"
-				  " Packet Ver: '"CL_WHITE"%d"CL_RESET"', IP: '"CL_WHITE"%d.%d.%d.%d"CL_RESET"').\n",
-				  sd->status.name, sd->status.account_id, sd->status.char_id,
-				  sd->packet_ver, CONVIP (ip));
-
+	ShowInfo("'"CL_WHITE"%s"CL_RESET"' logged in." 
+			" (AID/CID: '"CL_WHITE"%d/%d"CL_RESET"'," 
+			" Packet Ver: '"CL_WHITE"%d"CL_RESET"', IP: '"CL_WHITE"%d.%d.%d.%d"CL_RESET"'," 
+			" Group '"CL_WHITE"%d"CL_RESET"').\n", 
+			sd->status.name, sd->status.account_id, sd->status.char_id, 
+			sd->packet_ver, CONVIP(ip), sd->group_id);
 	// Send friends list
 	clif_friendslist_send (sd);
 
@@ -1219,107 +1216,110 @@ static int pc_calc_skillpoint (struct map_session_data *sd)
 }
 
 
-/*==========================================
- * ?えられるスキルの計算
- *------------------------------------------*/
-int pc_calc_skilltree (struct map_session_data *sd)
+int pc_calc_skilltree(struct map_session_data *sd)
 {
-	int i, id = 0, flag;
-	int c = 0;
-	nullpo_ret (sd);
-	i = pc_calc_skilltree_normalize_job (sd);
-	c = pc_mapid2jobid (i, sd->status.sex);
+	int i,id=0,flag;
+	int c=0;
 
-	if (c == -1)
-	{
-		//Unable to normalize job??
-		ShowError ("pc_calc_skilltree: Unable to normalize job %d for character %s (%d:%d)\n", i, sd->status.name, sd->status.account_id, sd->status.char_id);
+	nullpo_ret(sd);
+	i = pc_calc_skilltree_normalize_job(sd);
+	c = pc_mapid2jobid(i, sd->status.sex);
+	if( c == -1 )
+	{ //Unable to normalize job??
+		ShowError("pc_calc_skilltree: Unable to normalize job %d for character %s (%d:%d)\n", i, sd->status.name, sd->status.account_id, sd->status.char_id);
 		return 1;
 	}
+	c = pc_class2idx(c);
 
-	c = pc_class2idx (c);
-
-	for (i = 0; i < MAX_SKILL; i++)
-	{
-		if (sd->status.skill[i].flag != SKILL_FLAG_PLAGIARIZED)  //Don't touch plagiarized skills
+	for( i = 0; i < MAX_SKILL; i++ )
+	{ 
+		if( sd->status.skill[i].flag != SKILL_FLAG_PLAGIARIZED ) //Don't touch plagiarized skills
 			sd->status.skill[i].id = 0; //First clear skills.
 	}
 
-	for (i = 0; i < MAX_SKILL; i++)
-	{
-		if (sd->status.skill[i].flag != SKILL_FLAG_PERMANENT && sd->status.skill[i].flag != SKILL_FLAG_PLAGIARIZED)
-		{
-			// Restore original level of skills after deleting earned skills.
+	for( i = 0; i < MAX_SKILL; i++ )
+	{ 
+		if( sd->status.skill[i].flag != SKILL_FLAG_PERMANENT && sd->status.skill[i].flag != SKILL_FLAG_PLAGIARIZED )
+		{ // Restore original level of skills after deleting earned skills.
 			sd->status.skill[i].lv = (sd->status.skill[i].flag == SKILL_FLAG_TEMPORARY) ? 0 : sd->status.skill[i].flag - SKILL_FLAG_REPLACED_LV_0;
 			sd->status.skill[i].flag = SKILL_FLAG_PERMANENT;
 		}
 
-		if (sd->sc.count && sd->sc.data[SC_SPIRIT] && sd->sc.data[SC_SPIRIT]->val2 == SL_BARDDANCER && i >= DC_HUMMING && i <= DC_SERVICEFORYOU)
-		{
-			//Enable Bard/Dancer spirit linked skills.
-			if (sd->status.sex)
-			{
-				//Link dancer skills to bard.
-				if (sd->status.skill[i - 8].lv < 10)
+		if( sd->sc.count && sd->sc.data[SC_SPIRIT] && sd->sc.data[SC_SPIRIT]->val2 == SL_BARDDANCER && i >= DC_HUMMING && i<= DC_SERVICEFORYOU )
+		{ //Enable Bard/Dancer spirit linked skills.
+			if( sd->status.sex )
+			{ //Link dancer skills to bard.
+				if( sd->status.skill[i-8].lv < 10 )
 					continue;
-
 				sd->status.skill[i].id = i;
-				sd->status.skill[i].lv = sd->status.skill[i - 8].lv; // Set the level to the same as the linking skill
+				sd->status.skill[i].lv = sd->status.skill[i-8].lv; // Set the level to the same as the linking skill
 				sd->status.skill[i].flag = SKILL_FLAG_TEMPORARY; // Tag it as a non-savable, non-uppable, bonus skill
 			}
 			else
-			{
-				//Link bard skills to dancer.
-				if (sd->status.skill[i].lv < 10)
+			{ //Link bard skills to dancer.
+				if( sd->status.skill[i].lv < 10 )
 					continue;
-
-				sd->status.skill[i - 8].id = i - 8;
-				sd->status.skill[i - 8].lv = sd->status.skill[i].lv; // Set the level to the same as the linking skill
-				sd->status.skill[i - 8].flag = SKILL_FLAG_TEMPORARY; // Tag it as a non-savable, non-uppable, bonus skill
+				sd->status.skill[i-8].id = i - 8;
+				sd->status.skill[i-8].lv = sd->status.skill[i].lv; // Set the level to the same as the linking skill
+				sd->status.skill[i-8].flag = SKILL_FLAG_TEMPORARY; // Tag it as a non-savable, non-uppable, bonus skill
 			}
 		}
 	}
 
-	if (battle_config.gm_allskill > 0 && pc_isGM (sd) >= battle_config.gm_allskill)
-	{
-		for (i = 0; i < MAX_SKILL; i++)
-		{
-			if (skill_get_inf2 (i) & (INF2_NPC_SKILL | INF2_GUILD_SKILL))
+	if( pc_has_permission(sd, PC_PERM_ALL_SKILL) ) {
+		for( i = 0; i < MAX_SKILL; i++ ) {
+			switch(i) {
+				/**
+				 * Dummy skills must be added here otherwise they'll be displayed in the,
+				 * skill tree and since they have no icons they'll give resource errors
+				 **/
+				case AB_DUPLELIGHT_MELEE:
+				case AB_DUPLELIGHT_MAGIC:
+				case WL_CHAINLIGHTNING_ATK:
+				case WL_TETRAVORTEX_FIRE:
+				case WL_TETRAVORTEX_WATER:
+				case WL_TETRAVORTEX_WIND:
+				case WL_TETRAVORTEX_GROUND:
+				case WL_SUMMON_ATK_FIRE:
+				case WL_SUMMON_ATK_WIND:
+				case WL_SUMMON_ATK_WATER:
+				case WL_SUMMON_ATK_GROUND:
+				case LG_OVERBRAND_BRANDISH:
+				case LG_OVERBRAND_PLUSATK:
+				case ALL_BUYING_STORE:
+					continue;
+				default:
+					break;
+			}
+			if( skill_get_inf2(i)&(INF2_NPC_SKILL|INF2_GUILD_SKILL) )
 				continue; //Only skills you can't have are npc/guild ones
-
-			if (skill_get_max (i) > 0)
+			if( skill_get_max(i) > 0 )
 				sd->status.skill[i].id = i;
 		}
-
 		return 0;
 	}
 
-	do
-	{
+	do {
 		flag = 0;
-
-		for (i = 0; i < MAX_SKILL_TREE && (id = skill_tree[c][i].id) > 0; i++)
+		for( i = 0; i < MAX_SKILL_TREE && (id = skill_tree[c][i].id) > 0; i++ )
 		{
 			int j, f, k, inf2;
 
-			if (sd->status.skill[id].id)
+			if( sd->status.skill[id].id )
 				continue; //Skill already known.
 
 			f = 1;
-
-			if (!battle_config.skillfree)
-			{
-				for (j = 0; j < MAX_PC_SKILL_REQUIRE; j++)
-				{
-					if ( (k = skill_tree[c][i].need[j].id))
+			if(!battle_config.skillfree) {
+				for(j = 0; j < MAX_PC_SKILL_REQUIRE; j++) {
+					if((k=skill_tree[c][i].need[j].id))
 					{
 						if (sd->status.skill[k].id == 0 || sd->status.skill[k].flag == SKILL_FLAG_TEMPORARY || sd->status.skill[k].flag == SKILL_FLAG_PLAGIARIZED)
 							k = 0; //Not learned.
-						else if (sd->status.skill[k].flag >= SKILL_FLAG_REPLACED_LV_0) //Real lerned level
+						else
+						if (sd->status.skill[k].flag >= SKILL_FLAG_REPLACED_LV_0) //Real lerned level
 							k = sd->status.skill[skill_tree[c][i].need[j].id].flag - SKILL_FLAG_REPLACED_LV_0;
 						else
-							k = pc_checkskill (sd, k);
-
+							k = pc_checkskill(sd,k);
 						if (k < skill_tree[c][i].need[j].lv)
 						{
 							f = 0;
@@ -1327,51 +1327,48 @@ int pc_calc_skilltree (struct map_session_data *sd)
 						}
 					}
 				}
-
-				if (sd->status.job_level < skill_tree[c][i].joblv)
+				if( sd->status.job_level < skill_tree[c][i].joblv )
 					f = 0; // job level requirement wasn't satisfied
 			}
 
-			if (f)
+			if( f )
 			{
-				inf2 = skill_get_inf2 (id);
+				inf2 = skill_get_inf2(id);
 
-				if (!sd->status.skill[id].lv && (
-							(inf2 & INF2_QUEST_SKILL && !battle_config.quest_skill_learn) ||
-							inf2 & INF2_WEDDING_SKILL ||
-							(inf2 & INF2_SPIRIT_SKILL && !sd->sc.data[SC_SPIRIT])
-						))
+				if(!sd->status.skill[id].lv && (
+					(inf2&INF2_QUEST_SKILL && !battle_config.quest_skill_learn) ||
+					inf2&INF2_WEDDING_SKILL ||
+					(inf2&INF2_SPIRIT_SKILL && !sd->sc.data[SC_SPIRIT])
+				))
 					continue; //Cannot be learned via normal means. Note this check DOES allows raising already known skills.
 
 				sd->status.skill[id].id = id;
 
-				if (inf2 & INF2_SPIRIT_SKILL)
-				{
-					//Spirit skills cannot be learned, they will only show up on your tree when you get buffed.
+				if(inf2&INF2_SPIRIT_SKILL)
+				{	//Spirit skills cannot be learned, they will only show up on your tree when you get buffed.
 					sd->status.skill[id].lv = 1; // need to manually specify a skill level
 					sd->status.skill[id].flag = SKILL_FLAG_TEMPORARY; //So it is not saved, and tagged as a "bonus" skill.
 				}
-
 				flag = 1; // skill list has changed, perform another pass
 			}
 		}
-	}
-	while (flag);
+	} while(flag);
 
-	//
-	if (c > 0 && (sd->class_ & MAPID_UPPERMASK) == MAPID_TAEKWON && sd->status.base_level >= 90 && sd->status.skill_point == 0 && pc_famerank (sd->status.char_id, MAPID_TAEKWON))
+	// 
+	if( c > 0 && (sd->class_&MAPID_UPPERMASK) == MAPID_TAEKWON && sd->status.base_level >= 90 && sd->status.skill_point == 0 && pc_famerank(sd->status.char_id, MAPID_TAEKWON) )
 	{
 		/* Taekwon Ranger Bonus Skill Tree
 		============================================
 		- Grant All Taekwon Tree, but only as Bonus Skills in case they drop from ranking.
 		- (c > 0) to avoid grant Novice Skill Tree in case of Skill Reset (need more logic)
 		- (sd->status.skill_point == 0) to wait until all skill points are asigned to avoid problems with Job Change quest. */
-		for (i = 0; i < MAX_SKILL_TREE && (id = skill_tree[c][i].id) > 0; i++)
+
+		for( i = 0; i < MAX_SKILL_TREE && (id = skill_tree[c][i].id) > 0; i++ )
 		{
-			if ( (skill_get_inf2 (id) & (INF2_QUEST_SKILL | INF2_WEDDING_SKILL)))
+			if( (skill_get_inf2(id)&(INF2_QUEST_SKILL|INF2_WEDDING_SKILL)) )
 				continue; //Do not include Quest/Wedding skills.
 
-			if (sd->status.skill[id].id == 0)
+			if( sd->status.skill[id].id == 0 )
 			{
 				sd->status.skill[id].id = id;
 				sd->status.skill[id].flag = SKILL_FLAG_TEMPORARY; // So it is not saved, and tagged as a "bonus" skill.
@@ -1381,7 +1378,7 @@ int pc_calc_skilltree (struct map_session_data *sd)
 				sd->status.skill[id].flag = SKILL_FLAG_REPLACED_LV_0 + sd->status.skill[id].lv; // Remember original level
 			}
 
-			sd->status.skill[id].lv = skill_tree_get_max (id, sd->status.class_);
+			sd->status.skill[id].lv = skill_tree_get_max(id, sd->status.class_);
 		}
 	}
 
@@ -1389,75 +1386,65 @@ int pc_calc_skilltree (struct map_session_data *sd)
 }
 
 //Checks if you can learn a new skill after having leveled up a skill.
-static void pc_check_skilltree (struct map_session_data *sd, int skill)
+static void pc_check_skilltree(struct map_session_data *sd, int skill)
 {
-	int i, id = 0, flag;
-	int c = 0;
+	int i,id=0,flag;
+	int c=0;
 
-	if (battle_config.skillfree)
+	if(battle_config.skillfree)
 		return; //Function serves no purpose if this is set
-
-	i = pc_calc_skilltree_normalize_job (sd);
-	c = pc_mapid2jobid (i, sd->status.sex);
-
-	if (c == -1)   //Unable to normalize job??
-	{
-		ShowError ("pc_check_skilltree: Unable to normalize job %d for character %s (%d:%d)\n", i, sd->status.name, sd->status.account_id, sd->status.char_id);
+	
+	i = pc_calc_skilltree_normalize_job(sd);
+	c = pc_mapid2jobid(i, sd->status.sex);
+	if (c == -1) { //Unable to normalize job??
+		ShowError("pc_check_skilltree: Unable to normalize job %d for character %s (%d:%d)\n", i, sd->status.name, sd->status.account_id, sd->status.char_id);
 		return;
 	}
-
-	c = pc_class2idx (c);
-
-	do
-	{
+	c = pc_class2idx(c);
+	do {
 		flag = 0;
-
-		for (i = 0; i < MAX_SKILL_TREE && (id = skill_tree[c][i].id) > 0; i++)
+		for( i = 0; i < MAX_SKILL_TREE && (id=skill_tree[c][i].id)>0; i++ )
 		{
 			int j, f = 1, k;
 
-			if (sd->status.skill[id].id)  //Already learned
+			if( sd->status.skill[id].id ) //Already learned
 				continue;
-
-			for (j = 0; j < MAX_PC_SKILL_REQUIRE; j++)
+			
+			for( j = 0; j < MAX_PC_SKILL_REQUIRE; j++ )
 			{
-				if ( (k = skill_tree[c][i].need[j].id))
+				if( (k = skill_tree[c][i].need[j].id) )
 				{
-					if (sd->status.skill[k].id == 0 || sd->status.skill[k].flag == SKILL_FLAG_TEMPORARY || sd->status.skill[k].flag == SKILL_FLAG_PLAGIARIZED)
+					if( sd->status.skill[k].id == 0 || sd->status.skill[k].flag == SKILL_FLAG_TEMPORARY || sd->status.skill[k].flag == SKILL_FLAG_PLAGIARIZED )
 						k = 0; //Not learned.
-					else if (sd->status.skill[k].flag >= SKILL_FLAG_REPLACED_LV_0) //Real lerned level
+					else
+					if( sd->status.skill[k].flag >= SKILL_FLAG_REPLACED_LV_0) //Real lerned level
 						k = sd->status.skill[skill_tree[c][i].need[j].id].flag - SKILL_FLAG_REPLACED_LV_0;
 					else
-						k = pc_checkskill (sd, k);
-
-					if (k < skill_tree[c][i].need[j].lv)
+						k = pc_checkskill(sd,k);
+					if( k < skill_tree[c][i].need[j].lv )
 					{
 						f = 0;
 						break;
 					}
 				}
 			}
-
-			if (!f)
+			if( !f )
 				continue;
-
-			if (sd->status.job_level < skill_tree[c][i].joblv)
+			if( sd->status.job_level < skill_tree[c][i].joblv )
 				continue;
-
-			j = skill_get_inf2 (id);
-
-			if (!sd->status.skill[id].lv && (
-						(j & INF2_QUEST_SKILL && !battle_config.quest_skill_learn) ||
-						j & INF2_WEDDING_SKILL ||
-						(j & INF2_SPIRIT_SKILL && !sd->sc.data[SC_SPIRIT])
-					))
+			
+			j = skill_get_inf2(id);
+			if( !sd->status.skill[id].lv && (
+				(j&INF2_QUEST_SKILL && !battle_config.quest_skill_learn) ||
+				j&INF2_WEDDING_SKILL ||
+				(j&INF2_SPIRIT_SKILL && !sd->sc.data[SC_SPIRIT])
+			) )
 				continue; //Cannot be learned via normal means.
 
 			sd->status.skill[id].id = id;
 			flag = 1;
 		}
-	}
-	while (flag);
+	} while(flag);
 }
 
 // Make sure all the skills are in the correct condition
@@ -4588,7 +4575,7 @@ int pc_cart_additem (struct map_session_data *sd, struct item *item_data, int am
 
 	data = itemdb_search (item_data->nameid);
 
-	if (!itemdb_cancartstore (item_data, pc_isGM (sd)))
+	if( !itemdb_cancartstore(item_data, pc_get_group_level(sd)) )
 	{
 		// Check item trade restrictions	[Skotlex]
 		clif_displaymessage (sd->fd, msg_txt (264));
@@ -5068,45 +5055,6 @@ int pc_randomwarp (struct map_session_data *sd, clr_type type)
 	return 0;
 }
 
-
-/// Warps one player to another.
-/// @param sd player to warp.
-/// @param pl_sd player to warp to.
-int pc_warpto (struct map_session_data *sd, struct map_session_data *pl_sd)
-{
-	if (map[sd->bl.m].flag.nowarp && battle_config.any_warp_GM_min_level > pc_isGM (sd))
-	{
-		return -2;
-	}
-
-	if (map[pl_sd->bl.m].flag.nowarpto && battle_config.any_warp_GM_min_level > pc_isGM (sd))
-	{
-		return -3;
-	}
-
-	return pc_setpos (sd, pl_sd->mapindex, pl_sd->bl.x, pl_sd->bl.y, CLR_TELEPORT);
-}
-
-
-/// Recalls one player to another.
-/// @param sd player to warp to.
-/// @param pl_sd player to warp.
-int pc_recall (struct map_session_data *sd, struct map_session_data *pl_sd)
-{
-	if (map[pl_sd->bl.m].flag.nowarp && battle_config.any_warp_GM_min_level > pc_isGM (sd))
-	{
-		return -2;
-	}
-
-	if (map[sd->bl.m].flag.nowarpto && battle_config.any_warp_GM_min_level > pc_isGM (sd))
-	{
-		return -3;
-	}
-
-	return pc_setpos (pl_sd, sd->mapindex, sd->bl.x, sd->bl.y, CLR_RESPAWN);
-}
-
-
 /*==========================================
  * Records a memo point at sd's current position
  * pos - entry to replace, (-1: shift oldest entry out)
@@ -5117,7 +5065,7 @@ int pc_memo (struct map_session_data *sd, int pos)
 	nullpo_ret (sd);
 
 	// check mapflags
-	if (sd->bl.m >= 0 && (map[sd->bl.m].flag.nomemo || map[sd->bl.m].flag.nowarpto) && battle_config.any_warp_GM_min_level > pc_isGM (sd))
+	if( sd->bl.m >= 0 && (map[sd->bl.m].flag.nomemo || map[sd->bl.m].flag.nowarpto) && !pc_has_permission(sd, PC_PERM_WARP_ANYWHERE) )
 	{
 		clif_skill_teleportmessage (sd, 1); // "Saved point cannot be memorized."
 		return 0;
@@ -6283,7 +6231,7 @@ int pc_allskillup (struct map_session_data *sd)
 	}
 
 	//pc_calc_skilltree takes care of setting the ID to valid skills. [Skotlex]
-	if (battle_config.gm_allskill > 0 && pc_isGM (sd) >= battle_config.gm_allskill)
+	if (pc_has_permission(sd, PC_PERM_ALL_SKILL))
 	{
 		//Get ALL skills except npc/guild ones. [Skotlex]
 		//and except SG_DEVIL [Komurka] and MO_TRIPLEATTACK and RG_SNATCHER [ultramage]
@@ -6465,6 +6413,13 @@ int pc_resetstate (struct map_session_data *sd)
 	clif_updatestatus (sd, SP_UDEX);
 	clif_updatestatus (sd, SP_ULUK);	// End Addition
 	clif_updatestatus (sd, SP_STATUSPOINT);
+	
+	if( sd->mission_mobid ) { //bugreport:2200
+		sd->mission_mobid = 0;
+		sd->mission_count = 0;
+		pc_setglobalreg(sd,"TK_MISSION_ID", 0);
+	}
+	
 	status_calc_pc (sd, 0);
 	return 1;
 }
@@ -7896,15 +7851,13 @@ int pc_setriding (TBL_PC *sd, int flag)
  *------------------------------------------*/
 int pc_candrop (struct map_session_data *sd, struct item *item)
 {
-	int level = pc_isGM (sd);
-
 	if (item && item->expire_time)
 		return 0;
 
-	if (!pc_can_give_items (level)) //check if this GM level can drop items
+	if (!pc_can_give_items (sd)) //check if this GM level can drop items
 		return 0;
 
-	return (itemdb_isdropable (item, level));
+	return (itemdb_isdropable (item, pc_get_group_level(sd)));
 }
 
 /*==========================================
@@ -9248,6 +9201,37 @@ int pc_split_atoui (char *str, unsigned int *val, char sep, int max)
 	return i;
 }
 
+/** 
+ * Checks if player can use @/#command 
+ * @param sd Player map session data 
+ * @param command Command name without @/# and params 
+ * @param type is it atcommand or charcommand 
+ */ 
+bool pc_can_use_command(struct map_session_data *sd, const char *command, AtCommandType type) 
+{ 
+	return pc_group_can_use_command(pc_get_group_id(sd), command, type); 
+} 
+ 
+/** 
+ * Checks if player has a permission 
+ * @param sd Player map session data 
+ * @param permission permission to check 
+ */ 
+bool pc_has_permission(struct map_session_data *sd, int permission) 
+{ 
+	return pc_group_has_permission(pc_get_group_id(sd), permission); 
+} 
+ 
+/** 
+ * Checks if commands used by a player should be logged 
+ * according to their group setting. 
+ * @param sd Player map session data 
+ */ 
+bool pc_should_log_commands(struct map_session_data *sd) 
+{ 
+	return pc_group_should_log_commands(pc_get_group_id(sd)); 
+}
+
 /*==========================================
  * DB reading.
  * exp.txt        - required experience values
@@ -9608,6 +9592,7 @@ int pc_read_motd (void)
  *------------------------------------------*/
 void do_final_pc (void)
 {
+	do_final_pc_groups();
 	return;
 }
 
@@ -9647,5 +9632,6 @@ int do_init_pc (void)
 		}
 	}
 
+	do_init_pc_groups();
 	return 0;
 }

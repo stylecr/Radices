@@ -102,7 +102,7 @@ void buyingstore_create (struct map_session_data *sd, int zenylimit, unsigned ch
 		return;
 	}
 
-	if (!pc_can_give_items (pc_isGM (sd)))
+	if( !pc_can_give_items(sd) )
 	{
 		// custom: GM is not allowed to buy (give zeny)
 		sd->buyingstore.slots = 0;
@@ -155,7 +155,7 @@ void buyingstore_create (struct map_session_data *sd, int zenylimit, unsigned ch
 			break;
 		}
 
-		if (!id->flag.buyingstore || !itemdb_cantrade_sub (id, pc_isGM (sd), pc_isGM (sd)) || (idx = pc_search_inventory (sd, nameid)) == -1)
+		if( !id->flag.buyingstore || !itemdb_cantrade_sub(id, pc_get_group_level(sd), pc_get_group_level(sd)) || ( idx = pc_search_inventory(sd, nameid) ) == -1 )
 		{
 			// restrictions: allowed, no character-bound items and at least one must be owned
 			break;
@@ -236,7 +236,7 @@ void buyingstore_open (struct map_session_data *sd, int account_id)
 		return;
 	}
 
-	if (!pc_can_give_items (pc_isGM (sd)))
+	if( !pc_can_give_items(sd) )
 	{
 		// custom: GM is not allowed to sell
 		clif_displaymessage (sd->fd, msg_txt (246));
@@ -279,7 +279,7 @@ void buyingstore_trade (struct map_session_data *sd, int account_id, unsigned in
 		return;
 	}
 
-	if (!pc_can_give_items (pc_isGM (sd)))
+	if( !pc_can_give_items(sd) )
 	{
 		// custom: GM is not allowed to sell
 		clif_displaymessage (sd->fd, msg_txt (246));
@@ -343,7 +343,7 @@ void buyingstore_trade (struct map_session_data *sd, int account_id, unsigned in
 			return;
 		}
 
-		if (sd->status.inventory[index].expire_time || !itemdb_cantrade (&sd->status.inventory[index], pc_isGM (sd), pc_isGM (pl_sd)) || memcmp (sd->status.inventory[index].card, buyingstore_blankslots, sizeof (buyingstore_blankslots)))
+		if( sd->status.inventory[index].expire_time || !itemdb_cantrade(&sd->status.inventory[index], pc_get_group_level(sd), pc_get_group_level(pl_sd)) || memcmp(sd->status.inventory[index].card, buyingstore_blankslots, sizeof(buyingstore_blankslots)) )
 		{
 			// non-tradable item
 			clif_buyingstore_trade_failed_seller (sd, BUYINGSTORE_TRADE_SELLER_FAILED, nameid);

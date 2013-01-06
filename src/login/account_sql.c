@@ -504,7 +504,7 @@ static bool mmo_auth_fromsql (AccountDB_SQL *db, struct mmo_account *acc, int ac
 
 	// retrieve login entry for the specified account
 	if (SQL_ERROR == Sql_Query (sql_handle,
-								"SELECT `account_id`,`userid`,`user_pass`,`sex`,`email`,`level`,`state`,`unban_time`,`expiration_time`,`logincount`,`lastlogin`,`last_ip`,`birthdate` FROM `%s` WHERE `account_id` = %d",
+								"SELECT `account_id`,`userid`,`user_pass`,`sex`,`email`,`group_id`,`state`,`unban_time`,`expiration_time`,`logincount`,`lastlogin`,`last_ip`,`birthdate` FROM `%s` WHERE `account_id` = %d",
 								db->account_db, account_id)
 	   )
 	{
@@ -524,7 +524,7 @@ static bool mmo_auth_fromsql (AccountDB_SQL *db, struct mmo_account *acc, int ac
 	Sql_GetData (sql_handle,  2, &data, NULL); safestrncpy (acc->pass, data, sizeof (acc->pass));
 	Sql_GetData (sql_handle,  3, &data, NULL); acc->sex = data[0];
 	Sql_GetData (sql_handle,  4, &data, NULL); safestrncpy (acc->email, data, sizeof (acc->email));
-	Sql_GetData (sql_handle,  5, &data, NULL); acc->level = atoi (data);
+	Sql_GetData (sql_handle,  5, &data, NULL); acc->group_id = atoi (data);
 	Sql_GetData (sql_handle,  6, &data, NULL); acc->state = strtoul (data, NULL, 10);
 	Sql_GetData (sql_handle,  7, &data, NULL); acc->unban_time = atol (data);
 	Sql_GetData (sql_handle,  8, &data, NULL); acc->expiration_time = atol (data);
@@ -579,14 +579,14 @@ static bool mmo_auth_tosql (AccountDB_SQL *db, const struct mmo_account *acc, bo
 		{
 			// insert into account table
 			if (SQL_SUCCESS != SqlStmt_Prepare (stmt,
-												"INSERT INTO `%s` (`account_id`, `userid`, `user_pass`, `sex`, `email`, `level`, `state`, `unban_time`, `expiration_time`, `logincount`, `lastlogin`, `last_ip`, `birthdate`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+												"INSERT INTO `%s` (`account_id`, `userid`, `user_pass`, `sex`, `email`, `group_id`, `state`, `unban_time`, `expiration_time`, `logincount`, `lastlogin`, `last_ip`, `birthdate`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 												db->account_db)
 					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  0, SQLDT_INT, (void *) &acc->account_id,      sizeof (acc->account_id))
 					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  1, SQLDT_STRING, (void *) acc->userid,           strlen (acc->userid))
 					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  2, SQLDT_STRING, (void *) acc->pass,             strlen (acc->pass))
 					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  3, SQLDT_ENUM, (void *) &acc->sex,             sizeof (acc->sex))
 					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  4, SQLDT_STRING, (void *) &acc->email,           strlen (acc->email))
-					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  5, SQLDT_INT, (void *) &acc->level,           sizeof (acc->level))
+					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  5, SQLDT_INT, (void *) &acc->group_id,           sizeof (acc->group_id))
 					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  6, SQLDT_UINT, (void *) &acc->state,           sizeof (acc->state))
 					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  7, SQLDT_LONG, (void *) &acc->unban_time,      sizeof (acc->unban_time))
 					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  8, SQLDT_INT, (void *) &acc->expiration_time, sizeof (acc->expiration_time))
@@ -604,12 +604,12 @@ static bool mmo_auth_tosql (AccountDB_SQL *db, const struct mmo_account *acc, bo
 		else
 		{
 			// update account table
-			if (SQL_SUCCESS != SqlStmt_Prepare (stmt, "UPDATE `%s` SET `userid`=?,`user_pass`=?,`sex`=?,`email`=?,`level`=?,`state`=?,`unban_time`=?,`expiration_time`=?,`logincount`=?,`lastlogin`=?,`last_ip`=?,`birthdate`=? WHERE `account_id` = '%d'", db->account_db, acc->account_id)
+			if (SQL_SUCCESS != SqlStmt_Prepare (stmt, "UPDATE `%s` SET `userid`=?,`user_pass`=?,`sex`=?,`email`=?,`group_id`=?,`state`=?,`unban_time`=?,`expiration_time`=?,`logincount`=?,`lastlogin`=?,`last_ip`=?,`birthdate`=? WHERE `account_id` = '%d'", db->account_db, acc->account_id)
 					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  0, SQLDT_STRING, (void *) acc->userid,           strlen (acc->userid))
 					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  1, SQLDT_STRING, (void *) acc->pass,             strlen (acc->pass))
 					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  2, SQLDT_ENUM, (void *) &acc->sex,             sizeof (acc->sex))
 					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  3, SQLDT_STRING, (void *) acc->email,            strlen (acc->email))
-					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  4, SQLDT_INT, (void *) &acc->level,           sizeof (acc->level))
+					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  4, SQLDT_INT, (void *) &acc->group_id,           sizeof (acc->group_id))
 					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  5, SQLDT_UINT, (void *) &acc->state,           sizeof (acc->state))
 					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  6, SQLDT_LONG, (void *) &acc->unban_time,      sizeof (acc->unban_time))
 					||  SQL_SUCCESS != SqlStmt_BindParam (stmt,  7, SQLDT_LONG, (void *) &acc->expiration_time, sizeof (acc->expiration_time))

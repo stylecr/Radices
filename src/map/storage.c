@@ -104,7 +104,7 @@ int storage_storageopen(struct map_session_data *sd)
         return 1;
     }
 
-    if( !pc_can_give_items(pc_isGM(sd)) )
+    if( !pc_can_give_items(sd) )
       { //check is this GM level is allowed to put items to storage
         clif_displaymessage(sd->fd, msg_txt(246));
         return 1;
@@ -150,7 +150,7 @@ static int storage_additem (struct map_session_data *sd, struct item *item_data,
 
 	data = itemdb_search (item_data->nameid);
 
-	if (!itemdb_canstore (item_data, pc_isGM (sd)))
+	if( !itemdb_canstore(item_data, pc_get_group_level(sd)) )
 	{
 		//Check if item is storable. [Skotlex]
 		clif_displaymessage (sd->fd, msg_txt (264));
@@ -392,7 +392,7 @@ int storage_guild_storageopen(struct map_session_data *sd)
     if(sd->state.storage_flag)
         return 1; //Can't open both storages at a time.
     
-    if( !pc_can_give_items(pc_isGM(sd)) ) { //check is this GM level can open guild storage and store items [Lupus]
+    if( !pc_can_give_items(sd) ) { //check is this GM level can open guild storage and store items [Lupus]
         clif_displaymessage(sd->fd, msg_txt(246));
         return 1;
     }
@@ -425,7 +425,7 @@ int guild_storage_additem (struct map_session_data *sd, struct guild_storage *st
 
 	data = itemdb_search (item_data->nameid);
 
-	if (!itemdb_canguildstore (item_data, pc_isGM (sd)) || item_data->expire_time)
+	if( !itemdb_canguildstore(item_data, pc_get_group_level(sd)) || item_data->expire_time )
 	{
 		//Check if item is storable. [Skotlex]
 		clif_displaymessage (sd->fd, msg_txt (264));
